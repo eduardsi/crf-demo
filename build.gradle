@@ -1,0 +1,40 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.3.RELEASE'
+    }
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+
+group = 'net.sizovs'
+version = 'UNSPECIFIED';
+
+sourceCompatibility = 1.8
+
+dependencies {
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion) {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+
+    compile group: 'com.h2database', name: 'h2', version: '1.4.195'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: springBootVersion
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    compile group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '2.5.0'
+}
+
+
