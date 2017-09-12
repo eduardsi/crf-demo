@@ -2,11 +2,11 @@ package net.sizovs.crf.backbone;
 
 import java.lang.reflect.Type;
 
-public class ReactionNotFound extends RuntimeException {
+public class NoReactionFound extends RuntimeException {
 
     private final Type commandType;
 
-    public ReactionNotFound(Type commandType) {
+    public NoReactionFound(Type commandType) {
         this.commandType = commandType;
     }
 

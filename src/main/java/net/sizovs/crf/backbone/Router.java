@@ -21,7 +21,7 @@ class Router {
                                 .stream()
                                 .filter(reaction -> reaction.commandType().isSupertypeOf(commandType))
                                 .findFirst()
-                                .orElseThrow(() -> new ReactionNotFound(commandType)));
+                                .orElseThrow(() -> new NoReactionFound(commandType)));
     }
 
     public <C extends Command<R>, R extends Command.R> Reaction<C, R> route(C command) {

@@ -26,7 +26,7 @@ class CreatePermissionReaction implements Reaction<CreatePermission, CreatePermi
     private void throwIfPermissionWithTheSameNameExists(CreatePermission $) {
         long permission = permissions.countByNameIgnoreCase($.name());
         if (permission > 0) {
-            throw new PermissionAlreadyExists($.name());
+            throw new DuplicatePermissionCreationAttempted($.name());
         }
     }
 }
