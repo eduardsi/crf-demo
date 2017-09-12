@@ -1,11 +1,10 @@
 package net.sizovs.crf.backbone;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Component
-class PipedNow implements Now {
+class Pipeline implements Now {
 
     private final Router router;
 
@@ -13,8 +12,7 @@ class PipedNow implements Now {
 
     private final CommandCorrelationId correlationId;
 
-    @Autowired
-    public PipedNow(Router router, PlatformTransactionManager txManager, CommandCorrelationId correlationId) {
+    public Pipeline(Router router, PlatformTransactionManager txManager, CommandCorrelationId correlationId) {
         this.router = router;
         this.txManager = txManager;
         this.correlationId = correlationId;
@@ -22,13 +20,13 @@ class PipedNow implements Now {
 
     @Override
     public <R extends Command.R, C extends Command<R>> R execute(C command) {
-        Now pipe =
+        Now pipeline =
                 new Correlable(correlationId,
                         new Loggable(
                                 new Transactional(txManager,
                                         new Reacting(router))));
 
-        return pipe.execute(command);
+        return pipeline.execute(command);
     }
 
 }

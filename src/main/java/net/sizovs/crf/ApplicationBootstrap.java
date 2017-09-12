@@ -36,7 +36,6 @@ public class ApplicationBootstrap implements CommandLineRunner {
         CreatePermission createPermission = new CreatePermission("Superpowers");
         CreatePermission.PermissionId permissionId = createPermission.execute(now);
 
-
         BecomeAMember becomeAMember = new BecomeAMember("alan@devternity.com");
         BecomeAMember.MemberId memberId = becomeAMember.execute(now);
 

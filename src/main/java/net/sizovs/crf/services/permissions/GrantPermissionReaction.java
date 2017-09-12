@@ -24,7 +24,7 @@ class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Voi
         Permission permission = permissions.findOne($.permissionId())
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find permission (" + $.permissionId() + ")"));
 
-        member.grantPermission(permission);
+        member.grant(permission);
         return new Command.R.Void();
     }
 }

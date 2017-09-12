@@ -11,7 +11,7 @@ public class ReactionNotFound extends RuntimeException {
     }
 
     @Override
-    public String getLocalizedMessage() {
+    public String getMessage() {
         return "Cannot find reaction for command " + commandType;
     }
 }

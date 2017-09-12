@@ -10,7 +10,6 @@ public interface Command<T extends Command.R> {
         }
     }
 
-
     default T execute(Now now) {
         return now.execute(this);
     }

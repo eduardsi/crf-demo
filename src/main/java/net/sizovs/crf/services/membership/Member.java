@@ -32,13 +32,7 @@ public class Member {
     private Member() {
     }
 
-    public void grantDefaultPermissions() {
-        grantPermission(new Permission("DEFAULT1"));
-        grantPermission(new Permission("DEFAULT2"));
-        grantPermission(new Permission("DEFAULT3"));
-    }
-
-    public void grantPermission(Permission permission) {
+    public void grant(Permission permission) {
         log.info("Granting {} to {}!", permission.name(), id);
         permissions.add(permission);
     }
