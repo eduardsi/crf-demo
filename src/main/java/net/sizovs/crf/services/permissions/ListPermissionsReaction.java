@@ -24,6 +24,7 @@ class ListPermissionsReaction implements Reaction<ListPermissions, PermissionNam
                 .permissions()
                 .stream()
                 .map(Permission::name)
+                .map(Permission.UniqueName::toString)
                 .collect(toCollection(PermissionNames::new));
     }
 }

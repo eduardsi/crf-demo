@@ -8,7 +8,6 @@ import net.sizovs.crf.services.permissions.GrantPermission;
 import net.sizovs.crf.services.permissions.ListPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,14 +19,13 @@ public class ApplicationBootstrap implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationBootstrap.class);
 
-    @Autowired
-    Now now;
+    private final Now now;
 
-    @Autowired
-    Future future;
+    private final Future future;
 
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(ApplicationBootstrap.class, args);
+    public ApplicationBootstrap(Now now, Future future) {
+        this.now = now;
+        this.future = future;
     }
 
     @Override
@@ -48,5 +46,9 @@ public class ApplicationBootstrap implements CommandLineRunner {
 
     private Consumer<ListPermissions.PermissionNames> logPermissions() {
         return permissionNames -> log.info("Alan has permissions {}", permissionNames);
+    }
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(ApplicationBootstrap.class, args);
     }
 }

@@ -8,25 +8,20 @@ class CreatePermissionReaction implements Reaction<CreatePermission, CreatePermi
 
     private final Permissions permissions;
 
-    public CreatePermissionReaction(Permissions permissions) {
+    private final Permission.NameUniqueness nameUniqueness;
+
+    public CreatePermissionReaction(Permissions permissions, Permission.NameUniqueness nameUniqueness) {
         this.permissions = permissions;
+        this.nameUniqueness = nameUniqueness;
     }
 
     @Override
     public CreatePermission.PermissionId react(CreatePermission $) {
-
-        throwIfPermissionWithTheSameNameExists($);
-
-        Permission permission = new Permission($.name());
+        Permission.UniqueName name = new Permission.UniqueName($.name(), nameUniqueness);
+        Permission permission = new Permission(name);
         permissions.save(permission);
 
         return new CreatePermission.PermissionId(permission.id());
     }
 
-    private void throwIfPermissionWithTheSameNameExists(CreatePermission $) {
-        long permission = permissions.countByNameIgnoreCase($.name());
-        if (permission > 0) {
-            throw new DuplicatePermissionCreationAttempted($.name());
-        }
-    }
 }

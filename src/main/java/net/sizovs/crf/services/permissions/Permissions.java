@@ -7,7 +7,7 @@ import java.util.Optional;
 @Repository
 interface Permissions extends org.springframework.data.repository.Repository<Permission, String> {
 
-    long countByNameIgnoreCase(String name);
+    long countByNameStringIgnoreCase(String name);
 
     Optional<Permission> findOne(String id);
 
