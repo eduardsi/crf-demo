@@ -38,7 +38,7 @@ public class ApplicationBootstrap implements CommandLineRunner {
         BecomeAMember.MemberId memberId = becomeAMember.execute(now);
 
         GrantPermission grantPermission = new GrantPermission(memberId.toString(), permissionId.toString());
-        now.execute(grantPermission);
+        grantPermission.execute(now);
 
         ListPermissions listPermissions = new ListPermissions(memberId.toString());
         listPermissions.schedule(future).thenAccept(logPermissions());
