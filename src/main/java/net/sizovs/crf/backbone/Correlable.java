@@ -13,7 +13,7 @@ class Correlable implements Now {
     @Override
     public <R extends Command.R, C extends Command<R>> R execute(C command) {
         correlationId.storeForLogging();
-        R response = origin.execute(command);
+        var response = origin.execute(command);
         correlationId.stashFromLogging();
         return response;
     }

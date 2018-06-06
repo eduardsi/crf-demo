@@ -2,7 +2,6 @@ package net.sizovs.crf.services.permissions;
 
 import net.sizovs.crf.backbone.Command;
 import net.sizovs.crf.backbone.Reaction;
-import net.sizovs.crf.services.membership.Member;
 import net.sizovs.crf.services.membership.Members;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +18,13 @@ class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Voi
 
     @Override
     public Command.R.Void react(GrantPermission $) {
-        Member member = members.findOne($.memberId());
+        var member = members.findOne($.memberId());
 
-        Permission permission = permissions.findOne($.permissionId())
+        var permission = permissions.findOne($.permissionId())
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find permission (" + $.permissionId() + ")"));
 
         member.grant(permission);
+
         return new Command.R.Void();
     }
 }

@@ -15,7 +15,7 @@ class BecomeAMemberReaction implements Reaction<BecomeAMember, BecomeAMember.Mem
     @Override
     public BecomeAMember.MemberId react(BecomeAMember $) {
 
-        Member member = new Member($.email());
+        var member = new Member($.email());
         members.save(member);
 
         return new BecomeAMember.MemberId(member.id());

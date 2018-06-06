@@ -16,11 +16,11 @@ class CommandCorrelationId {
         MDC.put(MDC_KEY, next());
     }
 
-    public void stashFromLogging() {
-        MDC.remove(MDC_KEY);
-    }
-
     private String next() {
         return String.valueOf(counter.incrementAndGet() % 1000);
+    }
+
+    public void stashFromLogging() {
+        MDC.remove(MDC_KEY);
     }
 }

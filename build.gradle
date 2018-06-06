@@ -22,8 +22,6 @@ apply plugin: 'org.springframework.boot'
 group = 'net.sizovs'
 version = 'UNSPECIFIED';
 
-sourceCompatibility = 1.8
-
 dependencies {
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion) {
         exclude module: "spring-boot-starter-tomcat"

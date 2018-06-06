@@ -31,16 +31,16 @@ public class ApplicationBootstrap implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        CreatePermission createPermission = new CreatePermission("Superpowers");
-        CreatePermission.PermissionId permissionId = createPermission.execute(now);
+        var createPermission = new CreatePermission("Superpowers");
+        var permissionId = createPermission.execute(now);
 
-        BecomeAMember becomeAMember = new BecomeAMember("alan@devternity.com");
-        BecomeAMember.MemberId memberId = becomeAMember.execute(now);
+        var becomeAMember = new BecomeAMember("alan@devternity.com");
+        var memberId = becomeAMember.execute(now);
 
-        GrantPermission grantPermission = new GrantPermission(memberId.toString(), permissionId.toString());
+        var grantPermission = new GrantPermission(memberId.toString(), permissionId.toString());
         grantPermission.execute(now);
 
-        ListPermissions listPermissions = new ListPermissions(memberId.toString());
+        var listPermissions = new ListPermissions(memberId.toString());
         listPermissions.schedule(future).thenAccept(logPermissions());
     }
 

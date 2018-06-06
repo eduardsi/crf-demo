@@ -17,8 +17,8 @@ class CreatePermissionReaction implements Reaction<CreatePermission, CreatePermi
 
     @Override
     public CreatePermission.PermissionId react(CreatePermission $) {
-        Permission.UniqueName name = new Permission.UniqueName($.name(), nameUniqueness);
-        Permission permission = new Permission(name);
+        var name = new Permission.UniqueName($.name(), nameUniqueness);
+        var permission = new Permission(name);
         permissions.save(permission);
 
         return new CreatePermission.PermissionId(permission.id());

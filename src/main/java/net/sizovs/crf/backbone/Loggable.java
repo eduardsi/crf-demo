@@ -19,7 +19,7 @@ class Loggable implements Now {
     @Override
     public <R extends Command.R, C extends Command<R>> R execute(C command) {
         log.info(">>> {}", ReflectionToStringBuilder.toString(command, SHORT_PREFIX_STYLE));
-        R response = origin.execute(command);
+        var response = origin.execute(command);
         log.info("<<< {} ", ReflectionToStringBuilder.toString(response, SHORT_PREFIX_STYLE));
         return response;
     }
