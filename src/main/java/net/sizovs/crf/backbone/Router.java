@@ -14,26 +14,27 @@ class Router {
 
     private final LoadingCache<Type, Reaction> reactions;
 
-    public Router(ReactionComponents reactionsComponents) {
+    public Router(AllReactions reactions) {
         this.reactions = Caffeine.newBuilder()
                 .build(commandType ->
-                        reactionsComponents
+                        reactions
                                 .stream()
                                 .filter(reaction -> reaction.commandType().isSupertypeOf(commandType))
                                 .findFirst()
                                 .orElseThrow(() -> new NoReactionFound(commandType)));
     }
 
+    @SuppressWarnings("unchecked")
     public <C extends Command<R>, R extends Command.R> Reaction<C, R> route(C command) {
         return reactions.get(command.getClass());
     }
 
     @Component
-    static class ReactionComponents extends ForwardingCollection<Reaction> {
+    static class AllReactions extends ForwardingCollection<Reaction> {
 
         private final ListableBeanFactory beanFactory;
 
-        public ReactionComponents(ListableBeanFactory beanFactory) {
+        public AllReactions(ListableBeanFactory beanFactory) {
             this.beanFactory = beanFactory;
         }
 
