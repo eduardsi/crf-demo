@@ -27,6 +27,7 @@ dependencies {
         exclude module: "spring-boot-starter-tomcat"
     }
 
+    compile 'one.util:streamex:0.6.7'
     compile group: 'com.h2database', name: 'h2', version: '1.4.195'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
