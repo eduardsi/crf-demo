@@ -1,6 +1,11 @@
 .idea
 *.iml
 .gradle
+.classpath
+.project
+.settings
+.vscode
+bin
 build
 out
 /src/test/resources/application.yml

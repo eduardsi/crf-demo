@@ -37,10 +37,10 @@ public class ApplicationBootstrap implements CommandLineRunner {
         var becomeAMember = new BecomeAMember("alan@devternity.com");
         var memberId = becomeAMember.execute(now);
 
-        var grantPermission = new GrantPermission(memberId.toString(), permissionId.toString());
+        var grantPermission = new GrantPermission(memberId, permissionId);
         grantPermission.execute(now);
 
-        var listPermissions = new ListPermissions(memberId.toString());
+        var listPermissions = new ListPermissions(memberId);
         listPermissions.schedule(future).thenAccept(logPermissions());
     }
 

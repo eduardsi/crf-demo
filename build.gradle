@@ -34,6 +34,7 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty', version: springBootVersion
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
     compile group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '2.5.0'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
 }
 
 

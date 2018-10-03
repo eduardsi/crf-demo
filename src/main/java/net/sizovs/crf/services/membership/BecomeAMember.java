@@ -2,7 +2,7 @@ package net.sizovs.crf.services.membership;
 
 import net.sizovs.crf.backbone.Command;
 
-public class BecomeAMember implements Command<BecomeAMember.MemberId> {
+public class BecomeAMember implements Command<MemberId> {
 
     private final String email;
 
@@ -12,19 +12,5 @@ public class BecomeAMember implements Command<BecomeAMember.MemberId> {
 
     public String email() {
         return email;
-    }
-
-    public static class MemberId implements Command.R {
-
-        private final String id;
-
-        public MemberId(String id) {
-            this.id = id;
-        }
-
-        @Override
-        public String toString() {
-            return id;
-        }
     }
 }
