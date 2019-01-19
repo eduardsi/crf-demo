@@ -10,9 +10,9 @@ class Pipeline implements Now {
 
     private final PlatformTransactionManager txManager;
 
-    private final CommandCorrelationId correlationId;
+    private final Ccid correlationId;
 
-    public Pipeline(Router router, PlatformTransactionManager txManager, CommandCorrelationId correlationId) {
+    public Pipeline(Router router, PlatformTransactionManager txManager, Ccid correlationId) {
         this.router = router;
         this.txManager = txManager;
         this.correlationId = correlationId;

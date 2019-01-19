@@ -1,17 +1,13 @@
 package net.sizovs.crf.services.permissions;
 
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-interface Permissions extends org.springframework.data.repository.Repository<Permission, String> {
+interface Permissions extends CrudRepository<Permission, String> {
 
     long countByNameStringIgnoreCase(String name);
-
-    Optional<Permission> findOne(String id);
-
-    void save(Permission permission);
-
 
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
-class CommandCorrelationId {
+class Ccid {
 
     private static final String MDC_KEY = "ccid";
 

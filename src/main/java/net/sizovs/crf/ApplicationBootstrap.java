@@ -29,7 +29,7 @@ public class ApplicationBootstrap implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
         var createPermission = new CreatePermission("Superpowers");
         var permissionId = createPermission.execute(now);
@@ -48,7 +48,7 @@ public class ApplicationBootstrap implements CommandLineRunner {
         return permissionNames -> log.info("Alan has permissions {}", permissionNames);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         SpringApplication.run(ApplicationBootstrap.class, args);
     }
 }

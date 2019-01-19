@@ -23,9 +23,9 @@ public class Member {
     @OneToMany
     private Collection<Permission> permissions = new ArrayList<>();
 
-    private String email;
+    private Email email;
 
-    public Member(String email) {
+    public Member(Email email) {
         this.email = email;
     }
 
@@ -39,6 +39,10 @@ public class Member {
 
     public Collection<Permission> permissions() {
         return ImmutableList.copyOf(permissions);
+    }
+
+    public Email email() {
+        return email;
     }
 
     public String id() {
