@@ -19,7 +19,6 @@ class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Voi
     @Override
     public Command.R.Void react(GrantPermission $) {
         var member = members.findById($.memberId()).orElseThrow(() -> new IllegalArgumentException("Member cannot be found by id"));
-        System.out.println(member.email().isBlacklisted());
 
         var permission = permissions.findById($.permissionId())
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find permission (" + $.permissionId() + ")"));

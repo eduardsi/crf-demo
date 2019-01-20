@@ -16,7 +16,6 @@ class BecomeAMemberReaction implements Reaction<BecomeAMember, MemberId> {
 
     @Override
     public MemberId react(BecomeAMember $) {
-
         var member = new Member(new Email($.email(), blacklist));
         members.save(member);
 
