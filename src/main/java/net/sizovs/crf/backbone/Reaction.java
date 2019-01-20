@@ -2,7 +2,7 @@ package net.sizovs.crf.backbone;
 
 import com.google.common.reflect.TypeToken;
 
-public interface Reaction<C extends Command<R>, R extends Command.R> {
+public interface Reaction<C extends Command<R>, R> {
 
     R react(C $);
 

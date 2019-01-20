@@ -2,19 +2,20 @@ package net.sizovs.crf.backbone;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface Command<T extends Command.R> {
+public interface Command<R> {
 
-    interface R {
-        class Void implements R {
-
+    class Void {
+        @Override
+        public String toString() {
+            return "Void";
         }
     }
 
-    default T execute(Now now) {
+    default R execute(Now now) {
         return now.execute(this);
     }
 
-    default CompletableFuture<T> schedule(Future future) {
+    default CompletableFuture<R> schedule(Future future) {
         return future.schedule(this);
     }
 

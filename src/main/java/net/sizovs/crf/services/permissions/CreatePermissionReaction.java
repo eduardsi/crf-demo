@@ -4,7 +4,7 @@ import net.sizovs.crf.backbone.Reaction;
 import org.springframework.stereotype.Component;
 
 @Component
-class CreatePermissionReaction implements Reaction<CreatePermission, PermissionId> {
+class CreatePermissionReaction implements Reaction<CreatePermission, String> {
 
     private final Permissions permissions;
 
@@ -16,12 +16,12 @@ class CreatePermissionReaction implements Reaction<CreatePermission, PermissionI
     }
 
     @Override
-    public PermissionId react(CreatePermission $) {
+    public String react(CreatePermission $) {
         var name = new Permission.UniqueName($.name(), nameUniqueness);
         var permission = new Permission(name);
         permissions.save(permission);
 
-        return new PermissionId(permission.id());
+        return permission.id();
     }
 
 }

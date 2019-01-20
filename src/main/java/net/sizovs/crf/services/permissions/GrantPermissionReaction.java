@@ -6,7 +6,7 @@ import net.sizovs.crf.services.membership.Members;
 import org.springframework.stereotype.Component;
 
 @Component
-class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Void> {
+class GrantPermissionReaction implements Reaction<GrantPermission, Command.Void> {
 
     private final Members members;
     private final Permissions permissions;
@@ -17,7 +17,7 @@ class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Voi
     }
 
     @Override
-    public Command.R.Void react(GrantPermission $) {
+    public Command.Void react(GrantPermission $) {
         var member = members.findById($.memberId()).orElseThrow(() -> new IllegalArgumentException("Member cannot be found by id"));
 
         var permission = permissions.findById($.permissionId())
@@ -25,6 +25,6 @@ class GrantPermissionReaction implements Reaction<GrantPermission, Command.R.Voi
 
         member.grant(permission);
 
-        return new Command.R.Void();
+        return new Command.Void();
     }
 }

@@ -4,7 +4,7 @@ import net.sizovs.crf.backbone.Reaction;
 import org.springframework.stereotype.Component;
 
 @Component
-class BecomeAMemberReaction implements Reaction<BecomeAMember, MemberId> {
+class BecomeAMemberReaction implements Reaction<BecomeAMember, String> {
 
     private final Members members;
     private final EmailBlacklist blacklist;
@@ -15,10 +15,10 @@ class BecomeAMemberReaction implements Reaction<BecomeAMember, MemberId> {
     }
 
     @Override
-    public MemberId react(BecomeAMember $) {
+    public String react(BecomeAMember $) {
         var member = new Member(new Email($.email(), blacklist));
         members.save(member);
 
-        return new MemberId(member.id());
+        return member.id();
     }
 }

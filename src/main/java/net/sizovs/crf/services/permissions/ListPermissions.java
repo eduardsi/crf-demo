@@ -12,7 +12,7 @@ public class ListPermissions implements Command<ListPermissions.PermissionNames>
 
     private final String memberId;
 
-    public static class PermissionNames extends ForwardingCollection<String> implements Command.R {
+    public static class PermissionNames extends ForwardingCollection<String> {
 
         private final Collection<String> ids = new ArrayList<>();
 

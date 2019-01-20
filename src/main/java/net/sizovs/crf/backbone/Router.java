@@ -25,7 +25,7 @@ class Router {
     }
 
     @SuppressWarnings("unchecked")
-    public <C extends Command<R>, R extends Command.R> Reaction<C, R> route(C command) {
+    public <C extends Command<R>, R> Reaction<C, R> route(C command) {
         return reactions.get(command.getClass());
     }
 

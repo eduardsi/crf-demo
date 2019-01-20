@@ -9,7 +9,7 @@ class Reacting implements Now {
     }
 
     @Override
-    public <R extends Command.R, C extends Command<R>> R execute(C command) {
+    public <R, C extends Command<R>> R execute(C command) {
         var reaction = router.route(command);
         return reaction.react(command);
     }

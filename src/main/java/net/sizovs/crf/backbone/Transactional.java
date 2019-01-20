@@ -15,7 +15,7 @@ class Transactional implements Now {
     }
 
     @Override
-    public <R extends Command.R, C extends Command<R>> R execute(C command) {
+    public <R, C extends Command<R>> R execute(C command) {
         return tx.execute(txStatus -> origin.execute(command));
     }
 }
