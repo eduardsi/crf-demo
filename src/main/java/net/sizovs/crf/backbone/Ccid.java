@@ -12,15 +12,12 @@ class Ccid {
 
     private final AtomicLong counter = new AtomicLong();
 
-    public void storeForLogging() {
-        MDC.put(MDC_KEY, next());
+    public MDC.MDCCloseable storeForLogging() {
+        return MDC.putCloseable(MDC_KEY, next());
     }
 
     private String next() {
         return String.valueOf(counter.incrementAndGet() % 1000);
     }
 
-    public void stashFromLogging() {
-        MDC.remove(MDC_KEY);
-    }
 }

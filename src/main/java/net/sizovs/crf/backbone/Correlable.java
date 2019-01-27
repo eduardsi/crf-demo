@@ -12,9 +12,8 @@ class Correlable implements Now {
 
     @Override
     public <R, C extends Command<R>> R execute(C command) {
-        ccid.storeForLogging();
-        var response = origin.execute(command);
-        ccid.stashFromLogging();
-        return response;
+        try (var stashAutomatically = ccid.storeForLogging()) {
+            return origin.execute(command);
+        }
     }
 }
