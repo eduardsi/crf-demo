@@ -1,11 +1,11 @@
 package net.sizovs.crf.backbone;
 
-class Correlable implements Now {
+class Correlatable implements Now {
 
     private final Ccid ccid;
     private final Now origin;
 
-    public Correlable(Ccid ccid, Now origin) {
+    public Correlatable(Ccid ccid, Now origin) {
         this.ccid = ccid;
         this.origin = origin;
     }

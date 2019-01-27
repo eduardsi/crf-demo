@@ -21,7 +21,7 @@ class Pipeline implements Now {
     @Override
     public <R, C extends Command<R>> R execute(C command) {
         var pipeline =
-                new Correlable(correlationId,
+                new Correlatable(correlationId,
                         new Loggable(
                                 new Transactional(txManager,
                                         new Reacting(router))));
