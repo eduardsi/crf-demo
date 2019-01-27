@@ -13,7 +13,7 @@ public class Future {
         this.now = now;
     }
 
-    public <R, C extends Command<R>> CompletableFuture<R> schedule(C command) {
+    public <R, C extends Command<R>> CompletableFuture<R> execute(C command) {
         return CompletableFuture.supplyAsync(() -> now.execute(command));
     }
 }

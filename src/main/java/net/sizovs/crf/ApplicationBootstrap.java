@@ -1,5 +1,6 @@
 package net.sizovs.crf;
 
+import net.sizovs.crf.backbone.Eventually;
 import net.sizovs.crf.backbone.Future;
 import net.sizovs.crf.backbone.Now;
 import net.sizovs.crf.services.membership.BecomeAMember;
@@ -21,11 +22,14 @@ public class ApplicationBootstrap implements CommandLineRunner {
 
     private final Now now;
 
-    private final Future future;
+    private final Future async;
 
-    public ApplicationBootstrap(Now now, Future future) {
+    private final Eventually eventually;
+
+    public ApplicationBootstrap(Now now, Future async, Eventually eventually) {
         this.now = now;
-        this.future = future;
+        this.async = async;
+        this.eventually = eventually;
     }
 
     @Override
@@ -41,7 +45,8 @@ public class ApplicationBootstrap implements CommandLineRunner {
         grantPermission.execute(now);
 
         var listPermissions = new ListPermissions(memberId);
-        listPermissions.schedule(future).thenAccept(logPermissions());
+        listPermissions.execute(async).thenAccept(logPermissions());
+
     }
 
     private Consumer<ListPermissions.PermissionNames> logPermissions() {
