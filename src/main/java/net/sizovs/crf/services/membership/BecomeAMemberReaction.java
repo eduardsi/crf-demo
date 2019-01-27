@@ -1,6 +1,7 @@
 package net.sizovs.crf.services.membership;
 
 import net.sizovs.crf.backbone.Reaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -9,6 +10,7 @@ class BecomeAMemberReaction implements Reaction<BecomeAMember, String> {
     private final Members members;
     private final EmailBlacklist blacklist;
 
+    @Autowired
     public BecomeAMemberReaction(Members members, EmailBlacklist blacklist) {
         this.members = members;
         this.blacklist = blacklist;
@@ -21,4 +23,5 @@ class BecomeAMemberReaction implements Reaction<BecomeAMember, String> {
 
         return member.id();
     }
+
 }

@@ -9,3 +9,6 @@ public class BecomeAMember implements Command<String> {
     private final String email;
 
 }
+
+
+

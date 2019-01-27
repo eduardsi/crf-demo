@@ -1,32 +1,27 @@
 package net.sizovs.crf.backbone;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ForwardingCollection;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 
 @Component
 class Router {
 
-    private final LoadingCache<Type, Reaction> reactions;
+    private final AllReactions reactions;
 
     public Router(AllReactions reactions) {
-        this.reactions = Caffeine.newBuilder()
-                .build(commandType ->
-                        reactions
-                                .stream()
-                                .filter(reaction -> reaction.commandType().isSupertypeOf(commandType))
-                                .findFirst()
-                                .orElseThrow(() -> new NoReactionFound(commandType)));
+        this.reactions = reactions;
     }
 
     @SuppressWarnings("unchecked")
     public <C extends Command<R>, R> Reaction<C, R> route(C command) {
-        return reactions.get(command.getClass());
+        return reactions
+                    .stream()
+                    .filter(reaction -> reaction.isApplicableFor(command))
+                    .findFirst()
+                    .orElseThrow(() -> new NoReactionFound(command));
     }
 
     @Component

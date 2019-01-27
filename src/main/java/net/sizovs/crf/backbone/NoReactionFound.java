@@ -1,17 +1,15 @@
 package net.sizovs.crf.backbone;
 
-import java.lang.reflect.Type;
-
 public class NoReactionFound extends RuntimeException {
 
-    private final Type commandType;
+    private final Command command;
 
-    public NoReactionFound(Type commandType) {
-        this.commandType = commandType;
+    public NoReactionFound(Command command) {
+        this.command = command;
     }
 
     @Override
     public String getMessage() {
-        return "Cannot find reaction for command " + commandType;
+        return "Cannot find reaction for command " + command;
     }
 }
