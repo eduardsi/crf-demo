@@ -1,6 +1,3 @@
-import org.gradle.kotlin.dsl.kotlin
-
-
 buildscript {
     repositories {
         jcenter()
@@ -13,6 +10,7 @@ val springVersion = "2.1.2.RELEASE"
 
 plugins {
     java
+    groovy
     id("org.springframework.boot") version "2.1.2.RELEASE"
     id("io.franzbecker.gradle-lombok") version "1.14"
 }
@@ -40,6 +38,11 @@ dependencies {
     implementation("com.google.guava:guava:27.0.1-jre")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("javax.xml.bind:jaxb-api:2.3.0")
+
+    testImplementation("org.spockframework:spock-core:1.3-RC1-groovy-2.5")
+    testImplementation("org.spockframework:spock-spring:1.3-RC1-groovy-2.5")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
+    testImplementation("org.codehaus.groovy:groovy-all:2.5.5")
 }
 
 
