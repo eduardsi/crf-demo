@@ -31,16 +31,16 @@ public class ApplicationBootstrap implements CommandLineRunner {
     public void run(String... args) {
 
         var createPermission = new CreatePermission("Superpowers");
-        var permissionId = createPermission.execute(now);
+        var permissionId = now.execute(createPermission);
 
         var becomeAMember = new BecomeAMember("alan@devternity.com");
-        var memberId = becomeAMember.execute(now);
+        var memberId = now.execute(becomeAMember);
 
         var grantPermission = new GrantPermission(memberId, permissionId);
-        grantPermission.execute(now);
+        now.execute(grantPermission);
 
         var listPermissions = new ListPermissions(memberId);
-        listPermissions.execute(future).thenAccept(logPermissions());
+        future.schedule(listPermissions).thenAccept(logPermissions());
 
     }
 
