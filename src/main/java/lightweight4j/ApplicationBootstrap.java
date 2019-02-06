@@ -20,12 +20,11 @@ public class ApplicationBootstrap implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(ApplicationBootstrap.class);
 
     private final Now now;
+    private final Future future;
 
-    private final Future async;
-
-    public ApplicationBootstrap(Now now, Future async) {
+    public ApplicationBootstrap(Now now, Future future) {
         this.now = now;
-        this.async = async;
+        this.future = future;
     }
 
     @Override
@@ -41,7 +40,7 @@ public class ApplicationBootstrap implements CommandLineRunner {
         grantPermission.execute(now);
 
         var listPermissions = new ListPermissions(memberId);
-        listPermissions.execute(async).thenAccept(logPermissions());
+        listPermissions.execute(future).thenAccept(logPermissions());
 
     }
 

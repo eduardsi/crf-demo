@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,7 +29,7 @@ public class BecomeAMember implements Command<String> {
 
         @RequestMapping("/members")
         public String post(@RequestBody BecomeAMember command) {
-            return command.execute(now);
+            return now.execute(command);
         }
 
     }

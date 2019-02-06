@@ -3,8 +3,10 @@ package lightweight4j.lib.commands;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.concurrent.CompletableFuture;
+
 @Component
-class Pipeline implements Now {
+class Pipeline implements Now, Future {
 
     private final Router router;
 
@@ -21,12 +23,17 @@ class Pipeline implements Now {
     @Override
     public <R, C extends Command<R>> R execute(C command) {
         var pipeline =
-                new Correlatable(correlationId,
-                        new Loggable(
-                                new Transactional(txManager,
-                                        new Reacting(router))));
+                new LogCorrelation(correlationId,
+                        new Logging(
+                                new Transactions(txManager,
+                                        new Reactions(router))));
 
-        return pipeline.mixIn(command);
+        return pipeline.process(command);
+    }
+
+    @Override
+    public <R, C extends Command<R>> CompletableFuture<R> schedule(C command) {
+        return CompletableFuture.supplyAsync(() -> this.execute(command));
     }
 
 }

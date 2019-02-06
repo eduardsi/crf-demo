@@ -16,8 +16,8 @@ public interface Command<R> {
     }
 
 
-    default CompletableFuture<R> execute(Future async) {
-        return async.execute(this);
+    default CompletableFuture<R> execute(Future future) {
+        return future.schedule(this);
     }
 
 }

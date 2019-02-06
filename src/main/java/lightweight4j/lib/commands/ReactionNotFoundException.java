@@ -1,10 +1,10 @@
 package lightweight4j.lib.commands;
 
-public class NoReactionFound extends RuntimeException {
+public class ReactionNotFoundException extends RuntimeException {
 
     private final Command command;
 
-    public NoReactionFound(Command command) {
+    public ReactionNotFoundException(Command command) {
         this.command = command;
     }
 

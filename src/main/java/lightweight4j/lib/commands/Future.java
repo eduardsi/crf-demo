@@ -1,19 +1,9 @@
 package lightweight4j.lib.commands;
 
-import org.springframework.stereotype.Component;
-
 import java.util.concurrent.CompletableFuture;
 
-@Component
-public class Future {
+public interface Future {
 
-    private final Now now;
+    <R, C extends Command<R>> CompletableFuture<R> schedule(C command);
 
-    public Future(Now now) {
-        this.now = now;
-    }
-
-    public <R, C extends Command<R>> CompletableFuture<R> execute(C command) {
-        return CompletableFuture.supplyAsync(() -> now.execute(command));
-    }
 }

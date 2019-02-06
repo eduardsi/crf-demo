@@ -21,7 +21,7 @@ class Router {
                     .stream()
                     .filter(reaction -> reaction.isApplicableFor(command))
                     .findFirst()
-                    .orElseThrow(() -> new NoReactionFound(command));
+                    .orElseThrow(() -> new ReactionNotFoundException(command));
     }
 
     @Component
