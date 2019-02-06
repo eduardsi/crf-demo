@@ -1,19 +1,19 @@
 package lightweight4j.lib.commands;
 
-class Correlatable implements Now {
+class Correlatable implements PipelineBehavior {
 
     private final Ccid ccid;
-    private final Now origin;
+    private final PipelineBehavior origin;
 
-    public Correlatable(Ccid ccid, Now origin) {
+    public Correlatable(Ccid ccid, PipelineBehavior origin) {
         this.ccid = ccid;
         this.origin = origin;
     }
 
     @Override
-    public <R, C extends Command<R>> R execute(C command) {
+    public <R, C extends Command<R>> R mixIn(C command) {
         try (var stashAutomatically = ccid.storeForLogging()) {
-            return origin.execute(command);
+            return origin.mixIn(command);
         }
     }
 }

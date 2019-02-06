@@ -26,7 +26,7 @@ class Pipeline implements Now {
                                 new Transactional(txManager,
                                         new Reacting(router))));
 
-        return pipeline.execute(command);
+        return pipeline.mixIn(command);
     }
 
 }

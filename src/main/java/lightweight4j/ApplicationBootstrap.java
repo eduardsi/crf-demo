@@ -1,6 +1,5 @@
 package lightweight4j;
 
-import lightweight4j.lib.commands.Eventually;
 import lightweight4j.lib.commands.Future;
 import lightweight4j.lib.commands.Now;
 import lightweight4j.app.membership.BecomeAMember;
@@ -24,12 +23,9 @@ public class ApplicationBootstrap implements CommandLineRunner {
 
     private final Future async;
 
-    private final Eventually eventually;
-
-    public ApplicationBootstrap(Now now, Future async, Eventually eventually) {
+    public ApplicationBootstrap(Now now, Future async) {
         this.now = now;
         this.async = async;
-        this.eventually = eventually;
     }
 
     @Override

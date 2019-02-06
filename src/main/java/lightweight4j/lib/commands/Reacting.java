@@ -1,6 +1,6 @@
 package lightweight4j.lib.commands;
 
-class Reacting implements Now {
+class Reacting implements PipelineBehavior {
 
     private final Router router;
 
@@ -9,7 +9,7 @@ class Reacting implements Now {
     }
 
     @Override
-    public <R, C extends Command<R>> R execute(C command) {
+    public <R, C extends Command<R>> R mixIn(C command) {
         var reaction = router.route(command);
         return reaction.react(command);
     }
