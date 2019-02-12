@@ -1,11 +1,36 @@
 package lightweight4j.app.permissions;
 
-import lombok.Value;
-import lightweight4j.lib.commands.Command;
+import an.awesome.pipelinr.Command;
+import org.springframework.stereotype.Component;
 
-@Value
 public class CreatePermission implements Command<String> {
 
     private final String name;
 
+    public CreatePermission(String name) {
+        this.name = name;
+    }
+
+    @Component
+    static class Handler implements Command.Handler<CreatePermission, String> {
+
+        private final Permissions permissions;
+
+        private final Permission.NameUniqueness nameUniqueness;
+
+        public Handler(Permissions permissions, Permission.NameUniqueness nameUniqueness) {
+            this.permissions = permissions;
+            this.nameUniqueness = nameUniqueness;
+        }
+
+        @Override
+        public String handle(CreatePermission $) {
+            var name = new Permission.UniqueName($.name, nameUniqueness);
+            var permission = new Permission(name);
+            permissions.save(permission);
+
+            return permission.id();
+        }
+
+    }
 }

@@ -1,7 +1,6 @@
 package lightweight4j;
 
-import lightweight4j.lib.commands.Future;
-import lightweight4j.lib.commands.Now;
+import an.awesome.pipelinr.Pipeline;
 import lightweight4j.app.membership.BecomeAMember;
 import lightweight4j.app.permissions.CreatePermission;
 import lightweight4j.app.permissions.GrantPermission;
@@ -12,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.nio.channels.Pipe;
 import java.util.function.Consumer;
 
 @SpringBootApplication
@@ -19,28 +19,26 @@ public class ApplicationBootstrap implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationBootstrap.class);
 
-    private final Now now;
-    private final Future future;
+    private final Pipeline pipeline;
 
-    public ApplicationBootstrap(Now now, Future future) {
-        this.now = now;
-        this.future = future;
+    public ApplicationBootstrap(Pipeline pipeline) {
+        this.pipeline = pipeline;
     }
 
     @Override
     public void run(String... args) {
 
         var createPermission = new CreatePermission("Superpowers");
-        var permissionId = now.execute(createPermission);
+        var permissionId = pipeline.send(createPermission);
 
         var becomeAMember = new BecomeAMember("alan@devternity.com");
-        var memberId = now.execute(becomeAMember);
+        var memberId = pipeline.send(becomeAMember);
 
         var grantPermission = new GrantPermission(memberId, permissionId);
-        now.execute(grantPermission);
+        pipeline.send(grantPermission);
 
         var listPermissions = new ListPermissions(memberId);
-        future.schedule(listPermissions).thenAccept(logPermissions());
+        pipeline.send(listPermissions).thenAccept(logPermissions());
 
     }
 

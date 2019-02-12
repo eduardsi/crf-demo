@@ -1,8 +1,8 @@
-# CRF demo
+# PipelinR demo app
 
-This is a demo that supplements [How to design a service layer in Java using CRF](http://blog.sizovs.net/service-layer-design/) blog article.
+This app demonstrates the basic use of [PipelinR](https://github.com/sizovs/PipelinR) in a service layer.
 
-The application runs on Java 11 and uses Lombok.
+The starting point is [ApplicationBootstrap](src/main/java/lightweight4j/ApplicationBootstrap.java).
 
 #### Running via IDE
 > under `src/main/java` run `ApplicationBootstrap`

@@ -1,4 +1,4 @@
-package lightweight4j.app.core;
+package lightweight4j.lib.hibernate;
 
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;

@@ -1,4 +1,4 @@
-package lightweight4j.lib.commands;
+package lightweight4j.lib.pipeline;
 
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
-class Ccid {
+class CorrelationId {
 
     private static final String MDC_KEY = "ccid";
 

@@ -40,7 +40,7 @@ public class Permission {
 
         public UniqueName(String string, NameUniqueness uniqueness) {
             if (!uniqueness.guaranteed(string)) {
-                throw new DuplicatePermissionCreationAttempted(string);
+                throw new DuplicatePermissionCreationException(string);
             }
             this.string = string;
         }
