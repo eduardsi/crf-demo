@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 class BecomeAMemberSpec extends Specification {
@@ -39,6 +38,22 @@ class BecomeAMemberSpec extends Specification {
 
         and:
             _.andExpect(content().string(matchesUuid()))
+    }
+
+    def "returns validation error if a email is missing in a http request"() {
+        given:
+        def request = [
+                email: ''
+        ]
+        when:
+        def _ = mockMvc.perform(post("/members").contentType(APPLICATION_JSON).content(toJson(request))).andDo(print())
+        then:
+        _.andExpect(status().is(400))
+
+        and:
+        _.andExpect(content().json(toJson([
+                [ property: 'email', message: 'must not be empty' ]
+        ])))
     }
 
 }

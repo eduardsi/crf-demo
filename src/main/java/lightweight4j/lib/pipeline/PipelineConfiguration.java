@@ -15,6 +15,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
+
 @Configuration
 class PipelineConfiguration {
 
@@ -75,5 +81,22 @@ class WrapInTx implements PipelineStep {
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
         return tx.execute(txStatus -> next.invoke());
+    }
+}
+
+@Component
+@Order(4)
+class Validate implements PipelineStep {
+
+    @Override
+    public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
+        var validator = Validation.buildDefaultValidatorFactory().getValidator();
+        var violations = validator.validate(command);
+        if (!violations.isEmpty()) {
+            throw new CommandValidationException(violations);
+        }
+
+        return next.invoke();
+
     }
 }

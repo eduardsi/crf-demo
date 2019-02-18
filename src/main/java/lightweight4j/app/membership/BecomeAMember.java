@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.NotEmpty;
+
 public class BecomeAMember implements Command<String> {
 
+    @NotEmpty
     private final String email;
 
     public BecomeAMember(@Issue1498 @JsonProperty("email") String email) {

@@ -29,6 +29,7 @@ dependencies {
     }
 
     implementation("an.awesome:pipelinr:+")
+    implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
