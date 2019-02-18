@@ -1,4 +1,4 @@
-package lightweight4j.lib.pipeline;
+package lightweight4j.lib.pipeline.validation;
 
 import an.awesome.pipelinr.Command;
 import org.springframework.http.HttpStatus;

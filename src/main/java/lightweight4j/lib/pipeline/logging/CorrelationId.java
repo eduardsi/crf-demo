@@ -1,4 +1,4 @@
-package lightweight4j.lib.pipeline;
+package lightweight4j.lib.pipeline.logging;
 
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
