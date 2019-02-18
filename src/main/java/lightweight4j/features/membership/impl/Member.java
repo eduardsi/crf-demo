@@ -1,7 +1,7 @@
-package lightweight4j.app.membership;
+package lightweight4j.features.membership.impl;
 
 import com.google.common.collect.ImmutableList;
-import lightweight4j.app.permissions.Permission;
+import lightweight4j.features.permissions.impl.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

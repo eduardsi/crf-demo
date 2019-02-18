@@ -1,6 +1,8 @@
-package lightweight4j.app.permissions;
+package lightweight4j.features.permissions;
 
 import an.awesome.pipelinr.Command;
+import lightweight4j.features.permissions.impl.Permission;
+import lightweight4j.features.permissions.impl.Permissions;
 import org.springframework.stereotype.Component;
 
 public class CreatePermission implements Command<String> {

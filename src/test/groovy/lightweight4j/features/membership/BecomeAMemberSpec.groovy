@@ -1,4 +1,4 @@
-package lightweight4j.app.membership
+package lightweight4j.features.membership
 
 import org.hamcrest.Description
 import org.hamcrest.Matcher

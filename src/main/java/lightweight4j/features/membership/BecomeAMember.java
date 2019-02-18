@@ -1,9 +1,13 @@
-package lightweight4j.app.membership;
+package lightweight4j.features.membership;
 
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lightweight4j.features.membership.impl.Email;
+import lightweight4j.features.membership.impl.EmailBlacklist;
+import lightweight4j.features.membership.impl.Member;
+import lightweight4j.features.membership.impl.Members;
 import lightweight4j.lib.jackson.Issue1498;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

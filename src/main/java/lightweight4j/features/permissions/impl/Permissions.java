@@ -1,10 +1,10 @@
-package lightweight4j.app.permissions;
+package lightweight4j.features.permissions.impl;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-interface Permissions extends CrudRepository<Permission, String> {
+public interface Permissions extends CrudRepository<Permission, String> {
 
     long countByNameStringIgnoreCase(String name);
 

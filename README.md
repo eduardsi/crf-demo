@@ -15,5 +15,5 @@ The application is requires Java 11+.
 ```
 
 #### Running tests
-There is a single test [BecomeAMemberSpec](src/test/groovy/lightweight4j/app/membership/BecomeAMemberSpec.groovy) that demonstrate command execution via http.
+There is a single test [BecomeAMemberSpec](src/test/groovy/lightweight4j/features/membership/BecomeAMemberSpec.groovy) that demonstrate command execution via http.
 

@@ -1,8 +1,9 @@
-package lightweight4j.app.permissions;
+package lightweight4j.features.permissions;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
-import lightweight4j.app.membership.Members;
+import lightweight4j.features.membership.impl.Members;
+import lightweight4j.features.permissions.impl.Permissions;
 import org.springframework.stereotype.Component;
 
 public class GrantPermission implements Command<Voidy> {

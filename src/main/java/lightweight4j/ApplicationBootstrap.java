@@ -1,10 +1,10 @@
 package lightweight4j;
 
 import an.awesome.pipelinr.Pipeline;
-import lightweight4j.app.membership.BecomeAMember;
-import lightweight4j.app.permissions.CreatePermission;
-import lightweight4j.app.permissions.GrantPermission;
-import lightweight4j.app.permissions.ListPermissions;
+import lightweight4j.features.membership.BecomeAMember;
+import lightweight4j.features.permissions.CreatePermission;
+import lightweight4j.features.permissions.GrantPermission;
+import lightweight4j.features.permissions.ListPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

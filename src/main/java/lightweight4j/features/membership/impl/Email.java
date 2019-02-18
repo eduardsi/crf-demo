@@ -1,4 +1,4 @@
-package lightweight4j.app.membership;
+package lightweight4j.features.membership.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

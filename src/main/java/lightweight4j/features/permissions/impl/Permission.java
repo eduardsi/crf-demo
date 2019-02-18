@@ -1,4 +1,4 @@
-package lightweight4j.app.permissions;
+package lightweight4j.features.permissions.impl;
 
 import org.springframework.stereotype.Component;
 
