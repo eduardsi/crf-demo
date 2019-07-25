@@ -1,33 +1,28 @@
 package lightweight4j.features.membership.impl;
 
+import lightweight4j.lib.hibernate.HibernateConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
+
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 @Embeddable
 public class Email {
 
-    @Transient
-    @Autowired
-    private EmailBlacklist blacklist;
-
     private String email;
 
-    public Email(String email, EmailBlacklist blacklist) {
-        checkArgument(email != null && !email.isEmpty() && !email.isBlank() && email.contains("."),
-            "Email %s is not valid", email);
+    public Email(String email) {
+        var isNotBlank = !Objects.toString(email).isBlank();
+        checkArgument(isNotBlank, "Email %s must not be blank", email);
         this.email = email;
-        this.blacklist = blacklist;
     }
 
+    @HibernateConstructor
     private Email() {
-    }
-
-    public boolean isBlacklisted() {
-        return blacklist.contains(this);
     }
 
     @Override

@@ -29,30 +29,30 @@ class BecomeAMemberSpec extends Specification {
     def "creates a new member via http and returns its id"() {
         given:
             def request = [
-                    email: 'eduards@sizovs.net'
+                    email: 'eduards@sizovs.net',
+                    firstName: 'Eduards',
+                    lastName: 'Sizovs'
             ]
         when:
-            def _ = mockMvc.perform(post("/members").contentType(APPLICATION_JSON).content(toJson(request))).andDo(print())
+            def _ = mockMvc.perform(post("/members").contentType(APPLICATION_JSON).content(toJson(request)))
         then:
-            _.andExpect(status().isOk())
-
+        _.andExpect(status().is(200))
         and:
-            _.andExpect(content().string(matchesUuid()))
+        _.andExpect(content().string(matchesUuid()))
     }
 
-    def "returns validation error if a email is missing in a http request"() {
+    def "returns validation error if a first name, last name or email are empty"() {
         given:
-        def request = [
-                email: ''
-        ]
+        def request = {}
         when:
-        def _ = mockMvc.perform(post("/members").contentType(APPLICATION_JSON).content(toJson(request))).andDo(print())
+        def _ = mockMvc.perform(post("/members").contentType(APPLICATION_JSON).content(toJson(request)))
         then:
         _.andExpect(status().is(400))
-
         and:
         _.andExpect(content().json(toJson([
-                [ property: 'email', message: 'must not be empty' ]
+                [ property: 'email',     message: 'must not be empty' ],
+                [ property: 'firstName', message: 'must not be empty' ],
+                [ property: 'lastName',  message: 'must not be empty' ]
         ])))
     }
 

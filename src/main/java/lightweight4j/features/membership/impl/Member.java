@@ -2,9 +2,11 @@ package lightweight4j.features.membership.impl;
 
 import com.google.common.collect.ImmutableList;
 import lightweight4j.features.permissions.impl.Permission;
+import lightweight4j.lib.hibernate.HibernateConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -23,12 +25,18 @@ public class Member {
     @OneToMany
     private Collection<Permission> permissions = new ArrayList<>();
 
+    @Embedded
     private Email email;
 
-    public Member(Email email) {
+    @Embedded
+    private Name name;
+
+    public Member(Name name, Email email) {
+        this.name = name;
         this.email = email;
     }
 
+    @HibernateConstructor
     private Member() {
     }
 

@@ -28,6 +28,7 @@ dependencies {
         exclude(module = "spring-boot-starter-tomcat")
     }
 
+    implementation("org.apache.commons:commons-lang3:3.9")
     implementation("an.awesome:pipelinr:+")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
