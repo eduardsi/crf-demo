@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotEmpty;
 
-public class BecomeAMember implements Command<String> {
+public class BecomeAMember implements Command<Long> {
 
     @NotEmpty
     private final String email;
@@ -35,7 +35,7 @@ public class BecomeAMember implements Command<String> {
         private Pipeline pipeline;
 
         @PostMapping("/members")
-        public String post(@RequestBody BecomeAMember command) {
+        public Long post(@RequestBody BecomeAMember command) {
             return pipeline.send(command);
         }
 
@@ -43,7 +43,7 @@ public class BecomeAMember implements Command<String> {
 
 
     @Component
-    private static class Handler implements Command.Handler<BecomeAMember, String> {
+    private static class Handler implements Command.Handler<BecomeAMember, Long> {
 
         private final Members members;
         private final EmailBlacklist blacklist;
@@ -55,7 +55,7 @@ public class BecomeAMember implements Command<String> {
         }
 
         @Override
-        public String handle(BecomeAMember $) {
+        public Long handle(BecomeAMember $) {
             var email = new Email($.email);
             if (blacklist.contains(email)) {
                 throw new EmailIsBlacklistedException(email);

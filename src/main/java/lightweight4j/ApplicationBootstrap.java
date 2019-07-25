@@ -16,8 +16,7 @@ class ApplicationBootstrap implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
-        String memberId = pipeline.send(new BecomeAMember("eduards@sizovs.net", "Eduards", "Sizovs"));
+        Long memberId = pipeline.send(new BecomeAMember("eduards@sizovs.net", "Eduards", "Sizovs"));
         pipeline.send(new GrantPermission(memberId, "BACKOFFICE_ADMINISTRATION"));
 
     }

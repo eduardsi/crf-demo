@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 public class GrantPermission implements Command<Voidy> {
 
-    private final String adminId;
+    private final Long adminId;
     private final String operation;
 
-    public GrantPermission(String adminId, String operation) {
+    public GrantPermission(Long adminId, String operation) {
         this.adminId = adminId;
         this.operation = operation;
     }

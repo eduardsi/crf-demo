@@ -1,22 +1,19 @@
 package lightweight4j.features.administration;
 
+import lightweight4j.lib.domain.DomainEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.util.UUID;
 
+import static java.lang.String.format;
 import static java.util.EnumSet.allOf;
 
 @Entity
-class Permission {
+class Permission extends DomainEntity {
 
     public enum Operation {
         BACKOFFICE_ADMINISTRATION
     }
-
-    @Id
-    private String id = UUID.randomUUID().toString();
 
     private Operation operation;
 
@@ -28,19 +25,14 @@ class Permission {
     private Permission() {
     }
 
-    public String id() {
-        return id;
-    }
-
-
     public static Permission toDo(String operationName) {
-        var availableOps = allOf(Operation.class);
-        var operation = availableOps
+        var availableOperations = allOf(Operation.class);
+        var operation = availableOperations
                 .stream()
                 .filter(it -> it.name().equals(operationName))
                 .findFirst()
                 .orElseThrow(() ->
-                        new IllegalArgumentException("No such operation " + operationName + ". Available operations: " + availableOps));
+                        new IllegalArgumentException(format("%s is not in the list of available operations %s", operationName, availableOperations)));
 
         return new Permission(operation);
     }

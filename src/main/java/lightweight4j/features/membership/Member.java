@@ -1,17 +1,15 @@
 package lightweight4j.features.membership;
 
+import lightweight4j.lib.domain.AggregateRoot;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.util.UUID;
+import javax.persistence.Table;
 
-@Entity(name = "Members")
-class Member {
-
-    @Id
-    private String id = UUID.randomUUID().toString();
+@Entity
+@Table(name = "members")
+class Member extends AggregateRoot {
 
     @Embedded
     private Email email;
@@ -28,13 +26,8 @@ class Member {
     private Member() {
     }
 
-
-
     public Email email() {
         return email;
     }
 
-    public String id() {
-        return id;
-    }
 }
