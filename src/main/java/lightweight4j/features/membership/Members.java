@@ -1,9 +1,9 @@
-package lightweight4j.features.membership.impl;
+package lightweight4j.features.membership;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface Members extends CrudRepository<Member, String> {
+interface Members extends CrudRepository<Member, String> {
 
 }

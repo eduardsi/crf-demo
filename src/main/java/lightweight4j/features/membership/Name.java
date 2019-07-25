@@ -1,11 +1,11 @@
-package lightweight4j.features.membership.impl;
+package lightweight4j.features.membership;
 
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class Name {
+class Name {
 
     private String firstOne;
     private String lastOne;

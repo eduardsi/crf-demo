@@ -1,11 +1,11 @@
-package lightweight4j.features.membership.impl;
+package lightweight4j.features.membership;
 
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class EmailBlacklist {
+class EmailBlacklist {
 
     private static final List<String> BAD_DOMAINS = List.of("pornhub.com", "rotten.com");
 

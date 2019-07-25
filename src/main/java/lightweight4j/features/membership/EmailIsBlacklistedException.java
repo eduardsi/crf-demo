@@ -1,6 +1,6 @@
-package lightweight4j.features.membership.impl;
+package lightweight4j.features.membership;
 
-public class EmailIsBlacklistedException extends RuntimeException {
+class EmailIsBlacklistedException extends RuntimeException {
 
     private Email email;
 

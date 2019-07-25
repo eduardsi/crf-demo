@@ -3,7 +3,6 @@ package lightweight4j.features.membership;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
-import lightweight4j.features.membership.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,11 +29,10 @@ public class BecomeAMember implements Command<String> {
     }
 
     @RestController
-    static class Http {
+    private static class HttpEndpoint {
 
         @Autowired
         private Pipeline pipeline;
-
 
         @PostMapping("/members")
         public String post(@RequestBody BecomeAMember command) {
@@ -45,13 +43,13 @@ public class BecomeAMember implements Command<String> {
 
 
     @Component
-    static class Handler implements Command.Handler<BecomeAMember, String> {
+    private static class Handler implements Command.Handler<BecomeAMember, String> {
 
         private final Members members;
         private final EmailBlacklist blacklist;
 
         @Autowired
-        public Handler(Members members, EmailBlacklist blacklist) {
+        Handler(Members members, EmailBlacklist blacklist) {
             this.members = members;
             this.blacklist = blacklist;
         }

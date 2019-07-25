@@ -1,4 +1,4 @@
-package lightweight4j.features.membership.impl;
+package lightweight4j.features.membership;
 
 import lightweight4j.lib.hibernate.HibernateConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 
 @Embeddable
-public class Email {
+class Email {
 
     private String email;
 
