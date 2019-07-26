@@ -1,6 +1,6 @@
 package lightweight4j.features.administration;
 
-import lightweight4j.lib.domain.AggregateRoot;
+import lightweight4j.lib.domain.DomainEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ import java.util.Collection;
 
 @Entity
 @Table(name = "members")
-class Administrator extends AggregateRoot {
+class Administrator extends DomainEntity {
 
     private static final Logger log = LoggerFactory.getLogger(Administrator.class);
 

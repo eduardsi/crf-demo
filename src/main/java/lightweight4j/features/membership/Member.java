@@ -1,6 +1,6 @@
 package lightweight4j.features.membership;
 
-import lightweight4j.lib.domain.AggregateRoot;
+import lightweight4j.lib.domain.DomainEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Embedded;
@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "members")
-class Member extends AggregateRoot {
+class Member extends DomainEntity {
 
     @Embedded
     private Email email;
@@ -20,6 +20,7 @@ class Member extends AggregateRoot {
     public Member(Name name, Email email) {
         this.name = name;
         this.email = email;
+        schedule(new MemberHasArrived(this::id));
     }
 
     @HibernateConstructor

@@ -14,7 +14,6 @@ class CommandTransaction implements PipelineStep {
 
     private final TransactionTemplate tx;
 
-    @Autowired
     CommandTransaction(PlatformTransactionManager txManager) {
         this.tx = new TransactionTemplate(txManager);
     }
