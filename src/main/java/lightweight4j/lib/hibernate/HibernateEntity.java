@@ -1,5 +1,7 @@
 package lightweight4j.lib.hibernate;
 
+import lightweight4j.lib.modeling.Entity;
+
 import javax.persistence.*;
 import java.util.*;
 import java.util.stream.Stream;
@@ -7,7 +9,7 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 
 @MappedSuperclass
-public abstract class HibernateEntity {
+public abstract class HibernateEntity implements Entity {
 
     @Id
     @GeneratedValue

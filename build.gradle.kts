@@ -10,7 +10,6 @@ val springVersion = "2.1.2.RELEASE"
 
 plugins {
     java
-    groovy
     id("org.springframework.boot") version "2.1.2.RELEASE"
 }
 
@@ -39,10 +38,9 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:2.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
 
-    testImplementation("org.spockframework:spock-core:1.3-RC1-groovy-2.5")
-    testImplementation("org.spockframework:spock-spring:1.3-RC1-groovy-2.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
-    testImplementation("org.codehaus.groovy:groovy-all:2.5.5")
+    testImplementation("org.assertj:assertj-core:3.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.1.0")
 }
 
 

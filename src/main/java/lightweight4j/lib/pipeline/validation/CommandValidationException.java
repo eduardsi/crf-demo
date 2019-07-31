@@ -16,7 +16,7 @@ import java.util.Set;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-class CommandValidationException extends RuntimeException {
+public class CommandValidationException extends RuntimeException {
 
     private final Set<ConstraintViolation<? extends Command>> violations;
 

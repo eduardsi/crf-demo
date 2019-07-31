@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-class ApplicationBootstrap implements CommandLineRunner {
+class Lightweight4j implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
@@ -13,6 +13,6 @@ class ApplicationBootstrap implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(ApplicationBootstrap.class, args);
+        SpringApplication.run(Lightweight4j.class, args);
     }
 }
