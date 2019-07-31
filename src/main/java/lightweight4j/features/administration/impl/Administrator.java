@@ -1,6 +1,6 @@
 package lightweight4j.features.administration.impl;
 
-import lightweight4j.lib.domain.DomainEntity;
+import lightweight4j.lib.hibernate.HibernateEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ import java.util.Collection;
 
 @Entity
 @Table(name = "members")
-class Administrator extends DomainEntity {
+class Administrator extends HibernateEntity {
 
     private static final Logger log = LoggerFactory.getLogger(Administrator.class);
 

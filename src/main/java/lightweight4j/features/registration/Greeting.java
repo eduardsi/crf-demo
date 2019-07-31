@@ -2,7 +2,7 @@ package lightweight4j.features.registration;
 
 import an.awesome.pipelinr.Voidy;
 import lightweight4j.lib.pipeline.ExecutableCommand;
-import lightweight4j.lib.domain.SideEffect;
+import lightweight4j.features.SideEffect;
 import org.springframework.stereotype.Component;
 
 public class Greeting implements ExecutableCommand<Voidy> {
@@ -14,7 +14,7 @@ public class Greeting implements ExecutableCommand<Voidy> {
     }
 
     @Component
-    static class ViaSideEffect implements SideEffect<RegistrationCompleted> {
+    static class WhenRegistrationCompleted implements SideEffect<RegistrationCompleted> {
 
         @Override
         public void completed(RegistrationCompleted event) {

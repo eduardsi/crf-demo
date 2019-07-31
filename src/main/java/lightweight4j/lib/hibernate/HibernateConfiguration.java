@@ -1,67 +1,52 @@
 package lightweight4j.lib.hibernate;
 
 import org.hibernate.EmptyInterceptor;
-import org.hibernate.type.Type;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
-
-import static java.util.Arrays.asList;
-import static org.springframework.core.annotation.AnnotatedElementUtils.hasAnnotation;
 
 @Component
 class HibernateConfiguration implements HibernatePropertiesCustomizer {
 
+    private final PublishEventsAfterFlush publishEventsAfterFlush;
 
-    private final AutowireOnLoad autowireOnLoad;
-
-    public HibernateConfiguration(AutowireOnLoad autowireOnLoad) {
-        this.autowireOnLoad = autowireOnLoad;
+    public HibernateConfiguration(PublishEventsAfterFlush publishEventsAfterFlush) {
+        this.publishEventsAfterFlush = publishEventsAfterFlush;
     }
 
     @Override
     public void customize(Map<String, Object> hibernateProperties) {
-        hibernateProperties.put("hibernate.session_factory.interceptor", autowireOnLoad);
+        hibernateProperties.put("hibernate.session_factory.interceptor", publishEventsAfterFlush);
     }
 }
 
 
 @Component
-class AutowireOnLoad extends EmptyInterceptor {
+class PublishEventsAfterFlush extends EmptyInterceptor {
 
-    private final static boolean STATE_MODIFICATIONS_HAVE_BEEN_MADE = false;
+    private ApplicationEventPublisher eventPublisher;
 
-    private final AutowireCapableBeanFactory spring;
-
-    public AutowireOnLoad(AutowireCapableBeanFactory spring) {
-        this.spring = spring;
+    public PublishEventsAfterFlush(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
-    public boolean onLoad(Object root, Serializable id, Object[] dependencies, String[] props, Type[] types) {
-        Arrays.stream(dependencies)
-                .filter(this::forAutowiring)
-                .forEach(this::autowire);
-
-        autowire(root);
-
-        return STATE_MODIFICATIONS_HAVE_BEEN_MADE;
+    public void postFlush(Iterator entities) {
+        publishEvents(entities);
     }
 
-    private boolean forAutowiring(Object dependency) {
-        var annotations = asList(Entity.class, Embeddable.class);
-        return annotations.stream().anyMatch(annotation -> hasAnnotation(dependency.getClass(), annotation));
+    private void publishEvents(Iterator entities) {
+        while (entities.hasNext()) {
+            var entity = entities.next();
+            if (entity instanceof HibernateEntity) {
+                var domainEntity = (HibernateEntity) entity;
+                domainEntity.events().forEach(eventPublisher::publishEvent);
+                domainEntity.clearEvents();
+            }
+        }
     }
-
-    private void autowire(Object dependency) {
-        spring.autowireBeanProperties(dependency, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, true);
-    }
-
 
 }

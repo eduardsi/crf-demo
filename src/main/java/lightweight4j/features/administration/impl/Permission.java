@@ -1,6 +1,6 @@
 package lightweight4j.features.administration.impl;
 
-import lightweight4j.lib.domain.DomainEntity;
+import lightweight4j.lib.hibernate.HibernateEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Entity;
@@ -9,7 +9,7 @@ import static java.lang.String.format;
 import static java.util.EnumSet.allOf;
 
 @Entity
-class Permission extends DomainEntity {
+class Permission extends HibernateEntity {
 
     public enum Operation {
         BACKOFFICE_ADMINISTRATION

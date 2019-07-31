@@ -8,6 +8,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
+
 @Component
 class PipelineFactoryBean extends AbstractFactoryBean<Pipeline> {
 
@@ -25,6 +27,7 @@ class PipelineFactoryBean extends AbstractFactoryBean<Pipeline> {
     }
 
     @Override
+    @Nonnull
     protected Pipeline createInstance()  {
         return new Pipelinr(commandHandlers::stream, pipelineSteps::orderedStream);
     }

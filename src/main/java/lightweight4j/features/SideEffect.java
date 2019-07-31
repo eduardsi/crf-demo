@@ -1,4 +1,4 @@
-package lightweight4j.lib.domain;
+package lightweight4j.features;
 
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;

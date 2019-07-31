@@ -27,7 +27,7 @@ public class Registration implements ExecutableCommand<Long> {
 
     @Component
     @RestController
-    static class ViaHttp {
+    static class HttpEndpoint {
 
         @PostMapping("/members")
         Long accept(@RequestBody Registration command) {

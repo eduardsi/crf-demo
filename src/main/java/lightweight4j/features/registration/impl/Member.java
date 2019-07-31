@@ -1,7 +1,7 @@
 package lightweight4j.features.registration.impl;
 
 import lightweight4j.features.registration.RegistrationCompleted;
-import lightweight4j.lib.domain.DomainEntity;
+import lightweight4j.lib.hibernate.HibernateEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Embedded;
@@ -10,7 +10,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "members")
-class Member extends DomainEntity {
+class Member extends HibernateEntity {
 
     @Embedded
     public Email email;
