@@ -1,4 +1,4 @@
-package lightweight4j.features.membership
+package lightweight4j.features.registration
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class BecomeAMemberSpec extends Specification {
+class RegistrationSpec extends Specification {
 
     @Autowired
     MockMvc mockMvc

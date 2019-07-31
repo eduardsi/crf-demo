@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Order(2)
-class CommandLogging implements PipelineStep {
+class Logging implements PipelineStep {
 
-    private final Logger log = LoggerFactory.getLogger(CommandLogging.class);
+    private final Logger log = LoggerFactory.getLogger(Logging.class);
 
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {

@@ -1,4 +1,4 @@
-package lightweight4j.features.administration;
+package lightweight4j.features.administration.impl;
 
 import lightweight4j.lib.domain.DomainEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;

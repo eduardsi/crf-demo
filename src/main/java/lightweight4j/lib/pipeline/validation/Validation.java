@@ -5,15 +5,15 @@ import an.awesome.pipelinr.PipelineStep;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Validation;
+import static javax.validation.Validation.buildDefaultValidatorFactory;
 
 @Component
 @Order(4)
-class CommandValidation implements PipelineStep {
+class Validation implements PipelineStep {
 
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-        var validator = Validation.buildDefaultValidatorFactory().getValidator();
+        var validator = buildDefaultValidatorFactory().getValidator();
         var violations = validator.validate(command);
         if (!violations.isEmpty()) {
             throw new CommandValidationException(violations);

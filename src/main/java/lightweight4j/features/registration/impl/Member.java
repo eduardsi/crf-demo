@@ -1,5 +1,6 @@
-package lightweight4j.features.membership;
+package lightweight4j.features.registration.impl;
 
+import lightweight4j.features.registration.RegistrationCompleted;
 import lightweight4j.lib.domain.DomainEntity;
 import lightweight4j.lib.hibernate.HibernateConstructor;
 
@@ -12,23 +13,19 @@ import javax.persistence.Table;
 class Member extends DomainEntity {
 
     @Embedded
-    private Email email;
+    public Email email;
 
     @Embedded
-    private Name name;
+    public Name name;
 
     public Member(Name name, Email email) {
         this.name = name;
         this.email = email;
-        schedule(new MemberHasArrived(this::id));
+        schedule(new RegistrationCompleted(this::id));
     }
 
     @HibernateConstructor
     private Member() {
-    }
-
-    public Email email() {
-        return email;
     }
 
 }

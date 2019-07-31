@@ -1,34 +1,16 @@
 package lightweight4j.features.administration;
 
-import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
-import org.springframework.stereotype.Component;
+import lightweight4j.lib.pipeline.ExecutableCommand;
 
+public class GrantPermission implements ExecutableCommand<Voidy> {
 
-public class GrantPermission implements Command<Voidy> {
-
-    private final Long adminId;
-    private final String operation;
+    public final Long adminId;
+    public final String operation;
 
     public GrantPermission(Long adminId, String operation) {
         this.adminId = adminId;
         this.operation = operation;
     }
 
-    @Component
-    static class Handler implements Command.Handler<GrantPermission, Voidy> {
-
-        private final Administrators admins;
-
-        public Handler(Administrators admins) {
-            this.admins = admins;
-        }
-
-        @Override
-        public Voidy handle(GrantPermission $) {
-            var admin = admins.findById($.adminId).orElseThrow(() -> new IllegalArgumentException("Admin cannot be found by id"));
-            admin.grant(Permission.toDo($.operation));
-            return new Voidy();
-        }
-    }
 }

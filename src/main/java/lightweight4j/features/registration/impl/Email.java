@@ -1,10 +1,8 @@
-package lightweight4j.features.membership;
+package lightweight4j.features.registration.impl;
 
 import lightweight4j.lib.hibernate.HibernateConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Embeddable;
-import javax.persistence.Transient;
 
 import java.util.Objects;
 

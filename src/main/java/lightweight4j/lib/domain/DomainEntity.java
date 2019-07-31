@@ -3,7 +3,6 @@ package lightweight4j.lib.domain;
 
 import org.springframework.data.domain.AfterDomainEventPublication;
 import org.springframework.data.domain.DomainEvents;
-import org.springframework.util.Assert;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -21,9 +20,9 @@ public abstract class DomainEntity {
     private Long id;
 
     @Transient
-    private transient final List<DomainEvent> domainEvents = new ArrayList<>();
+    private transient final List<Object> domainEvents = new ArrayList<>();
 
-    protected <T extends DomainEvent> void schedule(T event) {
+    protected <T> void schedule(T event) {
         this.domainEvents.add(requireNonNull(event, "Domain event must not be null!"));
     }
 
@@ -33,7 +32,7 @@ public abstract class DomainEntity {
     }
 
     @DomainEvents
-    protected Collection<DomainEvent> events() {
+    protected Collection<Object> events() {
         return Collections.unmodifiableList(domainEvents);
     }
 

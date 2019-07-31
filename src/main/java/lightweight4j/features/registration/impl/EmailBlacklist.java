@@ -1,4 +1,4 @@
-package lightweight4j.features.membership;
+package lightweight4j.features.registration.impl;
 
 import org.springframework.stereotype.Component;
 

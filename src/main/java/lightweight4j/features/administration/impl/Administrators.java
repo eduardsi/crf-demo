@@ -1,4 +1,4 @@
-package lightweight4j.features.administration;
+package lightweight4j.features.administration.impl;
 
 import org.springframework.data.repository.Repository;
 
