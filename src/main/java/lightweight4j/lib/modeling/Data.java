@@ -5,10 +5,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.annotation.Nullable;
+
 public abstract class Data {
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(@Nullable Object that) {
         return EqualsBuilder.reflectionEquals(this, that);
     }
 

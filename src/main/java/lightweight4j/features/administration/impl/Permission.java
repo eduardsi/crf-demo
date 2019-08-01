@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 
 import static java.lang.String.format;
 import static java.util.EnumSet.allOf;
+import static java.util.Objects.requireNonNull;
 
 @Entity
 class Permission extends HibernateEntity {

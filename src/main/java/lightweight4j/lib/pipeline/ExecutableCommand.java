@@ -4,6 +4,9 @@ import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
+
 import static java.util.Objects.requireNonNull;
 
 public interface ExecutableCommand<T> extends Command<T> {
@@ -19,6 +22,7 @@ public interface ExecutableCommand<T> extends Command<T> {
     @Component
     class Injected {
 
+        @SuppressWarnings("NullAway.Init")
         private static Pipeline pipeline;
 
         public Injected(Pipeline pipeline) {

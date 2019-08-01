@@ -9,13 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class EmailTest {
 
     @Test
-    void rejectsNulls() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Email(null);
-        });
-    }
-
-    @Test
     void rejectsBlankValues() {
         assertThrows(IllegalArgumentException.class, () -> {
             new Email(" ");

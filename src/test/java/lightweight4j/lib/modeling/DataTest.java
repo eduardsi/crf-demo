@@ -3,6 +3,8 @@ package lightweight4j.lib.modeling;
 import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DataTest {
@@ -27,10 +29,14 @@ class DataTest {
     }
 
     static class Bean extends Data {
+
+        @Nullable
         String a;
+
+        @Nullable
         Integer b;
 
-        Bean(String a, Integer b) {
+        Bean(@Nullable String a, @Nullable Integer b) {
             this.a = a;
             this.b = b;
         }

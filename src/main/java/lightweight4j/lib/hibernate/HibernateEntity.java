@@ -2,6 +2,7 @@ package lightweight4j.lib.hibernate;
 
 import lightweight4j.lib.modeling.Entity;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.util.*;
 import java.util.stream.Stream;
@@ -13,9 +14,11 @@ public abstract class HibernateEntity implements Entity {
 
     @Id
     @GeneratedValue
+    @Nullable
     private Long id;
 
     @Version
+    @Nullable
     private Long version;
 
     @Transient
@@ -49,6 +52,6 @@ public abstract class HibernateEntity implements Entity {
     }
 
     public Long id() {
-        return id;
+        return requireNonNull(id, "ID is null. Perhaps the entity has not been persisted yet?");
     }
 }

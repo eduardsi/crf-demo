@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.errorprone
+
 buildscript {
     repositories {
         jcenter()
@@ -24,12 +26,20 @@ plugins {
 group = "net.sizovs"
 version = "UNSPECIFIED"
 
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        option("NullAway:AnnotatedPackages", "lightweight4j")
+        option("NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable")
+    }
+}
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web:$springVersion") {
         exclude(module = "spring-boot-starter-tomcat")
     }
 
     errorprone("com.google.errorprone:error_prone_core:2.3.3")
+    errorprone("com.uber.nullaway:nullaway:0.7.5")
 
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("an.awesome:pipelinr:+")
