@@ -7,6 +7,7 @@ buildscript {
 }
 
 val springVersion = "2.1.2.RELEASE"
+val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
@@ -33,7 +34,7 @@ dependencies {
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
-    implementation("com.google.guava:guava:27.0.1-jre")
+    implementation("com.google.guava:guava:$guavaVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("javax.xml.bind:jaxb-api:2.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
@@ -43,6 +44,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.1.0")
     testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
     testImplementation("com.github.javafaker:javafaker:1.0.0")
+    testImplementation("com.google.guava:guava-testlib:$guavaVersion")
 }
 
 

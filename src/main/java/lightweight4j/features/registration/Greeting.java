@@ -9,7 +9,7 @@ public class Greeting implements ExecutableCommand<Voidy> {
 
     public final Long memberId;
 
-    Greeting(Long memberId) {
+    private Greeting(Long memberId) {
         this.memberId = memberId;
     }
 

@@ -12,7 +12,7 @@ class Email {
     private String email;
 
     Email(String email) {
-        var isNotBlank = !Objects.toString(email).isBlank();
+        var isNotBlank = email != null && !email.isBlank();
         checkArgument(isNotBlank, "Email %s must not be blank", email);
         this.email = email;
     }

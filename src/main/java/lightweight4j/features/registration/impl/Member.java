@@ -7,6 +7,8 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(name = "members")
 class Member extends HibernateEntity {
@@ -18,8 +20,8 @@ class Member extends HibernateEntity {
     Name name;
 
     Member(Name name, Email email) {
-        this.name = name;
-        this.email = email;
+        this.name = requireNonNull(name, "Name cannot be null");
+        this.email = requireNonNull(email, "Email cannot be null");
         schedule(new RegistrationCompleted(this::id));
     }
 
