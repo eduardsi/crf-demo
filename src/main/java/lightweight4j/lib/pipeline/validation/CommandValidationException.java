@@ -51,7 +51,7 @@ public class CommandValidationException extends RuntimeException {
     }
 
     @ControllerAdvice
-    private static class SpringMvcHandler extends ResponseEntityExceptionHandler {
+    static class SpringMvcHandler extends ResponseEntityExceptionHandler {
 
         @ExceptionHandler(CommandValidationException.class)
         public ResponseEntity<List<ViolatedProperty>> handle(CommandValidationException it, WebRequest request) {

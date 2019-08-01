@@ -36,9 +36,11 @@ public abstract class HibernateEntity implements Entity {
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        HibernateEntity that = (HibernateEntity) o;
-        return Objects.equals(id, that.id);
+        if (o instanceof HibernateEntity) {
+            HibernateEntity that = (HibernateEntity) o;
+            return Objects.equals(id, that.id);
+        }
+        return false;
     }
 
     @Override

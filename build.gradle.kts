@@ -6,19 +6,20 @@ buildscript {
     }
 }
 
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
 val springVersion = "2.1.2.RELEASE"
 val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
     id("org.springframework.boot") version "2.1.2.RELEASE"
+    id("net.ltgt.errorprone") version "0.8.1"
 }
 
-
-repositories {
-    jcenter()
-    mavenCentral()
-}
 
 group = "net.sizovs"
 version = "UNSPECIFIED"
@@ -27,6 +28,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web:$springVersion") {
         exclude(module = "spring-boot-starter-tomcat")
     }
+
+    errorprone("com.google.errorprone:error_prone_core:2.3.3")
 
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("an.awesome:pipelinr:+")
