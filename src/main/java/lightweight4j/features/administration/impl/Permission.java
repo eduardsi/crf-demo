@@ -1,7 +1,6 @@
 package lightweight4j.features.administration.impl;
 
 import lightweight4j.lib.hibernate.HibernateEntity;
-import lightweight4j.lib.hibernate.HibernateConstructor;
 
 import javax.persistence.Entity;
 
@@ -11,7 +10,7 @@ import static java.util.EnumSet.allOf;
 @Entity
 class Permission extends HibernateEntity {
 
-    public enum Operation {
+    enum Operation {
         BACKOFFICE_ADMINISTRATION
     }
 
@@ -21,11 +20,10 @@ class Permission extends HibernateEntity {
         this.operation = operation;
     }
 
-    @HibernateConstructor
     private Permission() {
     }
 
-    public static Permission toDo(String operationName) {
+    static Permission toDo(String operationName) {
         var availableOperations = allOf(Operation.class);
         var operation = availableOperations
                 .stream()
@@ -37,7 +35,7 @@ class Permission extends HibernateEntity {
         return new Permission(operation);
     }
 
-    public Operation operation() {
+    Operation operation() {
         return operation;
     }
 }

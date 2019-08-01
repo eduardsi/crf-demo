@@ -10,7 +10,7 @@ public class RegistrationCompleted {
         this.memberId = memberId;
     }
 
-    public Long memberId() {
+    Long memberId() {
         return memberId.get();
     }
 }

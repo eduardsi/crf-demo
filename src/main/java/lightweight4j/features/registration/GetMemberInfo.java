@@ -13,8 +13,8 @@ public class GetMemberInfo implements ExecutableCommand<GetMemberInfo.MemberInfo
 
     public static class MemberInfo {
 
-        public final String firstName;
-        public final String lastName;
+        final String firstName;
+        final String lastName;
 
         public MemberInfo(String firstName, String lastName) {
             this.firstName = firstName;

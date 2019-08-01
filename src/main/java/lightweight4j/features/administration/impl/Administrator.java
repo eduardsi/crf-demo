@@ -17,7 +17,7 @@ class Administrator extends HibernateEntity {
     @OneToMany(cascade = CascadeType.ALL)
     private Collection<Permission> permissions = new ArrayList<>();
 
-    public void grant(Permission permission) {
+    void grant(Permission permission) {
         log.info("Granting {} permission to do {}!", id(), permission.operation());
         permissions.add(permission);
     }

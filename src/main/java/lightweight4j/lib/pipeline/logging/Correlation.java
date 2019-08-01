@@ -2,7 +2,6 @@ package lightweight4j.lib.pipeline.logging;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.PipelineStep;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +11,6 @@ class Correlation implements PipelineStep {
 
     private final CorrelationId correlationId;
 
-    @Autowired
     Correlation(CorrelationId correlationId) {
         this.correlationId = correlationId;
     }

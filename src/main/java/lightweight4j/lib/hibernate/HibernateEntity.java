@@ -25,11 +25,11 @@ public abstract class HibernateEntity implements Entity {
         this.events.add(requireNonNull(event, "Event must not be null!"));
     }
 
-    protected final void clearEvents() {
+    final void clearEvents() {
         this.events.clear();
     }
 
-    protected final Stream<Object> events() {
+    final Stream<Object> events() {
         return Collections.unmodifiableCollection(events).stream();
     }
 

@@ -4,7 +4,7 @@ class EmailIsBlacklistedException extends RuntimeException {
 
     private Email email;
 
-    public EmailIsBlacklistedException(Email email) {
+    EmailIsBlacklistedException(Email email) {
 
         this.email = email;
     }

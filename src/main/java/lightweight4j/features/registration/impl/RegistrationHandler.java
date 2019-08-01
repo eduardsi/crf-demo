@@ -12,7 +12,6 @@ class RegistrationHandler implements Command.Handler<Registration, Long> {
 
     private final EmailBlacklist blacklist;
 
-    @Autowired
     RegistrationHandler(Members members, EmailBlacklist blacklist) {
         this.members = members;
         this.blacklist = blacklist;

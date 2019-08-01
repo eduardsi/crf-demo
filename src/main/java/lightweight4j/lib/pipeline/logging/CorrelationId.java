@@ -12,7 +12,7 @@ class CorrelationId {
 
     private final AtomicLong counter = new AtomicLong();
 
-    public MDC.MDCCloseable storeForLogging() {
+    MDC.MDCCloseable storeForLogging() {
         return MDC.putCloseable(MDC_KEY, next());
     }
 

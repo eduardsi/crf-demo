@@ -41,6 +41,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testImplementation("org.assertj:assertj-core:3.9.1")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.1.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
 }
 
 
