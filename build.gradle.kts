@@ -41,8 +41,9 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.3.3")
     errorprone("com.uber.nullaway:nullaway:0.7.5")
 
+    implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
-    implementation("an.awesome:pipelinr:+")
+    implementation("an.awesome:pipelinr:0.2")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")

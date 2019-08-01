@@ -17,8 +17,6 @@ class Correlation implements PipelineStep {
 
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-        try (var stashAutomatically = correlationId.storeForLogging()) {
-            return next.invoke();
-        }
+        return correlationId.wrap(next::invoke);
     }
 }

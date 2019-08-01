@@ -4,6 +4,9 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+
+import static org.zalando.fauxpas.TryWith.tryWith;
 
 @Component
 class CorrelationId {
@@ -12,8 +15,11 @@ class CorrelationId {
 
     private final AtomicLong counter = new AtomicLong();
 
-    MDC.MDCCloseable storeForLogging() {
-        return MDC.putCloseable(MDC_KEY, next());
+    <T> T wrap(Supplier<T> action) {
+        var closeable = MDC.putCloseable(MDC_KEY, next());
+        return tryWith(closeable, __ -> {
+            return action.get();
+        });
     }
 
     private String next() {
