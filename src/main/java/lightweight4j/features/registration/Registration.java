@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotEmpty;
 
-public class Registration implements ExecutableCommand<Long> {
+public class Registration extends ExecutableCommand<Long> {
 
     @NotEmpty
     public final String email;

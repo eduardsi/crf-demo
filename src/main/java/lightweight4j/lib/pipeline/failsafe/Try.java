@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import static java.util.Collections.singletonList;
 
-public class Try<R, C extends ExecutableCommand<R>> implements ExecutableCommand<R> {
+public class Try<R, C extends ExecutableCommand<R>> extends ExecutableCommand<R> {
 
     private final C origin;
     private final int attempts;

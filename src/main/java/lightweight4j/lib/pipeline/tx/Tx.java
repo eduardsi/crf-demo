@@ -4,9 +4,10 @@ import an.awesome.pipelinr.Command;
 import lightweight4j.lib.pipeline.ExecutableCommand;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class Tx<C extends ExecutableCommand<R>, R> implements ExecutableCommand<R> {
+public class Tx<C extends ExecutableCommand<R>, R> extends ExecutableCommand<R> {
 
     private final C origin;
 
@@ -27,6 +28,8 @@ public class Tx<C extends ExecutableCommand<R>, R> implements ExecutableCommand<
         public R handle(Tx<C, R> txCmd) {
             var origin = txCmd.origin;
             var tx = new TransactionTemplate(txManager);
+            tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            tx.setName("Tx for " + origin.getClass().getSimpleName());
             tx.setReadOnly(origin instanceof ReadOnly);
             return tx.execute(status -> origin.execute());
         }

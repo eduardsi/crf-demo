@@ -42,7 +42,7 @@ class TryTest {
         assertThat(invocations.get()).isEqualTo(attempts);
     }
 
-    static class Explode implements ExecutableCommand<String> {
+    static class Explode extends ExecutableCommand<String> {
 
         final AtomicLong invocations;
         final int times;

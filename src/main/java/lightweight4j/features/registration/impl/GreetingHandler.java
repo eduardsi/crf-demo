@@ -22,7 +22,6 @@ class GreetingHandler implements Command.Handler<Greeting, Voidy> {
     public Voidy handle(Greeting command) {
         var member = members.findById(command.memberId).orElseThrow();
         logger.info("Greetings to {}", member.email);
-
         return new Voidy();
     }
 }
