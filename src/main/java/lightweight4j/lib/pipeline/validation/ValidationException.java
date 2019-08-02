@@ -16,11 +16,11 @@ import java.util.Set;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-public class CommandValidationException extends RuntimeException {
+public class ValidationException extends RuntimeException {
 
     private final Set<ConstraintViolation<? extends Command>> violations;
 
-    public <C extends Command> CommandValidationException(Set<ConstraintViolation<C>> violations) {
+    <C extends Command> ValidationException(Set<ConstraintViolation<C>> violations) {
         this.violations = new LinkedHashSet<>(violations.size());
         this.violations.addAll(violations);
     }
@@ -39,7 +39,7 @@ public class CommandValidationException extends RuntimeException {
         private String property;
         private String message;
 
-        public ViolatedProperty(ConstraintViolation violation) {
+        ViolatedProperty(ConstraintViolation violation) {
             this.property = violation.getPropertyPath().toString();
             this.message = violation.getMessage();
         }
@@ -53,8 +53,8 @@ public class CommandValidationException extends RuntimeException {
     @ControllerAdvice
     static class SpringMvcHandler extends ResponseEntityExceptionHandler {
 
-        @ExceptionHandler(CommandValidationException.class)
-        public ResponseEntity<List<ViolatedProperty>> handle(CommandValidationException it, WebRequest request) {
+        @ExceptionHandler(ValidationException.class)
+        public ResponseEntity<List<ViolatedProperty>> handle(ValidationException it, WebRequest request) {
             var violatedProperties = it.violations.stream().map(ViolatedProperty::new).collect(toList());
             return new ResponseEntity<>(violatedProperties, HttpStatus.BAD_REQUEST);
         }

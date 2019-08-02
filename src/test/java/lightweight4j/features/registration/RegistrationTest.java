@@ -1,8 +1,8 @@
 package lightweight4j.features.registration;
 
 import com.github.javafaker.Faker;
-import lightweight4j.lib.pipeline.Tx;
-import lightweight4j.lib.pipeline.validation.CommandValidationException;
+import lightweight4j.lib.pipeline.tx.Tx;
+import lightweight4j.lib.pipeline.validation.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -23,21 +23,21 @@ class RegistrationTest {
 
     @Test
     void throwsIfEmailIsMissing() {
-        assertThrows(CommandValidationException.class, () -> {
+        assertThrows(ValidationException.class, () -> {
             new Registration("", $.name().firstName(), $.name().lastName()).execute();
         });
     }
 
     @Test
     void throwsIfFirstNameIsMissing() {
-        assertThrows(CommandValidationException.class, () -> {
+        assertThrows(ValidationException.class, () -> {
             new Registration($.internet().emailAddress(), "", $.name().lastName()).execute();
         });
     }
 
     @Test
     void throwsIfLastNameIsMissing() {
-        assertThrows(CommandValidationException.class, () -> {
+        assertThrows(ValidationException.class, () -> {
             new Registration($.internet().emailAddress(), $.name().firstName(), "").execute();
         });
     }

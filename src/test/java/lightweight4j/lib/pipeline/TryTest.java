@@ -1,6 +1,7 @@
 package lightweight4j.lib.pipeline;
 
 import an.awesome.pipelinr.Command;
+import lightweight4j.lib.pipeline.failsafe.Try;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;

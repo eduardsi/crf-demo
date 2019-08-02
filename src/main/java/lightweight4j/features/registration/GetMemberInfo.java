@@ -1,7 +1,7 @@
 package lightweight4j.features.registration;
 
 import lightweight4j.lib.pipeline.ExecutableCommand;
-import lightweight4j.lib.pipeline.ReadOnly;
+import lightweight4j.lib.pipeline.tx.ReadOnly;
 
 public class GetMemberInfo implements ExecutableCommand<GetMemberInfo.MemberInfo>, ReadOnly {
 

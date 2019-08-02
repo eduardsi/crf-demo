@@ -7,18 +7,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Supplier;
+
 @Component
-@Order(2)
+@Order(1)
 class Logging implements PipelineStep {
 
     private final Logger log = LoggerFactory.getLogger(Logging.class);
 
+    private final CorrelationId correlationId;
+
+    public Logging(CorrelationId correlationId) {
+        this.correlationId = correlationId;
+    }
+
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-        log.info(">>> {}", command.toString());
-        var response = next.invoke();
-        log.info("<<< {} ", response.toString());
-        return response;
+        return correlationId.wrap(() -> {
+            log.info(">>> {}", command.toString());
+            var response = next.invoke();
+            log.info("<<< {} ", response.toString());
+            return response;
+        });
     }
 
 }

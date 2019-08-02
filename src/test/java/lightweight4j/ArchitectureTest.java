@@ -7,7 +7,7 @@ import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import lightweight4j.lib.pipeline.Tx;
+import lightweight4j.lib.pipeline.tx.Tx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Propagation;

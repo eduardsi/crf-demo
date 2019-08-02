@@ -1,6 +1,7 @@
-package lightweight4j.lib.pipeline;
+package lightweight4j.lib.pipeline.tx;
 
 import an.awesome.pipelinr.Command;
+import lightweight4j.lib.pipeline.ExecutableCommand;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -23,8 +24,8 @@ public class Tx<C extends ExecutableCommand<R>, R> implements ExecutableCommand<
         }
 
         @Override
-        public R handle(Tx<C, R> txCommand) {
-            var origin = txCommand.origin;
+        public R handle(Tx<C, R> txCmd) {
+            var origin = txCmd.origin;
             var tx = new TransactionTemplate(txManager);
             tx.setReadOnly(origin instanceof ReadOnly);
             return tx.execute(status -> origin.execute());
