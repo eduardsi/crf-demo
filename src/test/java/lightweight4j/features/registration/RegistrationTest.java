@@ -1,6 +1,7 @@
 package lightweight4j.features.registration;
 
 import com.github.javafaker.Faker;
+import lightweight4j.lib.pipeline.Tx;
 import lightweight4j.lib.pipeline.validation.CommandValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +16,8 @@ class RegistrationTest {
 
     @Test
     void registersANewMemberAndReturnsItsId() {
-        var id = new Registration($.internet().emailAddress(), $.name().firstName(), $.name().lastName()).execute();
+        var id = new Tx<>(
+                    new Registration($.internet().emailAddress(), $.name().firstName(), $.name().lastName())).execute();
         assertThat(id).isInstanceOf(Long.class);
     }
 

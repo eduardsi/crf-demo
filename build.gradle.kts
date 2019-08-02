@@ -11,6 +11,7 @@ buildscript {
 repositories {
     jcenter()
     mavenCentral()
+    mavenLocal()
 }
 
 val springVersion = "2.1.2.RELEASE"
@@ -43,7 +44,8 @@ dependencies {
 
     implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
-    implementation("an.awesome:pipelinr:0.2")
+    implementation("an.awesome:pipelinr:0.3")
+    implementation("net.jodah:failsafe:2.1.1")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
