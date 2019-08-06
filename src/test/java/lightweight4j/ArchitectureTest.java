@@ -7,6 +7,7 @@ import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import lightweight4j.infra.modeling.Event;
 import lightweight4j.infra.pipeline.tx.Tx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
@@ -19,6 +20,10 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 @AnalyzeClasses(packages = "lightweight4j")
 class ArchitectureTest {
 
+    static final String DOMAIN = "..domain..";
+    static final String APPLICATION = "..application..";
+    static final String INFRASTRUCTURE = "..infra..";
+
     private static DescribedPredicate<JavaAnnotation> transactionalWithMandatoryPropagation() {
         return new DescribedPredicate<>("Transactional with mandatory propagation") {
             @Override
@@ -30,6 +35,10 @@ class ArchitectureTest {
             }
         };
     }
+
+    @ArchTest
+    static ArchRule no_cycles_in_application =
+            slices().matching("lightweight4j.application.(*)..").should().beFreeOfCycles();
 
     @ArchTest
     static ArchRule no_cycles_in_domain =
@@ -76,8 +85,28 @@ class ArchitectureTest {
                     .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
 
     @ArchTest
-    static ArchRule infra_does_not_depend_on_domain  =
+    static ArchRule infra_does_not_depend_on_domain;
+
+    static {
+        infra_does_not_depend_on_domain = noClasses()
+            .that().resideInAnyPackage(INFRASTRUCTURE)
+            .should().accessClassesThat().resideInAPackage(DOMAIN);
+    }
+
+    @ArchTest
+    static ArchRule infra_does_not_depend_on_application  =
             noClasses()
-                .that().resideInAnyPackage("..infra..")
-                .should().accessClassesThat().resideInAPackage("..domain..");
+                    .that().resideInAnyPackage(INFRASTRUCTURE)
+                    .should().accessClassesThat().resideInAPackage(APPLICATION);
+
+    @ArchTest
+    static ArchRule events_do_not_depend_on_domain =
+            noClasses().that().implement(Event.class)
+                .should().dependOnClassesThat().resideInAnyPackage(DOMAIN);
+
+    @ArchTest
+    static ArchRule commands_do_not_depend_on_domain =
+            noClasses().that().implement(Command.class)
+                    .should().dependOnClassesThat().resideInAnyPackage(DOMAIN);
+
 }
