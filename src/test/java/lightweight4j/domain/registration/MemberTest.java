@@ -25,15 +25,18 @@ class MemberTest {
 
     @Test
     void publishes_an_event_when_created() {
+        // when new member is created
         var MEMBER_ID = 123;
         var member = new Member(
                 new Name("Uncle", "Bob"),
                 new Email("uncle@domain.com"));
         member.id(MEMBER_ID);
 
+        // then event must be published
         verify(eventPublisher).publishEvent(captor.capture());
         var event = captor.getValue();
 
+        // and event must provide some attributes of a member
         assertThat(event.memberId()).isEqualTo(MEMBER_ID);
     }
 }
