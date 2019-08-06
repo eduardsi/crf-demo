@@ -20,9 +20,9 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 @AnalyzeClasses(packages = "lightweight4j")
 class ArchitectureTest {
 
-    static final String DOMAIN = "..domain..";
-    static final String APPLICATION = "..application..";
-    static final String INFRASTRUCTURE = "..infra..";
+    private static final String DOMAIN = "..domain..";
+    private static final String APPLICATION = "..application..";
+    private static final String INFRASTRUCTURE = "..infra..";
 
     private static DescribedPredicate<JavaAnnotation> transactionalWithMandatoryPropagation() {
         return new DescribedPredicate<>("Transactional with mandatory propagation") {

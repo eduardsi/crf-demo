@@ -1,14 +1,10 @@
 package lightweight4j.infra.modeling;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
 
 public interface Event {
 
@@ -22,7 +18,6 @@ public interface Event {
         static Optional<ApplicationEventPublisher> GLOBAL = Optional.empty();
 
         static ThreadLocal<ApplicationEventPublisher> THREAD_LOCAL = new ThreadLocal<>();
-
 
         public Publisher(ApplicationEventPublisher publisher) {
             setGlobal(publisher);
@@ -47,16 +42,6 @@ public interface Event {
             }
         }
 
-    }
-
-    class ThreadLocalApplicationEventPublisher implements ApplicationEventPublisher {
-
-        private static ThreadLocal<Collection<Event>> events = new ThreadLocal<>();
-
-        @Override
-        public void publishEvent(Object event) {
-
-        }
     }
 
 }
