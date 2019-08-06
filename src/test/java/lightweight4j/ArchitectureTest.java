@@ -7,7 +7,7 @@ import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import lightweight4j.lib.pipeline.tx.Tx;
+import lightweight4j.infra.pipeline.tx.Tx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,41 +32,34 @@ class ArchitectureTest {
     }
 
     @ArchTest
-    static ArchRule noCyclesBetweenFeatures =
-            slices().matching("lightweight4j.features.(*)..").should().beFreeOfCycles();
+    static ArchRule no_cycles_in_domain =
+            slices().matching("lightweight4j.domain.(*)..").should().beFreeOfCycles();
 
     @ArchTest
-    static ArchRule noCyclesBetweenLibPackages =
-            slices().matching("lightweight4j.lib.(*)..").should().beFreeOfCycles();
+    static ArchRule no_cycles_in_infrastructure =
+            slices().matching("lightweight4j.infra.(*)..").should().beFreeOfCycles();
 
     @ArchTest
-    static ArchRule implementationIsHidden =
-            classes()
-                .that().resideInAPackage("..impl..")
-                .should().bePackagePrivate()
-                .because("Access to code is provided through the API");
-
-    @ArchTest
-    static ArchRule repositoriesRequireTransaction =
+    static ArchRule repositories_require_a_mandatory_tx_propagation =
             classes()
                     .that().areAssignableTo(Repository.class)
                     .should().beAnnotatedWith(transactionalWithMandatoryPropagation())
                     .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
 
     @ArchTest
-    static ArchRule handlersAreNamedProperly =
+    static ArchRule handler_names_should_end_with_Handler =
             classes()
                     .that().implement(Command.Handler.class)
                     .should().haveSimpleNameEndingWith("Handler");
 
     @ArchTest
-    static ArchRule autowiredAnnotationIsNotUsed =
+    static ArchRule no_autowire_annotation_anywhere =
             noCodeUnits()
                 .should().beAnnotatedWith(Autowired.class)
                 .because("Spring uses constructor injection by default");
 
     @ArchTest
-    static ArchRule transactionalAnnotationIsNotUsedInAClass =
+    static ArchRule no_tx_annotation_on_classes_and_interfaces =
             noClasses()
                     .that().areNotAssignableTo(Repository.class)
                     .should().beAnnotatedWith(Transactional.class)
@@ -75,7 +68,7 @@ class ArchitectureTest {
 
 
     @ArchTest
-    static ArchRule transactionalAnnotationIsNotUsedOnMethods =
+    static ArchRule no_tx_annotation_on_methods =
             noMethods()
                     .that().areDeclaredInClassesThat().areNotAssignableTo(Repository.class)
                     .should().beAnnotatedWith(Transactional.class)
@@ -83,8 +76,8 @@ class ArchitectureTest {
                     .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
 
     @ArchTest
-    static ArchRule libIsIndependentFromFeatures =
+    static ArchRule infra_does_not_depend_on_domain  =
             noClasses()
-                .that().resideInAnyPackage("..lib..")
-                .should().accessClassesThat().resideInAPackage("..features..");
+                .that().resideInAnyPackage("..infra..")
+                .should().accessClassesThat().resideInAPackage("..domain..");
 }
