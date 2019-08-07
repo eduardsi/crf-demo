@@ -1,5 +1,5 @@
 ---
 spring:
-    jpa:
-        open-in-view: false
-        show-sql: true
+  jpa:
+    open-in-view: false
+    show-sql: true

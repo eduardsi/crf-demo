@@ -28,6 +28,11 @@ plugins {
 group = "net.sizovs"
 version = "UNSPECIFIED"
 
+checkstyle {
+//    configFile file('your/checkstyle.xml');
+    toolVersion = "8.23"
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         option("NullAway:AnnotatedPackages", "lightweight4j")

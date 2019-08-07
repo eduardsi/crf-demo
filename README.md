@@ -2,7 +2,7 @@
 
 This Spring Boot app demonstrates the basic use of [PipelinR](https://github.com/sizovs/PipelinR) in a service layer.
 
-The starting point is [ApplicationBootstrap](src/main/java/lightweight4j/Lightweight4j.java).
+The starting point is [ApplicationBootstrap](src/main/java/awsm/Lightweight4j.java).
 
 The application is requires Java 11+.
 
