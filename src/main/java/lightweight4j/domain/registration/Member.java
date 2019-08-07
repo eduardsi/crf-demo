@@ -21,7 +21,7 @@ public class Member extends HibernateEntity {
     public Member(Name name, Email email) {
         this.name = requireNonNull(name, "Name cannot be null");
         this.email = requireNonNull(email, "Email cannot be null");
-        new RegistrationCompleted(this::id).schedule();
+        events().schedule(new RegistrationCompleted(this::id));
     }
 
     private Member() {
@@ -29,5 +29,9 @@ public class Member extends HibernateEntity {
 
     public Name name() {
         return name;
+    }
+
+    public Email email() {
+        return email;
     }
 }

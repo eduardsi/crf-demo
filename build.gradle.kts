@@ -19,6 +19,7 @@ val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
+    checkstyle
     id("org.springframework.boot") version "2.1.2.RELEASE"
     id("net.ltgt.errorprone") version "0.8.1"
 }

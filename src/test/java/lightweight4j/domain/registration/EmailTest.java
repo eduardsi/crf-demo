@@ -9,9 +9,7 @@ class EmailTest {
 
     @Test
     void rejects_blank_values() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Email(" ");
-        });
+        assertThrows(IllegalArgumentException.class, () -> new Email(" "));
     }
 
     @Test

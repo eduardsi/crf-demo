@@ -24,22 +24,19 @@ class RegistrationTest {
 
     @Test
     void throws_if_email_is_missing() {
-        assertThrows(ValidationException.class, () -> {
-            new Registration("", $.name().firstName(), $.name().lastName()).execute();
-        });
+        assertThrows(ValidationException.class, () ->
+                new Registration("", $.name().firstName(), $.name().lastName()).execute());
     }
 
     @Test
     void throws_if_first_name_is_missing() {
-        assertThrows(ValidationException.class, () -> {
-            new Registration($.internet().emailAddress(), "", $.name().lastName()).execute();
-        });
+        assertThrows(ValidationException.class, () ->
+                new Registration($.internet().emailAddress(), "", $.name().lastName()).execute());
     }
 
     @Test
     void throws_if_last_name_is_missing() {
-        assertThrows(ValidationException.class, () -> {
-            new Registration($.internet().emailAddress(), $.name().firstName(), "").execute();
-        });
+        assertThrows(ValidationException.class, () ->
+                new Registration($.internet().emailAddress(), $.name().firstName(), "").execute());
     }
 }

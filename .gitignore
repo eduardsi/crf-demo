@@ -1,5 +1,9 @@
-.idea
+.idea/*
+!.idea/inspectionProfiles
+!.idea/checkstyle-idea.xml
 *.iml
+*.ipr
+*.iws
 .gradle
 .classpath
 .project

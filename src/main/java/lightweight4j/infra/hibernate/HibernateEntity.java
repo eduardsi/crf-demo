@@ -3,16 +3,16 @@ package lightweight4j.infra.hibernate;
 import lightweight4j.infra.modeling.Entity;
 
 import javax.annotation.Nullable;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Version;
+import javax.persistence.*;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
 @MappedSuperclass
 public abstract class HibernateEntity implements Entity {
+
+    @Transient
+    private transient final Events events = new Events();
 
     @Id
     @GeneratedValue
@@ -33,6 +33,7 @@ public abstract class HibernateEntity implements Entity {
         return false;
     }
 
+
     @Override
     public final int hashCode() {
         return Objects.hash(id);
@@ -45,4 +46,9 @@ public abstract class HibernateEntity implements Entity {
     public void id(long id) {
         this.id = id;
     }
+
+    public Events events() {
+        return events;
+    }
+
 }

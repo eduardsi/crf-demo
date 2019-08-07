@@ -22,5 +22,4 @@ public interface Entity<T> {
         boolean isSatisfiedBy(T entity);
     }
 
-
 }

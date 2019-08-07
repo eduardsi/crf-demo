@@ -21,13 +21,13 @@ class WelcomeOnRegistrationCompleted implements SideEffect<RegistrationCompleted
     @Override
     public void afterCommit(RegistrationCompleted event) {
         var member = members.findById(event.memberId()).orElseThrow();
-        logger.info("Greetings to {}", member.name());
+        logger.info("After commit, sending greetings to {} to {}", member.name(), member.email());
     }
 
     @Override
     public void beforeCommit(RegistrationCompleted event) {
         var member = members.findById(event.memberId()).orElseThrow();
-        logger.info("Greetings in the same transaction to {}", member.name());
+        logger.info("Before commit, sending greetings to {} to {}", member.name(), member.email());
     }
 
 
