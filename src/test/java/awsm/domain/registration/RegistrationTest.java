@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class RegistrationTest {
 
   @Autowired
-  MockMvc mvc;
+  private MockMvc mvc;
 
   @Test
   void registers_a_new_member_and_returns_its_id() throws Exception {
