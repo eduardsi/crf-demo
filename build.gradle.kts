@@ -1,4 +1,6 @@
 import net.ltgt.gradle.errorprone.errorprone
+import java.time.Duration
+
 
 buildscript {
     repositories {
@@ -19,6 +21,7 @@ val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
+    jacoco
     checkstyle
     id("org.springframework.boot") version "2.1.2.RELEASE"
     id("net.ltgt.errorprone") version "0.8.1"
@@ -29,14 +32,35 @@ group = "net.sizovs"
 version = "UNSPECIFIED"
 
 checkstyle {
-//    configFile file('your/checkstyle.xml');
     toolVersion = "8.23"
+}
+
+tasks {
+    "check" {
+        dependsOn(jacocoTestCoverageVerification)
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
-        option("NullAway:AnnotatedPackages", "lightweight4j")
+        option("NullAway:AnnotatedPackages", "awsm")
         option("NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable")
+    }
+}
+
+tasks.withType<Test> {
+    maxParallelForks = 4
+    timeout.set(Duration.ofMinutes(1))
+    useJUnitPlatform()
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.7".toBigDecimal()
+            }
+        }
     }
 }
 
@@ -63,11 +87,11 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testImplementation("org.assertj:assertj-core:3.9.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
-    testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
     testImplementation("com.github.javafaker:javafaker:1.0.0")
     testImplementation("com.google.guava:guava-testlib:$guavaVersion")
+    testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
 }
 
 

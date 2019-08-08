@@ -1,5 +1,6 @@
 package awsm.application.commands;
 
+import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
 import awsm.domain.administration.Administrators;
 import awsm.domain.administration.Permission;
@@ -17,11 +18,11 @@ public class GrantPermission extends ExecutableCommand<Voidy> {
   }
 
   @Component
-  static class GrantPermissionHandler implements Handler<GrantPermission, Voidy> {
+  static class Handler implements Command.Handler<GrantPermission, Voidy> {
 
     private final Administrators admins;
 
-    public GrantPermissionHandler(Administrators admins) {
+    public Handler(Administrators admins) {
       this.admins = admins;
     }
 

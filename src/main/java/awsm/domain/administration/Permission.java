@@ -4,15 +4,22 @@ import static java.lang.String.format;
 import static java.util.EnumSet.allOf;
 
 import awsm.infra.hibernate.HibernateConstructor;
-import awsm.infra.hibernate.HibernateEntity;
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
-public class Permission extends HibernateEntity {
+public class Permission {
 
   enum Operation {
     BACKOFFICE_ADMINISTRATION
   }
+
+  @Id
+  @GeneratedValue
+  @Nullable
+  private Long id;
 
   private Operation operation;
 

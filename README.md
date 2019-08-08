@@ -13,3 +13,8 @@ The application is requires Java 11+.
 ```
 ./gradlew bootRun
 ```
+
+#### Running tests
+```
+./gradlew clean check
+```

@@ -1,5 +1,6 @@
 package awsm.application.commands;
 
+import an.awesome.pipelinr.Command;
 import awsm.domain.registration.Email;
 import awsm.domain.registration.EmailBlacklist;
 import awsm.domain.registration.EmailBlacklisted;
@@ -7,8 +8,6 @@ import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
 import awsm.infra.pipeline.ExecutableCommand;
-import awsm.infra.pipeline.tx.Tx;
-import java.util.Collection;
 import javax.validation.constraints.NotEmpty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,30 +31,25 @@ public class Registration extends ExecutableCommand<Long> {
     this.lastName = lastName;
   }
 
-  @Component
   @RestController
-  static class HttpEndpoint {
+  static class HttpEntryPoint {
 
     @PostMapping("/members")
     Long accept(@RequestBody Registration command) {
-      return new Tx<>(command).execute();
+      return command.execute();
     }
-
   }
 
   @Component
-  static class RegistrationHandler implements Handler<Registration, Long> {
+  static class Handler implements Command.Handler<Registration, Long> {
 
     private final Members members;
 
     private final EmailBlacklist blacklist;
 
-    private final Collection<Transaction> txHooks;
-
-    RegistrationHandler(Members members, EmailBlacklist blacklist, Collection<Transaction> txHooks) {
+    Handler(Members members, EmailBlacklist blacklist) {
       this.members = members;
       this.blacklist = blacklist;
-      this.txHooks = txHooks;
     }
 
     @Override
@@ -67,8 +61,6 @@ public class Registration extends ExecutableCommand<Long> {
       var member = new Member(name, email);
       members.save(member);
 
-      // hmm...
-      txHooks.forEach(hook -> hook.joinTransaction(member.id()));
       return member.id();
     }
 
@@ -80,9 +72,4 @@ public class Registration extends ExecutableCommand<Long> {
 
   }
 
-  public interface Transaction {
-
-    void joinTransaction(Long memberId);
-
-  }
 }

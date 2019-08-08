@@ -21,10 +21,10 @@ class DataTest {
   @Test
   void includes_all_fields_in_to_string() {
     assertThat(new Bean("Hello", 1960).toString())
-            .isEqualTo("DataTest.Bean[a=Hello,b=1960]");
+            .isEqualTo("DataTest.Bean[one=Hello,another=1960]");
 
     assertThat(new Bean("", 0).toString())
-            .isEqualTo("DataTest.Bean[a=,b=0]");
+            .isEqualTo("DataTest.Bean[one=,another=0]");
   }
 
   static class Bean extends Data {

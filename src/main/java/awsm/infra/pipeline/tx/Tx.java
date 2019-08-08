@@ -1,39 +1,30 @@
 package awsm.infra.pipeline.tx;
 
 import an.awesome.pipelinr.Command;
-import awsm.infra.pipeline.ExecutableCommand;
+import an.awesome.pipelinr.PipelineStep;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class Tx<C extends ExecutableCommand<R>, R> extends ExecutableCommand<R> {
+@Component
+@Order(2)
+class Tx implements PipelineStep {
 
-  private final C origin;
+  private final PlatformTransactionManager txManager;
 
-  public Tx(C origin) {
-    this.origin = origin;
+  public Tx(PlatformTransactionManager txManager) {
+    this.txManager = txManager;
   }
 
-  @Component
-  static class Handler<R, C extends ExecutableCommand<R>> implements Command.Handler<Tx<C, R>, R> {
-
-    private final PlatformTransactionManager txManager;
-
-    public Handler(PlatformTransactionManager txManager) {
-      this.txManager = txManager;
-    }
-
-    @Override
-    public R handle(Tx<C, R> txCmd) {
-      var origin = txCmd.origin;
-      var tx = new TransactionTemplate(txManager);
-      tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-      tx.setName("Tx for " + origin.getClass().getSimpleName());
-      tx.setReadOnly(origin instanceof ReadOnly);
-      return tx.execute(status -> origin.execute());
-    }
-
+  @Override
+  public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
+    var tx = new TransactionTemplate(txManager);
+    tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    tx.setName("Tx for " + command.getClass().getSimpleName());
+    tx.setReadOnly(command instanceof ReadOnly);
+    return tx.execute(status -> next.invoke());
   }
 
 }

@@ -8,7 +8,6 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 
 import an.awesome.pipelinr.Command;
 import awsm.infra.modeling.Event;
-import awsm.infra.pipeline.tx.Tx;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaEnumConstant;
@@ -51,12 +50,6 @@ class ArchitectureTest {
   static ArchRule no_cycles_in_infrastructure =
           slices().matching("awsm.infra.(*)..").should().beFreeOfCycles();
 
-  @ArchTest
-  static ArchRule repositories_require_a_mandatory_tx_propagation =
-          classes()
-                  .that().areAssignableTo(Repository.class)
-                  .should().beAnnotatedWith(transactionalWithMandatoryPropagation())
-                  .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
 
   @ArchTest
   static ArchRule handler_names_should_end_with_Handler =
@@ -69,6 +62,12 @@ class ArchitectureTest {
           noCodeUnits()
                   .should().beAnnotatedWith(Autowired.class)
                   .because("Spring uses constructor injection by default");
+  @ArchTest
+  static ArchRule repositories_require_a_mandatory_tx_propagation =
+          classes()
+                  .that().areAssignableTo(Repository.class)
+                  .should().beAnnotatedWith(transactionalWithMandatoryPropagation())
+                  .because("Because we want transaction boundaries to be defined at the higher levels");
 
   @ArchTest
   static ArchRule no_tx_annotation_on_classes_and_interfaces =
@@ -76,7 +75,7 @@ class ArchitectureTest {
                   .that().areNotAssignableTo(Repository.class)
                   .should().beAnnotatedWith(Transactional.class)
                   .orShould().beAnnotatedWith(javax.transaction.Transactional.class)
-                  .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
+                  .because("Transaction boundaries are defined by commands. They are all transactional by default");
 
 
   @ArchTest
@@ -85,7 +84,7 @@ class ArchitectureTest {
                   .that().areDeclaredInClassesThat().areNotAssignableTo(Repository.class)
                   .should().beAnnotatedWith(Transactional.class)
                   .orShould().beAnnotatedWith(javax.transaction.Transactional.class)
-                  .because("Transaction boundaries are set using " + Tx.class.getSimpleName() + "command ");
+                  .because("Transaction boundaries are defined by commands. They are all transactional by default");
 
   @ArchTest
   static ArchRule infra_does_not_depend_on_domain;
