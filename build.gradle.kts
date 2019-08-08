@@ -27,9 +27,14 @@ plugins {
     id("net.ltgt.errorprone") version "0.8.1"
 }
 
-
 group = "net.sizovs"
 version = "UNSPECIFIED"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_12
+    targetCompatibility = JavaVersion.VERSION_12
+}
+
 
 checkstyle {
     toolVersion = "8.23"
@@ -43,6 +48,7 @@ tasks {
 
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
+        disable("TypeParameterUnusedInFormals")
         option("NullAway:AnnotatedPackages", "awsm")
         option("NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable")
     }
@@ -58,7 +64,7 @@ tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = "0.7".toBigDecimal()
+                minimum = "0.8".toBigDecimal()
             }
         }
     }
@@ -75,6 +81,7 @@ dependencies {
     implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("an.awesome:pipelinr:0.3")
+    implementation("org.hashids:hashids:1.0.3")
     implementation("net.jodah:failsafe:2.1.1")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
@@ -88,7 +95,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testImplementation("org.assertj:assertj-core:3.9.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.1")
     testImplementation("com.github.javafaker:javafaker:1.0.0")
+    testImplementation("org.hamcrest:java-hamcrest:2.0.0.0")
     testImplementation("com.google.guava:guava-testlib:$guavaVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")

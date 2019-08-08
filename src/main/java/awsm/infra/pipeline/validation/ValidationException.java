@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-public class ValidationException extends RuntimeException {
+class ValidationException extends RuntimeException {
 
   private final Set<ConstraintViolation<? extends Command>> violations;
 

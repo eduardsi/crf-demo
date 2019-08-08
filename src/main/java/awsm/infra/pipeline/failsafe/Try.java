@@ -1,7 +1,5 @@
 package awsm.infra.pipeline.failsafe;
 
-import static java.util.Collections.singletonList;
-
 import an.awesome.pipelinr.Command;
 import awsm.infra.pipeline.ExecutableCommand;
 import net.jodah.failsafe.Failsafe;
@@ -25,7 +23,7 @@ public class Try<R, C extends ExecutableCommand<R>> extends ExecutableCommand<R>
     public R handle(Try<R, C> tryCmd) {
       var origin = tryCmd.origin;
       var policy = new RetryPolicy<R>().withMaxAttempts(tryCmd.attempts);
-      return Failsafe.with(singletonList(policy)).get(exec -> origin.execute());
+      return Failsafe.with(policy).get(exec -> origin.execute());
     }
   }
 

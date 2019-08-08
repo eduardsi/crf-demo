@@ -7,7 +7,7 @@ import awsm.domain.administration.Permission;
 import awsm.infra.pipeline.ExecutableCommand;
 import org.springframework.stereotype.Component;
 
-public class GrantPermission extends ExecutableCommand<Voidy> {
+class GrantPermission extends ExecutableCommand<Voidy> {
 
   private final Long adminId;
   private final String operation;

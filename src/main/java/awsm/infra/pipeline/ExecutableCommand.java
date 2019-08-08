@@ -13,7 +13,7 @@ public abstract class ExecutableCommand<T> extends Data implements Command<T> {
     return execute(Injected.pipeline);
   }
 
-  public final T execute(Pipeline pipeline) {
+  private T execute(Pipeline pipeline) {
     return requireNonNull(pipeline, "Pipeline cannot be null").send(this);
   }
 
