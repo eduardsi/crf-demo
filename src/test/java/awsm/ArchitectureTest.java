@@ -39,17 +39,8 @@ class ArchitectureTest {
   }
 
   @ArchTest
-  static ArchRule no_cycles_in_application =
-          slices().matching("awsm.application.(*)..").should().beFreeOfCycles();
-
-  @ArchTest
-  static ArchRule no_cycles_in_domain =
-          slices().matching("awsm.domain.(*)..").should().beFreeOfCycles();
-
-  @ArchTest
-  static ArchRule no_cycles_in_infrastructure =
-          slices().matching("awsm.infra.(*)..").should().beFreeOfCycles();
-
+  static ArchRule no_cycles =
+          slices().matching("..(*)..").should().beFreeOfCycles();
 
   @ArchTest
   static ArchRule handler_names_should_end_with_Handler =

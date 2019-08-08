@@ -1,11 +1,12 @@
-package awsm.infra.pipeline;
+package awsm.infra.pipeline.failsafe;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import an.awesome.pipelinr.Command;
-import awsm.infra.pipeline.failsafe.Try;
+import awsm.infra.pipeline.ExecutableCommand;
 import java.util.concurrent.atomic.AtomicLong;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -36,7 +37,7 @@ class TryTest {
     var result = new Try<>(attempts,
             new Explode(invocations, explodeTimes)).execute();
 
-    assertThat(result).isEqualTo("The dust has settled");
+    Assertions.assertThat(result).isEqualTo("The dust has settled");
     assertThat(invocations.get()).isEqualTo(attempts);
   }
 
