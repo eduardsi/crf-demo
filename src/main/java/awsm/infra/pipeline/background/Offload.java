@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.springframework.stereotype.Component;
 
-public class Offload<R, C extends ExecutableCommand<R>> extends ExecutableCommand<CompletableFuture<R>> {
+class Offload<R, C extends ExecutableCommand<R>> extends ExecutableCommand<CompletableFuture<R>> {
 
   private final C origin;
 

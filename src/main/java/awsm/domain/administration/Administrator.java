@@ -26,7 +26,7 @@ public class Administrator extends HibernateEntity {
   }
 
   public void grant(Permission permission) {
-    log.info("Granting {} permission to do {}!", id(), permission.operation());
+    log.info("Granting {} permission to do {}!", memberId, permission.operation());
     permissions.add(permission);
   }
 

@@ -3,6 +3,7 @@ package awsm.domain.administration;
 import static java.lang.String.format;
 import static java.util.EnumSet.allOf;
 
+import awsm.infra.hibernate.HibernateConstructor;
 import awsm.infra.hibernate.HibernateEntity;
 import javax.persistence.Entity;
 
@@ -19,6 +20,7 @@ public class Permission extends HibernateEntity {
     this.operation = operation;
   }
 
+  @HibernateConstructor
   private Permission() {
   }
 

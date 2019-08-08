@@ -2,6 +2,7 @@ package awsm.domain.registration;
 
 import static java.util.Objects.requireNonNull;
 
+import awsm.infra.hibernate.HibernateConstructor;
 import awsm.infra.hibernate.HibernateEntity;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -20,9 +21,10 @@ public class Member extends HibernateEntity {
   public Member(Name name, Email email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
-    events().schedule(new RegistrationCompleted(this::id));
+    new RegistrationCompleted(this::id).schedule();
   }
 
+  @HibernateConstructor
   private Member() {
   }
 

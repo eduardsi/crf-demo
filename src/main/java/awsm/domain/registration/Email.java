@@ -2,6 +2,7 @@ package awsm.domain.registration;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import awsm.infra.hibernate.HibernateConstructor;
 import javax.persistence.Embeddable;
 
 @Embeddable
@@ -15,6 +16,7 @@ public class Email {
     this.email = email;
   }
 
+  @HibernateConstructor
   private Email() {
   }
 

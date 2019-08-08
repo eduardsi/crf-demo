@@ -2,6 +2,7 @@ package awsm.domain.registration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import awsm.infra.modeling.Event;
 import org.junit.jupiter.api.Test;
 
 class MemberTest {
@@ -14,10 +15,9 @@ class MemberTest {
             new Email("uncle@domain.com"));
     member.id(memberId);
 
-    assertThat(member.events().stream().findFirst())
-            .hasValueSatisfying(it -> {
-              RegistrationCompleted event = (RegistrationCompleted) it;
-              assertThat(event.memberId()).isEqualTo(memberId);
-            });
+    RegistrationCompleted event = (RegistrationCompleted) Event.lastPublished.get();
+    assertThat(event.memberId()).isEqualTo(memberId);
   }
+
+
 }

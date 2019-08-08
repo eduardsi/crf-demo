@@ -8,14 +8,10 @@ import javax.annotation.Nullable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 @MappedSuperclass
 public abstract class HibernateEntity implements Entity {
-
-  @Transient
-  private final transient Events events = new Events();
 
   @Id
   @GeneratedValue
@@ -50,10 +46,6 @@ public abstract class HibernateEntity implements Entity {
 
   public void id(long id) {
     this.id = id;
-  }
-
-  public Events events() {
-    return events;
   }
 
 }
