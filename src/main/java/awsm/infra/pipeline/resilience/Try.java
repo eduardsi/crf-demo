@@ -1,4 +1,4 @@
-package awsm.infra.pipeline.failsafe;
+package awsm.infra.pipeline.resilience;
 
 import an.awesome.pipelinr.Command;
 import awsm.infra.pipeline.ExecutableCommand;

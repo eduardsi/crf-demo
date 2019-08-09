@@ -1,4 +1,4 @@
-package awsm.infra.pipeline.failsafe;
+package awsm.infra.pipeline.resilience;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

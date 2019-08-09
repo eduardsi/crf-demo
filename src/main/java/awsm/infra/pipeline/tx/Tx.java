@@ -9,7 +9,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
-@Order(2)
+@Order(5)
 class Tx implements PipelineStep {
 
   private final PlatformTransactionManager txManager;

@@ -14,6 +14,9 @@ repositories {
     jcenter()
     mavenCentral()
     mavenLocal()
+    maven {
+        url = uri("https://jitpack.io")
+    }
 }
 
 val springVersion = "2.1.2.RELEASE"
@@ -50,7 +53,10 @@ tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         disable("TypeParameterUnusedInFormals")
         option("NullAway:AnnotatedPackages", "awsm")
-        option("NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable")
+        option("NullAway:ExternalInitAnnotations", "" +
+                "javax.persistence.Entity," +
+                "javax.persistence.Embeddable," +
+                "org.springframework.boot.test.context.SpringBootTest")
     }
 }
 
@@ -82,7 +88,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("an.awesome:pipelinr:0.3")
     implementation("org.hashids:hashids:1.0.3")
-    implementation("net.jodah:failsafe:2.1.1")
+    implementation("com.github.jhalterman:failsafe:master") // Timeouts coming in 2.2.0
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
