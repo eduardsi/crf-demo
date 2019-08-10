@@ -1,6 +1,6 @@
-package awsm.infra.modeling;
+package awsm.domain;
 
-public interface Entity<T> {
+public interface DomainEntity<T> {
 
   @SuppressWarnings("unchecked")
   default boolean __(Specification<T> specification) {

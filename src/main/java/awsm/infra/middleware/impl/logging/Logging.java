@@ -1,15 +1,13 @@
-package awsm.infra.pipeline.logging;
+package awsm.infra.middleware.impl.logging;
 
-import an.awesome.pipelinr.Command;
-import an.awesome.pipelinr.PipelineStep;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.Middleware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(3)
-class Logging implements PipelineStep {
+public class Logging implements Middleware {
 
   private final CorrelationId correlationId;
 
@@ -31,5 +29,4 @@ class Logging implements PipelineStep {
   private <R, C extends Command<R>> Logger logger(C command) {
     return LoggerFactory.getLogger(command.getClass());
   }
-
 }

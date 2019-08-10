@@ -4,7 +4,7 @@ This Spring Boot app demonstrates the basic use of [PipelinR](https://github.com
 
 The starting point is [ApplicationBootstrap](src/main/java/awsm/Lightweight4j.java).
 
-The application is requires Java 11+.
+The application is requires Java 12+.
 
 #### Running application with IDE
 `Lightweight4j` has a main method. Just run it and have fun.

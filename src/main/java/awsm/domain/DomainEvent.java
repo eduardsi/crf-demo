@@ -1,14 +1,16 @@
-package awsm.infra.modeling;
+package awsm.domain;
 
 import static java.util.Objects.requireNonNull;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
-public interface Event {
+public interface DomainEvent {
 
-  ThreadLocal<Event> lastPublished = new ThreadLocal<>();
+  ThreadLocal<DomainEvent> lastPublished = new ThreadLocal<>();
 
   default void schedule() {
     ApplicationEventPublisherHolder.get().publishEvent(this);
@@ -46,4 +48,12 @@ public interface Event {
     }
   }
 
+  interface Listener<T extends DomainEvent> {
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    default void beforeCommit(T event) {
+
+    }
+
+  }
 }

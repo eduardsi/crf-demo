@@ -6,8 +6,9 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noCodeUnits;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
-import an.awesome.pipelinr.Command;
-import awsm.infra.modeling.Event;
+import awsm.domain.DomainEvent;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.impl.react.Reaction;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaEnumConstant;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 class ArchitectureTest {
 
   private static final String DOMAIN = "..domain..";
+  private static final String EVENTS = "..events..";
   private static final String APPLICATION = "..application..";
   private static final String INFRASTRUCTURE = "..infra..";
 
@@ -43,10 +45,10 @@ class ArchitectureTest {
           slices().matching("..(*)..").should().beFreeOfCycles();
 
   @ArchTest
-  static ArchRule handler_names_should_end_with_Handler =
+  static ArchRule reaction_names_should_be_called_Re =
           classes()
-                  .that().implement(Command.Handler.class)
-                  .should().haveSimpleNameEndingWith("Handler");
+                  .that().implement(Reaction.class)
+                  .should().haveSimpleName("Re");
 
   @ArchTest
   static ArchRule no_autowire_annotation_anywhere =
@@ -93,9 +95,10 @@ class ArchitectureTest {
                   .should().accessClassesThat().resideInAPackage(APPLICATION);
 
   @ArchTest
-  static ArchRule events_do_not_depend_on_domain =
-          noClasses().that().implement(Event.class)
-                  .should().dependOnClassesThat().resideInAnyPackage(DOMAIN);
+  static ArchRule events_do_not_depend_on_domain_and_reside_in_events_package =
+          noClasses().that().implement(DomainEvent.class)
+                  .should().dependOnClassesThat().resideInAnyPackage(DOMAIN)
+                  .andShould().resideInAPackage(EVENTS);
 
   @ArchTest
   static ArchRule commands_do_not_depend_on_domain =

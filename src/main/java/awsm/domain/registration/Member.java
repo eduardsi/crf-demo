@@ -28,7 +28,7 @@ public class Member {
   public Member(Name name, Email email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
-    new RegistrationCompleted(this::id).schedule();
+    new RegistrationCompleted(this).schedule();
   }
 
   @HibernateConstructor

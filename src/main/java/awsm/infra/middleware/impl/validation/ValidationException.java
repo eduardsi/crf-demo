@@ -1,9 +1,9 @@
-package awsm.infra.pipeline.validation;
+package awsm.infra.middleware.impl.validation;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-import an.awesome.pipelinr.Command;
+import awsm.infra.middleware.Command;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;

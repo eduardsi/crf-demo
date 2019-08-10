@@ -70,7 +70,7 @@ tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = "0.8".toBigDecimal()
+                minimum = "0.7".toBigDecimal()
             }
         }
     }
@@ -86,7 +86,6 @@ dependencies {
 
     implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
-    implementation("an.awesome:pipelinr:0.3")
     implementation("org.hashids:hashids:1.0.3")
     implementation("com.github.jhalterman:failsafe:master") // Timeouts coming in 2.2.0
     implementation("javax.validation:validation-api:2.0.1.Final")
@@ -97,6 +96,7 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("javax.xml.bind:jaxb-api:2.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
+
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testImplementation("org.assertj:assertj-core:3.9.1")

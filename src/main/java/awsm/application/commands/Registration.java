@@ -1,13 +1,13 @@
 package awsm.application.commands;
 
-import an.awesome.pipelinr.Command;
 import awsm.domain.registration.Email;
 import awsm.domain.registration.EmailBlacklist;
 import awsm.domain.registration.EmailBlacklistedException;
 import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
-import awsm.infra.pipeline.ExecutableCommand;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.impl.react.Reaction;
 import javax.validation.constraints.NotEmpty;
 import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Registration extends ExecutableCommand<String> {
+class Registration implements Command<String> {
 
   @NotEmpty
   private final String email;
@@ -42,7 +42,7 @@ class Registration extends ExecutableCommand<String> {
   }
 
   @Component
-  static class Handler implements Command.Handler<Registration, String> {
+  static class Re implements Reaction<Registration, String> {
 
     private final Members members;
 
@@ -50,14 +50,14 @@ class Registration extends ExecutableCommand<String> {
 
     private final Hashids hashids;
 
-    Handler(Members members, EmailBlacklist blacklist, Hashids hashids) {
+    Re(Members members, EmailBlacklist blacklist, Hashids hashids) {
       this.members = members;
       this.blacklist = blacklist;
       this.hashids = hashids;
     }
 
     @Override
-    public String handle(Registration cmd) {
+    public String react(Registration cmd) {
       var email = new Email(cmd.email);
       throwIfBlacklisted(email);
 

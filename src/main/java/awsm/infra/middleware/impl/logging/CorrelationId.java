@@ -1,4 +1,4 @@
-package awsm.infra.pipeline.logging;
+package awsm.infra.middleware.impl.logging;
 
 import static org.zalando.fauxpas.TryWith.tryWith;
 

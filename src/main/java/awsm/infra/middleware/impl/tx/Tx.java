@@ -1,22 +1,21 @@
-package awsm.infra.pipeline.tx;
+package awsm.infra.middleware.impl.tx;
 
-import an.awesome.pipelinr.Command;
-import an.awesome.pipelinr.PipelineStep;
-import org.springframework.core.annotation.Order;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.Middleware;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
-@Order(5)
-class Tx implements PipelineStep {
+public class Tx implements Middleware {
 
   private final PlatformTransactionManager txManager;
 
-  public Tx(PlatformTransactionManager txManager) {
+  Tx(PlatformTransactionManager txManager) {
     this.txManager = txManager;
   }
+
 
   @Override
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
@@ -26,5 +25,4 @@ class Tx implements PipelineStep {
     tx.setReadOnly(command instanceof ReadOnly);
     return tx.execute(status -> next.invoke());
   }
-
 }

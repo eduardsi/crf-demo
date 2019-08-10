@@ -1,17 +1,16 @@
 package awsm.domain.registration;
 
-import awsm.infra.modeling.Event;
-import java.util.function.Supplier;
+import awsm.domain.DomainEvent;
 
-public class RegistrationCompleted implements Event {
+public class RegistrationCompleted implements DomainEvent {
 
-  private final Supplier<Long> memberId;
+  private final Member member;
 
-  RegistrationCompleted(Supplier<Long> memberId) {
-    this.memberId = memberId;
+  RegistrationCompleted(Member member) {
+    this.member = member;
   }
 
-  public Long memberId() {
-    return memberId.get();
+  public Member member() {
+    return member;
   }
 }

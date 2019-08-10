@@ -1,16 +1,14 @@
-package awsm.infra.pipeline.validation;
+package awsm.infra.middleware.impl.validation;
 
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 
-import an.awesome.pipelinr.Command;
-import an.awesome.pipelinr.PipelineStep;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.Middleware;
 import javax.validation.Validator;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(10)
-class Validation implements PipelineStep {
+public class Validation implements Middleware {
 
   private final Validator validator;
 
@@ -18,15 +16,14 @@ class Validation implements PipelineStep {
     this.validator = buildDefaultValidatorFactory().getValidator();
   }
 
+
   @Override
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-
     var violations = validator.validate(command);
     if (!violations.isEmpty()) {
       throw new ValidationException(violations);
     }
 
     return next.invoke();
-
   }
 }

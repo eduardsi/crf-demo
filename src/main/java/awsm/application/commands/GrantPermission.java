@@ -1,13 +1,15 @@
 package awsm.application.commands;
 
-import an.awesome.pipelinr.Command;
-import an.awesome.pipelinr.Voidy;
+import static awsm.infra.middleware.ReturnsNothing.NOTHING;
+
 import awsm.domain.administration.Administrators;
 import awsm.domain.administration.Permission;
-import awsm.infra.pipeline.ExecutableCommand;
+import awsm.infra.middleware.Command;
+import awsm.infra.middleware.ReturnsNothing;
+import awsm.infra.middleware.impl.react.Reaction;
 import org.springframework.stereotype.Component;
 
-class GrantPermission extends ExecutableCommand<Voidy> {
+class GrantPermission implements Command<ReturnsNothing> {
 
   private final Long adminId;
   private final String operation;
@@ -18,19 +20,19 @@ class GrantPermission extends ExecutableCommand<Voidy> {
   }
 
   @Component
-  static class Handler implements Command.Handler<GrantPermission, Voidy> {
+  static class Re implements Reaction<GrantPermission, ReturnsNothing> {
 
     private final Administrators admins;
 
-    public Handler(Administrators admins) {
+    public Re(Administrators admins) {
       this.admins = admins;
     }
 
     @Override
-    public Voidy handle(GrantPermission cmd) {
+    public ReturnsNothing react(GrantPermission cmd) {
       var admin = admins.findById(cmd.adminId).orElseThrow();
       admin.grant(Permission.toDo(cmd.operation));
-      return new Voidy();
+      return NOTHING;
     }
 
   }
