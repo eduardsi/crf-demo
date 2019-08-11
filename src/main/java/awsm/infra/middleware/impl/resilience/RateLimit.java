@@ -1,39 +1,17 @@
 package awsm.infra.middleware.impl.resilience;
 
 import awsm.infra.middleware.Command;
-import awsm.infra.middleware.Middleware;
-import com.google.common.util.concurrent.RateLimiter;
-import java.lang.reflect.Type;
-import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.google.common.reflect.TypeToken;
 
-@Component
-public class RateLimit implements Middleware {
+public interface RateLimit<C extends Command> {
 
-  private final ConcurrentHashMap<Type, RateLimiter> rateLimiters = new ConcurrentHashMap<>();
+  int rateLimit();
 
-  @Override
-  public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-    if (!(command instanceof RateLimited)) {
-      return next.invoke();
-    }
+  default boolean matches(C command) {
+    TypeToken<C> commandTypeInAGeneric = new TypeToken<>(getClass()) {
 
-    var rateLimited = (RateLimited) command;
-    RateLimiter rateLimiter = rateLimiters
-            .computeIfAbsent(command.getClass(), type -> RateLimiter.create(rateLimited.maxPerSecond()));
-
-    if (!rateLimiter.tryAcquire()) {
-      throw new ThrottlingException();
-    }
-
-    return next.invoke();
+    };
+    return commandTypeInAGeneric.isSubtypeOf(command.getClass());
   }
 
-
-  @ResponseStatus(code = HttpStatus.TOO_MANY_REQUESTS)
-  private static class ThrottlingException extends RuntimeException {
-
-  }
 }

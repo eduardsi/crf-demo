@@ -8,15 +8,16 @@ import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
-import awsm.infra.middleware.impl.resilience.RateLimited;
+import awsm.infra.middleware.impl.resilience.RateLimit;
 import javax.validation.constraints.NotEmpty;
 import org.hashids.Hashids;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Registration implements Command<String>, RateLimited {
+class Registration implements Command<String> {
 
   @NotEmpty
   private final String email;
@@ -33,17 +34,28 @@ class Registration implements Command<String>, RateLimited {
     this.lastName = lastName;
   }
 
-  @Override
-  public int maxPerSecond() {
-    return 1;
-  }
-
   @RestController
   static class HttpEntryPoint {
 
     @PostMapping("/members")
     String accept(@RequestBody Registration command) {
       return command.execute();
+    }
+  }
+
+
+  @Component
+  static class Resilience implements RateLimit<Registration> {
+
+    private final int rateLimit;
+
+    public Resilience(@Value("${registration.rateLimit}") int rateLimit) {
+      this.rateLimit = rateLimit;
+    }
+
+    @Override
+    public int rateLimit() {
+      return rateLimit;
     }
   }
 
