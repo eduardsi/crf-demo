@@ -16,7 +16,6 @@ public class React implements Middleware {
   @Override
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
     var reaction = router.route(command);
-    var resilience = reaction.resilience();
-    return resilience.wrapIfNecessary(() -> reaction.react(command));
+    return reaction.react(command);
   }
 }

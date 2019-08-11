@@ -1,4 +1,4 @@
-package awsm.application.commands;
+package awsm.application;
 
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 

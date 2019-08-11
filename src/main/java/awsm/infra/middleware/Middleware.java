@@ -11,7 +11,7 @@ public interface Middleware {
 
     T invoke();
 
-    class Last<R> implements Next<R> {
+    class Null<R> implements Next<R> {
 
       @Override
       public R invoke() {

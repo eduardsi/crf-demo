@@ -1,4 +1,4 @@
-package awsm.application.commands;
+package awsm.application;
 
 import awsm.domain.registration.Email;
 import awsm.domain.registration.EmailBlacklist;
@@ -8,6 +8,7 @@ import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
+import awsm.infra.middleware.impl.resilience.RateLimited;
 import javax.validation.constraints.NotEmpty;
 import org.hashids.Hashids;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Registration implements Command<String> {
+class Registration implements Command<String>, RateLimited {
 
   @NotEmpty
   private final String email;
@@ -30,6 +31,11 @@ class Registration implements Command<String> {
     this.email = email;
     this.firstName = firstName;
     this.lastName = lastName;
+  }
+
+  @Override
+  public int maxPerSecond() {
+    return 1;
   }
 
   @RestController
