@@ -6,4 +6,5 @@ class NoMiddlewares implements Middlewares {
   public <R, C extends Command<R>> R send(C command) {
     throw new NoMiddlewaresException(command.getClass().getSimpleName());
   }
+
 }

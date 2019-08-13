@@ -13,7 +13,7 @@ class MemberTest {
             new Name("Uncle", "Bob"),
             new Email("uncle@domain.com"));
 
-    RegistrationCompleted event = (RegistrationCompleted) DomainEvent.lastPublished.get();
+    Registration event = (Registration) DomainEvent.lastPublished.get();
     assertThat(event.member()).isEqualTo(member);
   }
 

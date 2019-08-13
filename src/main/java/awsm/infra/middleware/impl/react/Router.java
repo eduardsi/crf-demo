@@ -19,7 +19,7 @@ class Router {
             .stream()
             .filter(it -> it.matches(command))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Cannot find reaction for " + commandName));
+            .orElseThrow(() -> new IllegalArgumentException("Cannot find reaction for " + commandName + " command"));
     return reaction;
   }
 

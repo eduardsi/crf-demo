@@ -106,6 +106,7 @@ dependencies {
     testImplementation("org.hamcrest:java-hamcrest:2.0.0.0")
     testImplementation("com.google.guava:guava-testlib:$guavaVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5-engine:0.11.0")
+    testImplementation("com.pivovarit:parallel-collectors:1.1.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
 }
 

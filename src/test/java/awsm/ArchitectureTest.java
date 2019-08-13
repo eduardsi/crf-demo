@@ -6,8 +6,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noCodeUnits;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
-import awsm.domain.DomainEvent;
 import awsm.infra.middleware.Command;
+import awsm.infra.middleware.Scheduler;
 import awsm.infra.middleware.impl.react.Reaction;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 class ArchitectureTest {
 
   private static final String DOMAIN = "..domain..";
-  private static final String EVENTS = "..events..";
   private static final String APPLICATION = "..application..";
   private static final String INFRASTRUCTURE = "..infra..";
 
@@ -75,6 +74,7 @@ class ArchitectureTest {
   static ArchRule no_tx_annotation_on_methods =
           noMethods()
                   .that().areDeclaredInClassesThat().areNotAssignableTo(Repository.class)
+                  .and().areDeclaredInClassesThat().areNotAssignableTo(Scheduler.class)
                   .should().beAnnotatedWith(Transactional.class)
                   .orShould().beAnnotatedWith(javax.transaction.Transactional.class)
                   .because("Transaction boundaries are defined by commands. They are all transactional by default");
@@ -95,14 +95,14 @@ class ArchitectureTest {
                   .should().accessClassesThat().resideInAPackage(APPLICATION);
 
   @ArchTest
-  static ArchRule events_do_not_depend_on_domain_and_reside_in_events_package =
-          noClasses().that().implement(DomainEvent.class)
-                  .should().dependOnClassesThat().resideInAnyPackage(DOMAIN)
-                  .andShould().resideInAPackage(EVENTS);
-
-  @ArchTest
   static ArchRule commands_do_not_depend_on_domain =
           noClasses().that().implement(Command.class)
                   .should().dependOnClassesThat().resideInAnyPackage(DOMAIN);
+
+  @ArchTest
+  static ArchRule commands_are_package_private =
+      classes().that().implement(Command.class)
+          .should().bePackagePrivate();
+
 
 }

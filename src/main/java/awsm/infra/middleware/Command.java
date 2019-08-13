@@ -6,4 +6,8 @@ public interface Command<R>  {
     return MiddlewaresHolder.get().send(this);
   }
 
+  default void schedule() {
+    SchedulerHolder.get().schedule(this);
+  }
+
 }

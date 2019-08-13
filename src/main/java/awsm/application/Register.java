@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Registration implements Command<String> {
+class Register implements Command<String> {
 
   @NotEmpty
   private final String email;
@@ -28,7 +28,7 @@ class Registration implements Command<String> {
   @NotEmpty
   private final String lastName;
 
-  public Registration(String email, String firstName, String lastName) {
+  public Register(String email, String firstName, String lastName) {
     this.email = email;
     this.firstName = firstName;
     this.lastName = lastName;
@@ -38,14 +38,14 @@ class Registration implements Command<String> {
   static class HttpEntryPoint {
 
     @PostMapping("/members")
-    String accept(@RequestBody Registration command) {
+    String accept(@RequestBody Register command) {
       return command.execute();
     }
   }
 
 
   @Component
-  static class Resilience implements RateLimit<Registration> {
+  static class Resilience implements RateLimit<Register> {
 
     private final int rateLimit;
 
@@ -60,7 +60,7 @@ class Registration implements Command<String> {
   }
 
   @Component
-  static class Re implements Reaction<Registration, String> {
+  static class Re implements Reaction<Register, String> {
 
     private final Members members;
 
@@ -75,7 +75,7 @@ class Registration implements Command<String> {
     }
 
     @Override
-    public String react(Registration cmd) {
+    public String react(Register cmd) {
       var email = new Email(cmd.email);
       throwIfBlacklisted(email);
 
