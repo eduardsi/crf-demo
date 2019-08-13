@@ -1,9 +1,15 @@
 package awsm.infra.middleware.impl.scheduler;
 
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
+import static java.util.concurrent.CompletableFuture.allOf;
 
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.Scheduler;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 class PersistentScheduler implements Scheduler {
 
   private static final int MAX_ATTEMPTS = 3;
+
+  private static final Executor THREAD_POOL = Executors.newFixedThreadPool(10);
 
   private final ScheduledCommands scheduledCommands;
 
@@ -24,10 +32,24 @@ class PersistentScheduler implements Scheduler {
     scheduledCommands.save(new ScheduledCommand(command));
   }
 
-  @Transactional(noRollbackFor = Exception.class)
-  @Scheduled(initialDelay = 5000, fixedDelay = 1000)
-  public void executeOldest() {
-    scheduledCommands.findFirstByTouchedTimesLessThanAndStatus(MAX_ATTEMPTS, PENDING).ifPresent(ScheduledCommand::execute);
+  @Transactional(noRollbackFor = CompletionException.class)
+  @Scheduled(initialDelay = 5000, fixedDelay = 5000)
+  public void executeBatch() {
+    waitUntilCompletes(batch());
+  }
+
+  private void waitUntilCompletes(Stream<CompletableFuture> futures) {
+    allOf(
+        futures.toArray(CompletableFuture[]::new)
+    ).join();
+  }
+
+
+  private Stream<CompletableFuture> batch() {
+    return scheduledCommands
+        .findTop10ByTouchedTimesLessThanAndStatus(MAX_ATTEMPTS, PENDING)
+        .stream()
+        .map(c -> c.executeIn(THREAD_POOL));
   }
 
 }

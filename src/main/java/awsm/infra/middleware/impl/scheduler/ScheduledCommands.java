@@ -1,6 +1,6 @@
 package awsm.infra.middleware.impl.scheduler;
 
-import java.util.Optional;
+import java.util.Collection;
 import javax.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.Repository;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 interface ScheduledCommands extends Repository<ScheduledCommand, Long> {
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  Optional<ScheduledCommand> findFirstByTouchedTimesLessThanAndStatus(long touchedTimes, ScheduledCommand.Status status);
+  Collection<ScheduledCommand> findTop10ByTouchedTimesLessThanAndStatus(long touchedTimes, ScheduledCommand.Status status);
 
   void save(ScheduledCommand scheduledCommand);
 

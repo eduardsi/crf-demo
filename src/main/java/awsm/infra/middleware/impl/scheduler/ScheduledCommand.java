@@ -6,6 +6,8 @@ import static java.time.ZoneOffset.UTC;
 import awsm.infra.hibernate.HibernateConstructor;
 import awsm.infra.middleware.Command;
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -53,12 +55,13 @@ class ScheduledCommand<T> {
   private ScheduledCommand() {
   }
 
-  void execute() {
-    checkState(status != Status.PENDING, "Cannot execute work that is not %s", status);
+  CompletableFuture executeIn(Executor executor) {
+    checkState(status == Status.PENDING, "Cannot execute work that is not %s", status);
     this.touchedTimes++;
     this.touchedAt = LocalDateTime.now(UTC);
-    this.command.execute();
-    this.status = Status.DONE;
+    return CompletableFuture
+        .runAsync(() -> this.command.execute(), executor)
+        .thenRun(() -> this.status = Status.DONE);
   }
 
   @Override
