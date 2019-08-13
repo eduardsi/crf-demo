@@ -20,7 +20,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
-class ScheduledCommand<T> {
+class ScheduledCommand {
 
   enum Status {
     PENDING, DONE
