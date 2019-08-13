@@ -33,6 +33,6 @@ class HashidsFactoryBean extends AbstractFactoryBean<Hashids> {
   @Override
   @Nonnull
   protected Hashids createInstance() {
-    return new Hashids(salt);
+    return new Hashids(salt, 10);
   }
 }
