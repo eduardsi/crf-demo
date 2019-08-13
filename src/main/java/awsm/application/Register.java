@@ -6,6 +6,7 @@ import awsm.domain.registration.EmailBlacklistedException;
 import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
+import awsm.infra.jackson.JacksonConstructor;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
 import awsm.infra.middleware.impl.resilience.RateLimit;
@@ -28,6 +29,7 @@ class Register implements Command<String> {
   @NotEmpty
   private final String lastName;
 
+  @JacksonConstructor
   public Register(String email, String firstName, String lastName) {
     this.email = email;
     this.firstName = firstName;

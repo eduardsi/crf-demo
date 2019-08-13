@@ -13,7 +13,7 @@ class SchedulerHolder {
     set(scheduler);
   }
 
-  static void set(Scheduler scheduler) {
+  private static void set(Scheduler scheduler) {
     SchedulerHolder.INSTANCE = requireNonNull(scheduler, "Scheduler cannot be null");
   }
 

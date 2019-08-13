@@ -7,6 +7,6 @@ class NoSchedulerException extends RuntimeException {
   NoSchedulerException(String cmd) {
     super(format(
         "%s has not been scheduled, because no scheduler is set. For production usage, set global %s.",
-        cmd, Scheduler.class.getSimpleName()));;
+        cmd, Scheduler.class.getSimpleName()));
   }
 }

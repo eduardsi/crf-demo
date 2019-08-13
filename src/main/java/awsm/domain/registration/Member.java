@@ -47,7 +47,4 @@ public class Member {
     return requireNonNull(id, "ID is null. Perhaps the entity has not been persisted yet?");
   }
 
-  public void id(long id) {
-    this.id = id;
-  }
 }

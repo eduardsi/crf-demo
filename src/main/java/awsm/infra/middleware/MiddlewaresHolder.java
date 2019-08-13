@@ -13,7 +13,7 @@ class MiddlewaresHolder {
     set(middlewares);
   }
 
-  static void set(Middlewares middlewares) {
+  private static void set(Middlewares middlewares) {
     MiddlewaresHolder.INSTANCE = requireNonNull(middlewares, "Middlewares cannot be null");
   }
 
