@@ -2,7 +2,7 @@ package awsm.infra.middleware.impl.scheduler;
 
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.STATUS;
-import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.TOUCHED_TIMES;
+import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.TOUCH_TIMES;
 import static java.util.concurrent.CompletableFuture.allOf;
 
 import awsm.infra.middleware.Command;
@@ -66,7 +66,7 @@ class PersistentScheduler implements Scheduler {
     @Override
     public Predicate toPredicate(Root<ScheduledCommand> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
       return cb.and(
-              cb.lessThan(root.get(TOUCHED_TIMES), 3),
+              cb.lessThan(root.get(TOUCH_TIMES), 3),
               cb.equal(root.get(STATUS), PENDING));
     }
   }
