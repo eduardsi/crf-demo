@@ -1,7 +1,5 @@
 package awsm.infra.middleware.impl.logging;
 
-import static org.zalando.fauxpas.TryWith.tryWith;
-
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import org.slf4j.MDC;
@@ -16,9 +14,9 @@ class CorrelationId {
 
   <T> T wrap(Supplier<T> action) {
     var closeable = MDC.putCloseable(MDC_KEY, next());
-    return tryWith(closeable, any -> {
+    try (closeable) {
       return action.get();
-    });
+    }
   }
 
   private String next() {

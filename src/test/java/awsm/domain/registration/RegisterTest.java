@@ -1,5 +1,6 @@
 package awsm.domain.registration;
 
+import static com.machinezoo.noexception.Exceptions.sneak;
 import static com.pivovarit.collectors.ParallelCollectors.parallelToList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +11,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.zalando.fauxpas.FauxPas.throwingSupplier;
 
 import com.github.javafaker.Faker;
 import java.util.concurrent.Executors;
@@ -123,9 +123,9 @@ class RegisterTest {
 
   private ResultActions registerWithEmail(String email) {
     var json = "{" + "\"email\": \"" + email + "\"," + "\"firstName\": \"Eduards\"," + "\"lastName\": \"Sizovs\"" + "}";
-    return throwingSupplier(() -> mvc.perform(post("/members")
+    return sneak().get(() -> mvc.perform(post("/members")
         .content(json)
         .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON))).get();
+        .contentType(MediaType.APPLICATION_JSON)));
   }
 }

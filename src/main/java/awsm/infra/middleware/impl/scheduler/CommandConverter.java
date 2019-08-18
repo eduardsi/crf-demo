@@ -1,6 +1,6 @@
 package awsm.infra.middleware.impl.scheduler;
 
-import static org.zalando.fauxpas.FauxPas.throwingSupplier;
+import static com.machinezoo.noexception.Exceptions.sneak;
 
 import awsm.infra.middleware.Command;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -19,11 +19,11 @@ class CommandConverter implements AttributeConverter<Command, String> {
 
   @Override
   public String convertToDatabaseColumn(Command attribute) {
-    return throwingSupplier(() -> mapper.writeValueAsString(attribute)).get();
+    return sneak().get(() -> mapper.writeValueAsString(attribute));
   }
 
   @Override
   public Command convertToEntityAttribute(String command) {
-    return throwingSupplier(() -> mapper.readValue(command, Command.class)).get();
+    return sneak().get(() -> mapper.readValue(command, Command.class));
   }
 }

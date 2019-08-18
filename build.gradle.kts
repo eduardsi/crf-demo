@@ -87,7 +87,6 @@ dependencies {
     annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
     compileOnly("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
 
-    implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("org.hashids:hashids:1.0.3")
     implementation("com.github.jhalterman:failsafe:master") // Timeouts coming in 2.2.0
@@ -96,6 +95,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("com.google.guava:guava:$guavaVersion")
+    implementation("com.machinezoo.noexception:noexception:1.3.4")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("javax.xml.bind:jaxb-api:2.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
