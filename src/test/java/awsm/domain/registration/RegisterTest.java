@@ -99,10 +99,6 @@ class RegisterTest {
     return register(email, "Eduards", "Sizovs");
   }
 
-  private String email() {
-    return new Faker().internet().emailAddress();
-  }
-
   private ResultActions register(String email, String firstName, String lastName) {
     var json = "{" + "\"email\": \"" + email + "\"," + "\"firstName\": \""
         + firstName + "\"," + "\"lastName\": \"" + lastName + "\"" + "}";
@@ -110,5 +106,9 @@ class RegisterTest {
         .content(json)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)));
+  }
+
+  private static String email() {
+    return new Faker().internet().emailAddress();
   }
 }
