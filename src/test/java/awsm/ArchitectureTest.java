@@ -23,9 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 @AnalyzeClasses(packages = "awsm")
 class ArchitectureTest {
 
-  private static final String DOMAIN = "..domain..";
-  private static final String APPLICATION = "..application..";
-  private static final String INFRASTRUCTURE = "..infra..";
+  private static final String DOMAIN = "*.domain..";
+  private static final String APPLICATION = "*.application..";
+  private static final String INFRASTRUCTURE = "*.infra..";
 
   private static DescribedPredicate<JavaAnnotation> transactionalWithMandatoryPropagation() {
     return new DescribedPredicate<>("Transactional with mandatory propagation") {
@@ -85,14 +85,14 @@ class ArchitectureTest {
   static {
     infra_does_not_depend_on_domain = noClasses()
             .that().resideInAnyPackage(INFRASTRUCTURE)
-            .should().accessClassesThat().resideInAPackage(DOMAIN);
+            .should().dependOnClassesThat().resideInAPackage(DOMAIN);
   }
 
   @ArchTest
   static ArchRule infra_does_not_depend_on_application =
           noClasses()
                   .that().resideInAnyPackage(INFRASTRUCTURE)
-                  .should().accessClassesThat().resideInAPackage(APPLICATION);
+                  .should().dependOnClassesThat().resideInAPackage(APPLICATION);
 
   @ArchTest
   static ArchRule commands_do_not_depend_on_domain =

@@ -51,6 +51,7 @@ tasks {
 
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
+        disableWarningsInGeneratedCode.set(true)
         disable("TypeParameterUnusedInFormals")
         option("NullAway:AnnotatedPackages", "awsm")
         option("NullAway:ExternalInitAnnotations", "" +
@@ -59,10 +60,9 @@ tasks.withType<JavaCompile>().configureEach {
                 "org.springframework.boot.test.context.SpringBootTest")
     }
 }
-
 tasks.withType<Test> {
     maxParallelForks = 4
-    timeout.set(Duration.ofMinutes(1))
+    timeout.set(Duration.ofMinutes(2))
     useJUnitPlatform()
 }
 
@@ -83,6 +83,9 @@ dependencies {
 
     errorprone("com.google.errorprone:error_prone_core:2.3.3")
     errorprone("com.uber.nullaway:nullaway:0.7.5")
+
+    annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
+    compileOnly("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
 
     implementation("org.zalando:faux-pas:0.8.0")
     implementation("org.apache.commons:commons-lang3:3.9")
