@@ -59,35 +59,31 @@ class RegisterTest {
   }
 
   @Test
-  void throws_if_email_is_missing() throws Exception {
-    register("", "Eduards", "Sizovs")
-        .andExpect(status().is(400))
-        .andExpect(jsonPath("$.[0].property", is("email")))
-        .andExpect(jsonPath("$.[0].message", is("must not be empty")));
+  void throws_if_email_is_not_unique() throws Exception {
+    var email = email();
+    register(email)
+        .andExpect(status().isOk());
+
+    register(email)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.[0]", is("email is taken")));
   }
 
   @Test
-  void throws_if_first_name_is_missing() throws Exception {
-    register(email(), "", "Sizovs")
-        .andExpect(status().is(400))
-        .andExpect(jsonPath("$.[0].property", is("firstName")))
-        .andExpect(jsonPath("$.[0].message", is("must not be empty")));
-  }
-
-  @Test
-  void throws_if_last_name_is_missing() throws Exception {
-    register(email(), "Eduards", "")
-        .andExpect(status().is(400))
-        .andExpect(jsonPath("$.[0].property", is("lastName")))
-        .andExpect(jsonPath("$.[0].message", is("must not be empty")));
+  void throws_if_email_or_first_name_or_last_name_are_missing() throws Exception {
+    register("", "", "")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.[0]", is("firstName is missing")))
+        .andExpect(jsonPath("$.[1]", is("lastName is missing")))
+        .andExpect(jsonPath("$.[2]", is("email is missing")));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"pornhub.com", "rotten.com"})
   void throws_if_email_is_blacklisted(String domain) throws Exception {
     var email = "eduards@" + domain;
-    register(email, "Eduards", "Sizovs")
-        .andExpect(status().is(400))
+    register(email)
+        .andExpect(status().isBadRequest())
         .andExpect(content().string("Email " + email + " is blacklisted"));
   }
 

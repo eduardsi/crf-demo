@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.annotations.NaturalId;
 
 @Entity
 @Table(name = "members")
@@ -20,12 +21,13 @@ public class Member {
   private Long id;
 
   @Embedded
+  @NaturalId
   private Email email;
 
   @Embedded
   private Name name;
 
-  public Member(Name name, Email email) {
+  public Member(Name name, Email.Unique email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
     new Registration(this).schedule();
@@ -46,5 +48,6 @@ public class Member {
   public Long id() {
     return requireNonNull(id, "ID is null. Perhaps the entity has not been persisted yet?");
   }
+
 
 }

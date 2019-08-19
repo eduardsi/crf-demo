@@ -9,6 +9,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 public class DomainException extends RuntimeException {
 
+  public DomainException(String message) {
+    super(message);
+  }
+
   @ControllerAdvice
   static class SpringMvcHandler extends ResponseEntityExceptionHandler {
 

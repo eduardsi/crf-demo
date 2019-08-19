@@ -90,7 +90,6 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("org.hashids:hashids:1.0.3")
     implementation("com.github.jhalterman:failsafe:master") // Timeouts coming in 2.2.0
-    implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
