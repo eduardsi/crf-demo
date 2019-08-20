@@ -18,7 +18,6 @@ public class Email implements Serializable {
   String email;
 
   public Email(String email) {
-    System.out.println("Instantiating email for " + email);
     var isNotBlank = email != null && !email.isBlank();
     checkArgument(isNotBlank, "Email %s must not be blank", email);
     this.email = email;
@@ -131,7 +130,6 @@ public class Email implements Serializable {
 
       @Override
       public boolean allows(Email email) {
-        System.out.println("Making a blacklist trip");
         return BAD_DOMAINS
             .stream()
             .noneMatch(domain -> email.toString().contains(domain));
