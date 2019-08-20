@@ -12,11 +12,11 @@ public class Validator<R> {
 
   private final List<Rule<R>> rules = new ArrayList<>();
 
-  public <T> Validator<R> with(AttributeGetter<R, T> getter, AttributeCheck<T> condition, String message) {
+  public <T> Validator<R> with(AttributeGetter<T> getter, AttributeCheck<T> condition, String message) {
     return with(getter, condition, message, new Nesting.Absent<>());
   }
 
-  public <T> Validator<R> with(AttributeGetter<R, T> getter, AttributeCheck<T> check, String message, Nesting<R> nested) {
+  public <T> Validator<R> with(AttributeGetter<T> getter, AttributeCheck<T> check, String message, Nesting<R> nested) {
     var rule = new AttributeRule<>(getter, check, value -> format(message, value));
     rule.with(nested.validator());
     rules.add(rule);
@@ -53,8 +53,9 @@ public class Validator<R> {
     }
   }
 
-  public interface AttributeGetter<R, T> {
-    T provide(R root);
+  @FunctionalInterface
+  public interface AttributeGetter<T> {
+    T attr();
   }
 
   public interface AttributeCheck<T> {
@@ -70,12 +71,12 @@ public class Validator<R> {
   }
 
   private class AttributeRule<V> implements Rule<R> {
-    private AttributeGetter<R, V> getter;
+    private AttributeGetter<V> getter;
     private AttributeCheck<V> check;
     private AttributeViolation<V> violation;
     private Validator<R> nestedValidator = new Validator<>();
 
-    AttributeRule(AttributeGetter<R, V> getter, AttributeCheck<V> check, AttributeViolation<V> violation)  {
+    AttributeRule(AttributeGetter<V> getter, AttributeCheck<V> check, AttributeViolation<V> violation)  {
       this.getter = getter;
       this.check = check;
       this.violation = violation;
@@ -87,7 +88,7 @@ public class Validator<R> {
 
     @Override
     public Collection<String> violations(R root) {
-      var attr = this.getter.provide(root);
+      var attr = this.getter.attr();
       var truthy = this.check.isTruthy(attr);
       if (!truthy) {
         return singletonList(violation.text(attr));

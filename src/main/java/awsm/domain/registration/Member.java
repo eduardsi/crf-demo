@@ -27,10 +27,10 @@ public class Member {
   @Embedded
   private Name name;
 
-  public Member(Name name, Email.Unique email) {
+  public Member(Name name, Email.NotBlacklisted email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
-    new Registration(this).schedule();
+    new RegistrationCompleted(this).schedule();
   }
 
   @HibernateConstructor

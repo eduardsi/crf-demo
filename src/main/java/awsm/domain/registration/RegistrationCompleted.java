@@ -2,11 +2,11 @@ package awsm.domain.registration;
 
 import awsm.domain.DomainEvent;
 
-public class Registration implements DomainEvent {
+public class RegistrationCompleted implements DomainEvent {
 
   private final Member member;
 
-  Registration(Member member) {
+  RegistrationCompleted(Member member) {
     this.member = member;
   }
 

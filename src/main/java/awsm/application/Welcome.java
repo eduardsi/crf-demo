@@ -4,7 +4,7 @@ import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 
 import awsm.domain.DomainEvent;
 import awsm.domain.registration.Members;
-import awsm.domain.registration.Registration;
+import awsm.domain.registration.RegistrationCompleted;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.ReturnsNothing;
 import awsm.infra.middleware.impl.react.Reaction;
@@ -20,9 +20,9 @@ class Welcome implements Command<ReturnsNothing> {
   }
 
   @Component
-  static class Scheduled implements DomainEvent.Listener<Registration> {
+  static class Scheduled implements DomainEvent.Listener<RegistrationCompleted> {
     @Override
-    public void beforeCommit(Registration event) {
+    public void beforeCommit(RegistrationCompleted event) {
       var welcome = new Welcome(event.member().id());
       welcome.schedule();
     }

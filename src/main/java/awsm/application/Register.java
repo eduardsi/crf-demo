@@ -1,18 +1,19 @@
 package awsm.application;
 
+import static awsm.infra.memoization.Memoizers.memoizer;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import awsm.domain.registration.Email;
-import awsm.domain.registration.EmailBlacklist;
-import awsm.domain.registration.EmailBlacklistedException;
+import awsm.domain.registration.Email.NotBlacklisted;
+import awsm.domain.registration.Email.Unique;
 import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
 import awsm.infra.jackson.JacksonConstructor;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
-import awsm.infra.middleware.impl.resilience.RateLimit;
 import awsm.infra.middleware.impl.react.validation.Validator;
+import awsm.infra.middleware.impl.resilience.RateLimit;
 import org.hashids.Hashids;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -67,43 +68,42 @@ class Register implements Command<String> {
 
     private final Members members;
 
-    private final EmailBlacklist blacklist;
+    private final Email.Blacklist blacklist;
 
     private final Hashids hashids;
 
     private final Email.Uniqueness uniqueness;
 
-    Re(Members members, EmailBlacklist blacklist, Hashids hashids, Email.Uniqueness uniqueness) {
+    Re(Members members, Email.Blacklist blacklist, Hashids hashids, Email.Uniqueness uniqueness) {
       this.members = members;
-      this.blacklist = blacklist;
       this.hashids = hashids;
-      this.uniqueness = uniqueness.memoized();
+      this.uniqueness = memoizer(uniqueness::guaranteed)::memoized;
+      this.blacklist = memoizer(blacklist::allows)::memoized;
     }
 
     @Override
     public String react(Register cmd) {
+
+      var email = memoizer(() -> new Email(cmd.email));
+
       new Validator<Register>()
-          .with(c -> c.firstName, v -> !v.isBlank(), "firstName is missing")
-          .with(c -> c.lastName, v -> !v.isBlank(), "lastName is missing")
-          .with(c -> c.email, v -> !v.isBlank(), "email is missing", nested ->
+          .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
+          .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
+          .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
               nested
-                  .with(c -> new Email(c.email), uniqueness::guaranteed, "email is taken")
+                  .with(email::memoized, uniqueness::guaranteed, "email is taken")
+                  .with(email::memoized, blacklist::allows,      "email %s is blacklisted")
           ).check(cmd);
 
-
-      var email = new Email.Unique(cmd.email, uniqueness);
-      throwIfBlacklisted(email);
-
       var name = new Name(cmd.firstName, cmd.lastName);
-      var member = new Member(name, email);
+      var registrationEmail =
+          new NotBlacklisted(blacklist,
+              new Unique(uniqueness,
+                  email.memoized()));
+
+      var member = new Member(name, registrationEmail);
       members.save(member);
       return hashids.encode(member.id());
-    }
-
-    private void throwIfBlacklisted(Email email) {
-      if (blacklist.contains(email)) {
-        throw new EmailBlacklistedException(email);
-      }
     }
 
   }

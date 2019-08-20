@@ -84,7 +84,7 @@ class RegisterTest {
     var email = "eduards@" + domain;
     register(email)
         .andExpect(status().isBadRequest())
-        .andExpect(content().string("Email " + email + " is blacklisted"));
+        .andExpect(jsonPath("$.[0]", is("email " + email + " is blacklisted")));
   }
 
   private ResultActions register() {

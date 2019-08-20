@@ -2,10 +2,11 @@ package awsm.domain.registration;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import awsm.domain.DomainException;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import org.springframework.stereotype.Component;
@@ -14,16 +15,22 @@ import org.springframework.stereotype.Component;
 public class Email implements Serializable {
 
   @Column(unique = true)
-  private String email;
+  String email;
 
   public Email(String email) {
+    System.out.println("Instantiating email for " + email);
     var isNotBlank = email != null && !email.isBlank();
     checkArgument(isNotBlank, "Email %s must not be blank", email);
     this.email = email;
   }
 
+  Email(Email from) {
+    this.email = from.toString();
+  }
+
   @HibernateConstructor
   private Email() {
+
   }
 
   @Override
@@ -32,12 +39,12 @@ public class Email implements Serializable {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Objects.hashCode(email);
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public final boolean equals(Object obj) {
     if (obj instanceof Email) {
       Email that = (Email) obj;
       return this.email.equals(that.email);
@@ -48,11 +55,10 @@ public class Email implements Serializable {
   @Embeddable
   public static class Unique extends Email {
 
-    public Unique(String email, Uniqueness uniqueness) {
+    public Unique(Uniqueness uniqueness, Email email) {
       super(email);
-      var e = new Email(email);
-      if (!uniqueness.guaranteed(e)) {
-        throw new EmailNotUniqueException(e);
+      if (!uniqueness.guaranteed(this)) {
+        throw new NotUniqueException(this);
       }
     }
 
@@ -62,13 +68,39 @@ public class Email implements Serializable {
 
   }
 
+  static class NotUniqueException extends DomainException {
+    NotUniqueException(Email email) {
+      super("Email " + email + " is not unique");
+    }
+  }
+
+
+  @Embeddable
+  public static class NotBlacklisted extends Email {
+
+    public NotBlacklisted(Blacklist blacklist, Unique email) {
+      super(email);
+      if (!blacklist.allows(email)) {
+        throw new BlacklistedException(email);
+      }
+    }
+
+    @HibernateConstructor
+    private NotBlacklisted() {
+    }
+
+  }
+
+  static class BlacklistedException extends DomainException {
+    BlacklistedException(Email email) {
+      super("Email " + email + " is blacklisted");
+    }
+  }
+
+
   public interface Uniqueness {
 
     boolean guaranteed(Email email);
-
-    default Uniqueness memoized() {
-      return new Memoized(this);
-    }
 
     @Component
     class AcrossMembers implements Uniqueness {
@@ -86,19 +118,25 @@ public class Email implements Serializable {
 
     }
 
-    class Memoized implements Email.Uniqueness {
+  }
 
-      private final Email.Uniqueness origin;
-      private final ConcurrentHashMap<Email, Boolean> memoizer = new ConcurrentHashMap<>();
+  public interface Blacklist {
 
-      Memoized(Email.Uniqueness origin) {
-        this.origin = origin;
-      }
+    boolean allows(Email email);
+
+    @Component
+    class HardCoded implements Blacklist {
+
+      private static final List<String> BAD_DOMAINS = List.of("pornhub.com", "rotten.com");
 
       @Override
-      public boolean guaranteed(Email email) {
-        return memoizer.computeIfAbsent(email, origin::guaranteed);
+      public boolean allows(Email email) {
+        System.out.println("Making a blacklist trip");
+        return BAD_DOMAINS
+            .stream()
+            .noneMatch(domain -> email.toString().contains(domain));
       }
+
     }
 
   }
