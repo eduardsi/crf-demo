@@ -1,7 +1,7 @@
 package awsm.infra.middleware.impl.scheduler;
 
-import java.util.Collection;
 import javax.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Lock;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 interface ScheduledCommands extends Repository<ScheduledCommand, Long> {
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  Collection<ScheduledCommand> findAll(Specification<ScheduledCommand> spec, Pageable page);
+  Page<ScheduledCommand> findAll(Specification<ScheduledCommand> spec, Pageable page);
 
   void save(ScheduledCommand scheduledCommand);
 

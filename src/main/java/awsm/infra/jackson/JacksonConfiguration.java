@@ -12,6 +12,7 @@ class JacksonConfiguration {
   @Bean
   Jackson2ObjectMapperBuilderCustomizer customizer() {
     return jackson -> jackson
+            .failOnEmptyBeans(false)
             .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
   }
 

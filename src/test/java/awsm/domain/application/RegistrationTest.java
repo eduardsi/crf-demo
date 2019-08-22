@@ -1,4 +1,4 @@
-package awsm.domain.registration;
+package awsm.domain.application;
 
 import static com.machinezoo.noexception.Exceptions.sneak;
 import static com.pivovarit.collectors.ParallelCollectors.parallelToList;
@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @SpringBootTest
 @AutoConfigureMockMvc
-class RegisterTest {
+class RegistrationTest {
 
   @Autowired
   private MockMvc mvc;

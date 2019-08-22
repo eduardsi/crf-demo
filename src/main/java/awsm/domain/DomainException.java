@@ -13,15 +13,5 @@ public class DomainException extends RuntimeException {
     super(message);
   }
 
-  @ControllerAdvice
-  static class SpringMvcHandler extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(DomainException.class)
-    public ResponseEntity<String> handle(DomainException it, WebRequest request) {
-      return new ResponseEntity<>(it.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-  }
-
 
 }

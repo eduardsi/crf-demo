@@ -16,7 +16,6 @@ public class Tx implements Middleware {
     this.txManager = txManager;
   }
 
-
   @Override
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
     var tx = new TransactionTemplate(txManager);
@@ -25,4 +24,5 @@ public class Tx implements Middleware {
     tx.setReadOnly(command instanceof ReadOnly);
     return tx.execute(status -> next.invoke());
   }
+
 }

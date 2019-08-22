@@ -9,12 +9,12 @@ import awsm.domain.registration.Email.Unique;
 import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
+import awsm.infra.hashing.HashId;
 import awsm.infra.jackson.JacksonConstructor;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
 import awsm.infra.middleware.impl.react.validation.Validator;
 import awsm.infra.middleware.impl.resilience.RateLimit;
-import org.hashids.Hashids;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Register implements Command<String> {
+class Register implements Command<HashId> {
 
   private final String email;
 
@@ -39,9 +39,8 @@ class Register implements Command<String> {
 
   @RestController
   static class HttpEntryPoint {
-
     @PostMapping("/members")
-    String accept(@RequestBody Register command) {
+    HashId accept(@RequestBody Register command) {
       return command.execute();
     }
   }
@@ -64,25 +63,22 @@ class Register implements Command<String> {
 
   @Component
   @Scope(SCOPE_PROTOTYPE)
-  static class Re implements Reaction<Register, String> {
+  static class Re implements Reaction<Register, HashId> {
 
     private final Members members;
 
     private final Email.Blacklist blacklist;
 
-    private final Hashids hashids;
-
     private final Email.Uniqueness uniqueness;
 
-    Re(Members members, Email.Blacklist blacklist, Hashids hashids, Email.Uniqueness uniqueness) {
+    Re(Members members, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
       this.members = members;
-      this.hashids = hashids;
       this.uniqueness = memoizer(uniqueness::guaranteed)::memoized;
       this.blacklist = memoizer(blacklist::allows)::memoized;
     }
 
     @Override
-    public String react(Register cmd) {
+    public HashId react(Register cmd) {
 
       var email = memoizer(() -> new Email(cmd.email));
 
@@ -103,7 +99,7 @@ class Register implements Command<String> {
 
       var member = new Member(name, registrationEmail);
       members.save(member);
-      return hashids.encode(member.id());
+      return new HashId(member.id());
     }
 
   }

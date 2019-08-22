@@ -38,8 +38,8 @@ class Welcome implements Command<ReturnsNothing> {
     }
 
     @Override
-    public ReturnsNothing react(Welcome command) {
-      var member = members.findById(command.memberId).orElseThrow();
+    public ReturnsNothing react(Welcome cmd) {
+      var member = members.findById(cmd.memberId).orElseThrow();
       System.out.printf("Sending email to %s: Welcome to the Matrix, %s", member.email(), member.name());
       return NOTHING;
     }
