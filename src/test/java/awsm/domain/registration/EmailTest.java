@@ -3,8 +3,10 @@ package awsm.domain.registration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@DisplayName("an email")
 class EmailTest {
 
   @Test

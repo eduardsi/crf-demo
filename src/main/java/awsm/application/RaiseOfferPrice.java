@@ -1,7 +1,7 @@
 package awsm.application;
 
-import awsm.domain.trading.DecimalNumber;
-import awsm.domain.trading.Offers;
+import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.Offers;
 import awsm.infra.hashing.UnhashId;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;

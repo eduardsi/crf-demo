@@ -1,6 +1,6 @@
-package awsm.domain.trading;
+package awsm.domain.offers;
 
-import static awsm.domain.trading.Offer.Status.PENDING;
+import static awsm.domain.offers.Offer.Status.PENDING;
 import static java.util.Objects.requireNonNull;
 
 import awsm.infra.hibernate.HibernateConstructor;

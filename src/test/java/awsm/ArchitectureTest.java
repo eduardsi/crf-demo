@@ -95,14 +95,9 @@ class ArchitectureTest {
                   .should().dependOnClassesThat().resideInAPackage(APPLICATION);
 
   @ArchTest
-  static ArchRule commands_do_not_depend_on_domain =
+  static ArchRule commands_do_not_depend_on_domain_and_infra =
           noClasses().that().implement(Command.class)
-                  .should().dependOnClassesThat().resideInAnyPackage(DOMAIN);
-
-  @ArchTest
-  static ArchRule commands_are_package_private =
-      classes().that().implement(Command.class)
-          .should().bePackagePrivate();
-
+                  .should().dependOnClassesThat().resideInAnyPackage(DOMAIN)
+                  .andShould().dependOnClassesThat().resideInAnyPackage(INFRASTRUCTURE);
 
 }

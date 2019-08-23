@@ -54,10 +54,14 @@ tasks.withType<JavaCompile>().configureEach {
         disableWarningsInGeneratedCode.set(true)
         disable("TypeParameterUnusedInFormals")
         option("NullAway:AnnotatedPackages", "awsm")
+        option("NullAway:ExcludedFieldAnnotations", "" +
+                "org.mockito.Mock," +
+                "org.springframework.beans.factory.annotation.Autowired"
+        )
         option("NullAway:ExternalInitAnnotations", "" +
                 "javax.persistence.Entity," +
-                "javax.persistence.Embeddable," +
-                "org.springframework.boot.test.context.SpringBootTest")
+                "javax.persistence.Embeddable,"
+        )
     }
 }
 tasks.withType<Test> {
@@ -96,6 +100,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("com.machinezoo.noexception:noexception:1.3.4")
+    implementation("org.msgpack:jackson-dataformat-msgpack:0.8.17")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("javax.xml.bind:jaxb-api:2.3.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")

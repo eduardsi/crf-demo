@@ -1,12 +1,12 @@
-package awsm.domain.trading;
+package awsm.domain.offers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import awsm.util.concurrency.Threads;
 import awsm.util.concurrency.Transactions;
-import java.math.BigDecimal;
 import java.util.concurrent.CompletionException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +14,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @SpringBootTest
+@DisplayName("an offer")
 class OfferTest {
 
   @Autowired

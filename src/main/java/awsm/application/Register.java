@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class Register implements Command<HashId> {
+class Register implements Command<CharSequence> {
 
   private final String email;
 
@@ -40,7 +40,7 @@ class Register implements Command<HashId> {
   @RestController
   static class HttpEntryPoint {
     @PostMapping("/members")
-    HashId accept(@RequestBody Register command) {
+    CharSequence accept(@RequestBody Register command) {
       return command.execute();
     }
   }
@@ -63,7 +63,7 @@ class Register implements Command<HashId> {
 
   @Component
   @Scope(SCOPE_PROTOTYPE)
-  static class Re implements Reaction<Register, HashId> {
+  static class Re implements Reaction<Register, CharSequence> {
 
     private final Members members;
 
@@ -78,7 +78,7 @@ class Register implements Command<HashId> {
     }
 
     @Override
-    public HashId react(Register cmd) {
+    public CharSequence react(Register cmd) {
 
       var email = memoizer(() -> new Email(cmd.email));
 

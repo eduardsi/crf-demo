@@ -1,5 +1,6 @@
 package awsm.domain.administration;
 
+import awsm.infra.hibernate.HibernateConstructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -30,6 +31,11 @@ public class Administrator  {
 
   public Administrator(Long memberId) {
     this.memberId = memberId;
+  }
+
+
+  @HibernateConstructor
+  private Administrator() {
   }
 
   public void grant(Permission permission) {

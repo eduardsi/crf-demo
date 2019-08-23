@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,13 +15,14 @@ import org.springframework.test.web.servlet.ResultActions;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class TradingTest {
+@DisplayName("an offer")
+class OffersTest {
 
   @Autowired
   private MockMvc mvc;
 
   @Test
-  void accepting_a_pending_offer() throws Exception {
+  void can_be_accepted() throws Exception {
     var offerId = place("100.00")
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
@@ -30,7 +32,7 @@ class TradingTest {
   }
 
   @Test
-  void increasing_the_price() throws Exception {
+  void can_be_raised_in_price() throws Exception {
     var offerId = place("100.00")
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
@@ -41,7 +43,7 @@ class TradingTest {
   }
 
   @Test
-  void throwing_on_accepting_offer_that_is_already_accepted() throws Exception {
+  void cannot_be_accepted_multiple_times() throws Exception {
     var offerId = place("100.00")
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
@@ -55,7 +57,7 @@ class TradingTest {
   }
 
   @Test
-  void throwing_on_accepting_offer_that_exceeds_the_limit() throws Exception {
+  void cannot_be_accepted_if_price_is_not_within_a_limit() throws Exception {
     var offerId = place("100.00")
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();

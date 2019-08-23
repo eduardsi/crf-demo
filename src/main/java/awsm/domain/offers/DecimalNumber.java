@@ -1,4 +1,4 @@
-package awsm.domain.trading;
+package awsm.domain.offers;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,6 +38,20 @@ public class DecimalNumber {
   @Override
   public String toString() {
     return decimal.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return decimal.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof DecimalNumber) {
+      var that = (DecimalNumber) obj;
+      return this.decimal.equals(that.decimal);
+    }
+    return false;
   }
 
   @Converter(autoApply = true)

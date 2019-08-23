@@ -1,8 +1,8 @@
 package awsm.application;
 
-import awsm.domain.trading.DecimalNumber;
-import awsm.domain.trading.Offer;
-import awsm.domain.trading.Offers;
+import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.Offer;
+import awsm.domain.offers.Offers;
 import awsm.infra.hashing.HashId;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.impl.react.Reaction;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class PlaceOffer implements Command<HashId> {
+class PlaceOffer implements Command<CharSequence> {
 
   private final BigDecimal price;
 
@@ -24,13 +24,13 @@ class PlaceOffer implements Command<HashId> {
   @RestController
   static class HttpEntryPoint {
     @PostMapping("/offers")
-    HashId accept(@RequestBody PlaceOffer placeOffer)  {
+    CharSequence accept(@RequestBody PlaceOffer placeOffer)  {
       return placeOffer.execute();
     }
   }
 
   @Component
-  static class Re implements Reaction<PlaceOffer, HashId> {
+  static class Re implements Reaction<PlaceOffer, CharSequence> {
 
     private final Offers offers;
 
@@ -40,7 +40,7 @@ class PlaceOffer implements Command<HashId> {
     }
 
     @Override
-    public HashId react(PlaceOffer cmd) {
+    public CharSequence react(PlaceOffer cmd) {
       var price = new DecimalNumber(cmd.price);
       var offer = new Offer(price);
       offers.save(offer);
