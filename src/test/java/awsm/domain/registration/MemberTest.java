@@ -23,7 +23,7 @@ class MemberTest {
               new Unique(uniqueness,
                   new Email("uncle@domain.com"))));
 
-    RegistrationCompleted event = (RegistrationCompleted) DomainEvent.lastPublished.get();
+    var event = (RegistrationCompleted) DomainEvent.lastPublished.get();
     assertThat(event.member()).isEqualTo(member);
   }
 
