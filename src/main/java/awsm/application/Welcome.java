@@ -2,9 +2,7 @@ package awsm.application;
 
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 
-import awsm.domain.DomainEvent;
 import awsm.domain.registration.Members;
-import awsm.domain.registration.NewMemberEvent;
 import awsm.infra.middleware.Command;
 import awsm.infra.middleware.ReturnsNothing;
 import awsm.infra.middleware.impl.react.Reaction;
@@ -15,21 +13,12 @@ class Welcome implements Command<ReturnsNothing> {
 
   private final long memberId;
 
-  private Welcome(@JsonProperty("memberId") long memberId) {
+  Welcome(@JsonProperty("memberId") long memberId) {
     this.memberId = memberId;
   }
 
   @Component
-  private static class EveryNewMember implements DomainEvent.Listener<NewMemberEvent> {
-    @Override
-    public void beforeCommit(NewMemberEvent event) {
-      var welcome = new Welcome(event.member().id());
-      welcome.schedule();
-    }
-  }
-
-  @Component
-  private static class Re implements Reaction<Welcome, ReturnsNothing> {
+  static class Re implements Reaction<Welcome, ReturnsNothing> {
 
     private final Members members;
 

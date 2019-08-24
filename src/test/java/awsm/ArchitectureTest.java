@@ -12,6 +12,7 @@ import awsm.infra.middleware.impl.react.Reaction;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaEnumConstant;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -35,6 +36,17 @@ class ArchitectureTest {
         var hasTxAnnotation = rawType.isAssignableFrom(Transactional.class);
         var propagation = (JavaEnumConstant) annotation.getProperties().get("propagation");
         return hasTxAnnotation && propagation != null && propagation.name().equals(Propagation.MANDATORY.name());
+      }
+    };
+  }
+
+  private static DescribedPredicate<JavaMethodCall> commandExecute() {
+    return new DescribedPredicate<>("command is executed") {
+      @Override
+      public boolean apply(JavaMethodCall input) {
+        var isACommand = input.getTargetOwner().isAssignableTo(Command.class);
+        var executeMethod = input.getName().matches("execute");
+        return isACommand && executeMethod;
       }
     };
   }
@@ -80,13 +92,9 @@ class ArchitectureTest {
                   .because("Transaction boundaries are defined by commands. They are all transactional by default");
 
   @ArchTest
-  static ArchRule infra_does_not_depend_on_domain;
-
-  static {
-    infra_does_not_depend_on_domain = noClasses()
+  static ArchRule infra_does_not_depend_on_domain = noClasses()
             .that().resideInAnyPackage(INFRASTRUCTURE)
             .should().dependOnClassesThat().resideInAPackage(DOMAIN);
-  }
 
   @ArchTest
   static ArchRule infra_does_not_depend_on_application =
@@ -99,5 +107,12 @@ class ArchitectureTest {
           noClasses().that().implement(Command.class)
                   .should().dependOnClassesThat().resideInAnyPackage(DOMAIN)
                   .andShould().dependOnClassesThat().resideInAnyPackage(INFRASTRUCTURE);
+
+  @ArchTest
+  static ArchRule reactions_cannot_execute_commands =
+      noClasses().that().implement(Reaction.class)
+          .should().callMethodWhere(commandExecute())
+          .because("they must talk to domain model directly");
+
 
 }

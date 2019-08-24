@@ -3,6 +3,8 @@ package awsm.application;
 import static awsm.infra.memoization.Memoizers.memoizer;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
+import awsm.domain.administration.Administrator;
+import awsm.domain.administration.Administrators;
 import awsm.domain.registration.Email;
 import awsm.domain.registration.Email.NotBlacklisted;
 import awsm.domain.registration.Email.Unique;
@@ -67,12 +69,15 @@ class Register implements Command<CharSequence> {
 
     private final Members members;
 
+    private final Administrators administrators;
+
     private final Email.Blacklist blacklist;
 
     private final Email.Uniqueness uniqueness;
 
-    Re(Members members, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
+    Re(Members members, Administrators administrators, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
       this.members = members;
+      this.administrators = administrators;
       this.uniqueness = memoizer(uniqueness::guaranteed)::memoized;
       this.blacklist = memoizer(blacklist::allows)::memoized;
     }
@@ -99,6 +104,13 @@ class Register implements Command<CharSequence> {
 
       var member = new Member(name, registrationEmail);
       members.save(member);
+
+      var admin = new Administrator(member.id());
+      administrators.save(admin);
+
+      var welcome = new Welcome(member.id());
+      welcome.schedule();
+
       return new HashId(member.id());
     }
 
