@@ -26,7 +26,7 @@ class AcceptOffer implements Command<ReturnsNothing> {
   }
 
   @RestController
-  static class HttpEntryPoint {
+  static class Http {
     @PostMapping("/offers/{offerId}/accept/limit/{limit}")
     ReturnsNothing accept(@PathVariable String offerId, @PathVariable BigDecimal limit) {
       return new AcceptOffer(offerId, limit).execute();

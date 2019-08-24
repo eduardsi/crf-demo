@@ -23,7 +23,7 @@ class RaiseOfferPrice implements Command<BigDecimal> {
 
 
   @RestController
-  static class HttpEntryPoint {
+  static class Http {
     @PostMapping("/offers/{offerId}/raise/{ratio}")
     BigDecimal accept(@PathVariable String offerId, @PathVariable BigDecimal ratio)  {
       return new RaiseOfferPrice(offerId, ratio).execute();

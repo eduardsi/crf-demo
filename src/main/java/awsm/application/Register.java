@@ -38,7 +38,7 @@ class Register implements Command<CharSequence> {
   }
 
   @RestController
-  static class HttpEntryPoint {
+  static class Http {
     @PostMapping("/members")
     CharSequence accept(@RequestBody Register command) {
       return command.execute();

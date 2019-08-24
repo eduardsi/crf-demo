@@ -22,7 +22,7 @@ class PlaceOffer implements Command<CharSequence> {
   }
 
   @RestController
-  static class HttpEntryPoint {
+  static class Http {
     @PostMapping("/offers")
     CharSequence accept(@RequestBody PlaceOffer placeOffer)  {
       return placeOffer.execute();
