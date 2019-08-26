@@ -27,12 +27,13 @@ class ScheduledCommands {
     var criteria = criteriaBuilder.createQuery(ScheduledCommand.class);
     var root = criteria.from(ScheduledCommand.class);
 
-    criteriaBuilder.and(
-        criteriaBuilder.lessThan(root.get(TOUCH_TIMES), 3),
-        criteriaBuilder.equal(root.get(STATUS), PENDING));
+    var where = criteria.where(
+        criteriaBuilder.and(
+          criteriaBuilder.lessThan(root.get(TOUCH_TIMES), 3),
+          criteriaBuilder.equal(root.get(STATUS), PENDING)));
 
     return entityManager
-        .createQuery(criteria)
+        .createQuery(where)
         .setLockMode(LockModeType.PESSIMISTIC_WRITE)
         .setMaxResults(limit)
         .getResultStream();
