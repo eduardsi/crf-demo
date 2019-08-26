@@ -19,14 +19,14 @@ repositories {
     }
 }
 
-val springVersion = "2.1.2.RELEASE"
+val springVersion = "2.1.7.RELEASE"
 val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
     jacoco
     checkstyle
-    id("org.springframework.boot") version "2.1.2.RELEASE"
+    id("org.springframework.boot") version "2.1.7.RELEASE"
     id("net.ltgt.errorprone") version "0.8.1"
 }
 
@@ -98,6 +98,7 @@ dependencies {
     implementation("org.threeten:threeten-extra:1.5.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
+    implementation("org.springframework:spring-webflux:5.1.9.RELEASE")
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("com.machinezoo.noexception:noexception:1.3.4")
     implementation("org.msgpack:jackson-dataformat-msgpack:0.8.17")

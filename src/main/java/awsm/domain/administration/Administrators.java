@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Administrators {
+public class Administrators  {
 
   private final EntityManager entityManager;
 
