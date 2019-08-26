@@ -43,7 +43,7 @@ class PlaceOffer implements Command<CharSequence> {
     public CharSequence react(PlaceOffer cmd) {
       var price = new DecimalNumber(cmd.price);
       var offer = new Offer(price);
-      offers.save(offer);
+      offers.add(offer);
       return new HashId(offer.id());
     }
   }

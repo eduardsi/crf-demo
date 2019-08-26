@@ -30,18 +30,18 @@ class OfferTest {
 
     var offerId = tx.wrap(() -> {
       var anOffer = new Offer(new DecimalNumber("10.00"));
-      offers.save(anOffer);
+      offers.add(anOffer);
       return anOffer.id();
     }).get();
 
     threads.spinOff(tx.wrap(() -> {
-      var offer = offers.findById(offerId).orElseThrow();
+      var offer = offers.singleById(offerId).orElseThrow();
       offer.raiseBy(new DecimalNumber("10.00"));
       threads.sync();
     }));
 
     threads.spinOff(tx.wrap(() -> {
-      var offer = offers.findById(offerId).orElseThrow();
+      var offer = offers.singleById(offerId).orElseThrow();
       offer.accept();
       threads.sync();
     }));

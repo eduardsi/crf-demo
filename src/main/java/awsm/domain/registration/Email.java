@@ -112,7 +112,7 @@ public class Email implements Serializable {
 
       @Override
       public boolean guaranteed(Email email) {
-        return members.findByEmail(email).isEmpty();
+        return members.singleByEmail(email).isEmpty();
       }
 
     }

@@ -106,10 +106,10 @@ class Register implements Command<CharSequence> {
                   email.memoized()));
 
       var member = new Member(name, registrationEmail);
-      members.save(member);
+      members.add(member);
 
       var admin = new Administrator(member.id());
-      administrators.save(admin);
+      administrators.add(admin);
 
       var welcome = new Welcome(member.id());
       welcome.schedule();
@@ -138,7 +138,7 @@ class Register implements Command<CharSequence> {
 
       @Override
       public ReturnsNothing react(Welcome cmd) {
-        var member = members.findById(cmd.memberId).orElseThrow();
+        var member = members.singleById(cmd.memberId).orElseThrow();
         System.out.printf("Sending email to %s: Welcome to the Matrix, %s", member.email(), member.name());
         return NOTHING;
       }

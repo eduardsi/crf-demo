@@ -30,7 +30,7 @@ class GrantPermission implements Command<ReturnsNothing> {
 
     @Override
     public ReturnsNothing react(GrantPermission cmd) {
-      var admin = admins.findById(cmd.adminId).orElseThrow();
+      var admin = admins.singleById(cmd.adminId).orElseThrow();
       admin.grant(Permission.toDo(cmd.operation));
       return NOTHING;
     }

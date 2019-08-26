@@ -17,8 +17,7 @@ import javax.persistence.Version;
 public class Offer {
 
   enum Status {
-    PENDING, ACCEPTED;
-
+    PENDING, ACCEPTED
   }
 
   @Id

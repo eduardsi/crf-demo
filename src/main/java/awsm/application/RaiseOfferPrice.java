@@ -42,7 +42,7 @@ class RaiseOfferPrice implements Command<BigDecimal> {
     @Override
     public BigDecimal react(RaiseOfferPrice cmd) {
       var offerId = new UnhashId(cmd.offerId).asLong();
-      var offer = offers.findById(offerId).orElseThrow();
+      var offer = offers.singleById(offerId).orElseThrow();
       var ratio = new DecimalNumber(cmd.ratio);
       offer.raiseBy(ratio);
       return offer.price().asDecimal();

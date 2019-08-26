@@ -45,7 +45,7 @@ class AcceptOffer implements Command<ReturnsNothing> {
     @Override
     public ReturnsNothing react(AcceptOffer cmd) {
       var offerId = new UnhashId(cmd.offerId).asLong();
-      var offer = offers.findById(offerId).orElseThrow();
+      var offer = offers.singleById(offerId).orElseThrow();
 
       var limit = new DecimalNumber(cmd.limit);
       var withinALimit = limit.isEqualOrGreaterThan(offer.price());

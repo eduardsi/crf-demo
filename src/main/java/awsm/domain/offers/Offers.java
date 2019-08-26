@@ -1,15 +1,23 @@
 package awsm.domain.offers;
 
 import java.util.Optional;
-import org.springframework.data.repository.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import javax.persistence.EntityManager;
+import org.springframework.stereotype.Component;
 
-@Transactional(propagation = Propagation.MANDATORY)
-public interface Offers extends Repository<Offer, Long> {
+@Component
+public class Offers {
 
-  Optional<Offer> findById(Long id);
+  private final EntityManager entityManager;
 
-  void save(Offer offer);
+  public Offers(EntityManager entityManager) {
+    this.entityManager = entityManager;
+  }
 
+  public Optional<Offer> singleById(Long id) {
+    return Optional.ofNullable(entityManager.find(Offer.class, id));
+  }
+
+  public void add(Offer offer) {
+    entityManager.persist(offer);
+  }
 }
