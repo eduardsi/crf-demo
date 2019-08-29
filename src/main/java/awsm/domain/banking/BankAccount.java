@@ -63,15 +63,15 @@ public class BankAccount {
   }
 
   public Transaction withdraw(DecimalNumber amount) {
-    new IsOpen().enforce();
+    new EnforceIsOpen();
     var tx = transactions.withdrawal(amount);
-    new BalanceIsPositive().enforce();
-    new WithdrawalLimitNotExceeded().enforce();
+    new EnforcePositiveBalance();
+    new EnforceWithdrawalLimitNotExceeded();
     return tx;
   }
 
   public Transaction deposit(DecimalNumber amount) {
-    new IsOpen().enforce();
+    new EnforceIsOpen();
     return transactions.deposit(amount);
   }
 
@@ -91,8 +91,8 @@ public class BankAccount {
     return requireNonNull(id, "ID is null");
   }
 
-  private class IsOpen {
-    void enforce() {
+  private class EnforceIsOpen {
+    private EnforceIsOpen() {
       checkState(isOpen(), "Account is closed.");
     }
 
@@ -101,28 +101,32 @@ public class BankAccount {
     }
   }
 
-  private class BalanceIsPositive {
-    void enforce() {
-      var balanceIsPositive = transactions.sum().isEqualOrGreaterThan(ZERO);
-      checkState(balanceIsPositive, "Not enough funds available on your account.");
+  private class EnforcePositiveBalance {
+    private EnforcePositiveBalance() {
+      checkState(isPositiveBalance(), "Not enough funds available on your account.");
+    }
+
+    private boolean isPositiveBalance() {
+      return transactions.sum().isEqualOrGreaterThan(ZERO);
     }
   }
 
-  private class WithdrawalLimitNotExceeded {
-    void enforce() {
+  private class EnforceWithdrawalLimitNotExceeded {
+    private EnforceWithdrawalLimitNotExceeded() {
       var withdrawnToday = totalWithdrawn(now(clock()));
       var dailyLimit = withdrawalLimit.dailyLimit();
       var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
       checkState(withinDailyLimit, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
-
-    private DecimalNumber totalWithdrawn(LocalDate someDay) {
-      return transactions.sumIf(
-          and(
-              tx -> tx.isWithdrawal(),
-              tx -> tx.isBooked(someDay)))
-          .abs();
-    }
   }
+
+  private DecimalNumber totalWithdrawn(LocalDate someDay) {
+    return transactions.sumIf(
+        and(
+            tx -> tx.isWithdrawal(),
+            tx -> tx.isBooked(someDay)))
+        .abs();
+  }
+}
 
 }
