@@ -3,15 +3,13 @@ package awsm.domain.banking;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.time.temporal.ChronoUnit.MINUTES;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
 
 import awsm.domain.offers.DecimalNumber;
+import awsm.infra.media.Media;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.json.JsonObject;
 import org.threeten.extra.LocalDateRange;
 
 class BankStatement {
@@ -42,16 +40,10 @@ class BankStatement {
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  public String json() {
-    var self = createObjectBuilder();
-    self.add("startingBalance", startingBalance.json());
-    self.add("closingBalance", closingBalance.json());
-
-    var children = createArrayBuilder();
-    entries.forEach(txEntry -> children.add(txEntry.json()));
-    self.add("transactions", children);
-
-    return self.build().toString();
+  public void printTo(Media media) {
+    media.print("startingBalance", nested -> startingBalance.printTo(nested));
+    media.print("closingBalance", nested -> closingBalance.printTo(nested));
+    media.print("transactions", entries, (nested, entry) -> entry.printTo(nested));
   }
 
   static class TxEntry {
@@ -71,13 +63,11 @@ class BankStatement {
       this.balance = balance;
     }
 
-    private JsonObject json() {
-      var self = createObjectBuilder();
-      self.add("time", time.format(ISO_LOCAL_DATE_TIME));
-      self.add("withdrawal", withdrawal.toString());
-      self.add("deposit", deposit.toString());
-      self.add("balance", balance.toString());
-      return self.build();
+    private void printTo(Media media) {
+      media.print("time", time.format(ISO_LOCAL_DATE_TIME));
+      media.print("withdrawal", withdrawal.toString());
+      media.print("deposit", deposit.toString());
+      media.print("balance", balance.toString());
     }
   }
 
@@ -91,11 +81,11 @@ class BankStatement {
       this.date = date;
     }
 
-    private JsonObject json() {
-      var self = createObjectBuilder();
-      self.add("amount", amount.toString());
-      self.add("date", date.format(ISO_DATE));
-      return self.build();
+    private void printTo(Media media) {
+      media.print("amount", amount.toString());
+      media.print("date", date.format(ISO_DATE));
     }
+
+
   }
 }

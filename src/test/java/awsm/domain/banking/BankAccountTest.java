@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 import awsm.domain.offers.DecimalNumber;
+import awsm.infra.media.JsonMedia;
 import java.time.LocalDate;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +43,8 @@ class BankAccountTest {
     offset(ofDays(1));
     account.withdraw(new DecimalNumber("2.00"));
 
-    var statement = account.statement(from, to).json();
+    var media = new JsonMedia();
+    account.statement(from, to).printTo(media);
     var expected = """
       {
         "startingBalance": {
@@ -70,7 +72,7 @@ class BankAccountTest {
        }
     """;
 
-    assertEquals(expected, statement, JSONCompareMode.STRICT);
+    assertEquals(expected, "" + media, JSONCompareMode.STRICT);
   }
 
   @Test
