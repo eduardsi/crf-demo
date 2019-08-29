@@ -1,49 +1,40 @@
 package awsm.domain.banking;
 
-import static awsm.domain.banking.Transaction.Type.DEPOSIT;
-import static awsm.domain.banking.Transaction.Type.WITHDRAW;
-import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.common.collect.ImmutableList.copyOf;
 
 import awsm.domain.offers.DecimalNumber;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import one.util.streamex.StreamEx;
-import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
-  private List<Transaction> transactions;
+  private Collection<Transaction> transactions;
 
   Transactions(List<Transaction> transactions) {
-    this.transactions = transactions;
+    this.transactions = copyOf(transactions);
   }
 
-  Transaction withdrawal(DecimalNumber amount) {
-    var tx = new Transaction(WITHDRAW, amount);
-    transactions.add(tx);
-    return tx;
+  Transactions thatAre(Predicate<Transaction> condition) {
+    return new Transactions(stream().filter(condition).toList());
   }
 
-  Transaction deposit(DecimalNumber amount) {
-    var tx = new Transaction(DEPOSIT, amount);
-    transactions.add(tx);
-    return tx;
+  DecimalNumber balance(DecimalNumber startingBalance, BiConsumer<DecimalNumber, Transaction> balanceConsumer) {
+    return stream().foldLeft(startingBalance, (runningBalance, tx) -> {
+      var newBalance = tx.apply(runningBalance);
+      balanceConsumer.accept(newBalance, tx);
+      return newBalance;
+    });
   }
 
-  Transactions within(LocalDateRange dateRange) {
-    return new Transactions(transactions.stream().filter(tx -> tx.isBookedWithin(dateRange)).collect(toImmutableList()));
+  DecimalNumber balance() {
+    return balance(DecimalNumber.ZERO, (decimalNumber, tx) -> {});
   }
 
-  StreamEx<Transaction> stream() {
-    return StreamEx.of(transactions.stream());
-  }
-
-  DecimalNumber sum() {
-    return sumIf(tx -> true);
-  }
-
-  DecimalNumber sumIf(Predicate<Transaction> condition) {
-    return stream().filter(condition).foldRight(DecimalNumber.ZERO, Transaction::apply);
+  private StreamEx<Transaction> stream() {
+    return StreamEx.of(transactions);
   }
 
 }

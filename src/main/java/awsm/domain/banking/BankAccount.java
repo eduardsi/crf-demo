@@ -1,9 +1,12 @@
 package awsm.domain.banking;
 
+import static awsm.domain.banking.Transaction.Type.DEPOSIT;
+import static awsm.domain.banking.Transaction.Type.WITHDRAWAL;
 import static awsm.domain.offers.DecimalNumber.ZERO;
 import static awsm.infra.time.TimeMachine.clock;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.and;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static java.time.LocalDate.now;
 import static java.util.Objects.requireNonNull;
 
@@ -22,7 +25,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OrderColumn;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 @Entity
@@ -46,10 +48,7 @@ public class BankAccount {
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
-  private List<Transaction> tx = new ArrayList<>();
-
-  @Transient
-  private transient Transactions transactions = new Transactions(tx);
+  private List<Transaction> transactions = new ArrayList<>();
 
   @Version
   private long version;
@@ -62,25 +61,35 @@ public class BankAccount {
   private BankAccount() {
   }
 
+  // unfortunately, I can't persist Transactions in Hibernate :(  only Lists, ArrayList and other crap.
+  private Transactions transactions() {
+    return new Transactions(copyOf(transactions));
+  }
+
   public Transaction withdraw(DecimalNumber amount) {
-    new EnforceIsOpen();
-    var tx = transactions.withdrawal(amount);
+    new EnforceOpen();
+
+    var transaction = new Transaction(WITHDRAWAL, amount);
+    transactions.add(transaction);
+
     new EnforcePositiveBalance();
     new EnforceWithdrawalLimitNotExceeded();
-    return tx;
+    return transaction;
   }
 
   public Transaction deposit(DecimalNumber amount) {
-    new EnforceIsOpen();
-    return transactions.deposit(amount);
+    new EnforceOpen();
+    var transaction = new Transaction(DEPOSIT, amount);
+    transactions.add(transaction);
+    return transaction;
   }
 
   public DecimalNumber balance() {
-    return transactions.sum();
+    return transactions().balance();
   }
 
   public BankStatement statement(LocalDate from, LocalDate to) {
-    return new BankStatement(from, to, transactions);
+    return new BankStatement(from, to, transactions());
   }
 
   public void close() {
@@ -91,8 +100,8 @@ public class BankAccount {
     return requireNonNull(id, "ID is null");
   }
 
-  private class EnforceIsOpen {
-    private EnforceIsOpen() {
+  private class EnforceOpen {
+    private EnforceOpen() {
       checkState(isOpen(), "Account is closed.");
     }
 
@@ -107,7 +116,7 @@ public class BankAccount {
     }
 
     private boolean isPositiveBalance() {
-      return transactions.sum().isEqualOrGreaterThan(ZERO);
+      return transactions().balance().isEqualOrGreaterThan(ZERO);
     }
   }
 
@@ -121,10 +130,11 @@ public class BankAccount {
   }
 
   private DecimalNumber totalWithdrawn(LocalDate someDay) {
-    return transactions.sumIf(
+    return transactions().thatAre(
         and(
-            tx -> tx.isWithdrawal(),
-            tx -> tx.isBooked(someDay)))
+            tx -> tx.type() == WITHDRAWAL,
+            tx -> tx.bookingDate().isEqual(someDay)))
+        .balance()
         .abs();
   }
 }

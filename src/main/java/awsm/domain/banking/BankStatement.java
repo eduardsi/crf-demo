@@ -1,5 +1,7 @@
 package awsm.domain.banking;
 
+import static awsm.domain.banking.Transaction.bookedBefore;
+import static awsm.domain.banking.Transaction.bookedDuring;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -10,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.threeten.extra.LocalDateRange;
 
 class BankStatement {
 
@@ -21,23 +22,21 @@ class BankStatement {
   private final Balance startingBalance;
 
   BankStatement(LocalDate from, LocalDate to, Transactions transactions) {
-    var startingBalance = transactions.within(LocalDateRange.ofUnboundedStart(from)).sum();
-
+    var startingBalance = transactions.thatAre(bookedBefore(from)).balance();
     var closingBalance = transactions
-        .within(LocalDateRange.ofClosed(from, to))
-        .stream()
-        .foldLeft(startingBalance, (balance, tx) -> {
-          var runningBalance = tx.apply(balance);
-          entries.add(new TxEntry(
-              tx.bookingTime(),
-              tx.amount().withdrawal(),
-              tx.amount().deposit(),
-              runningBalance));
-          return runningBalance;
-        });
+        .thatAre(bookedDuring(from, to))
+        .balance(startingBalance, (balance, tx) -> enter(tx, balance));
 
     this.startingBalance = new Balance(from, startingBalance);
     this.closingBalance = new Balance(to, closingBalance);
+  }
+
+  private void enter(Transaction tx, DecimalNumber runningBalance) {
+    entries.add(new TxEntry(
+        tx.bookingTime(),
+        tx.amount().withdrawal(),
+        tx.amount().deposit(),
+        runningBalance));
   }
 
   public void printTo(Media media) {

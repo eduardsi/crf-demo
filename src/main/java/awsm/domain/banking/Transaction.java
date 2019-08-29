@@ -2,14 +2,12 @@ package awsm.domain.banking;
 
 import static awsm.domain.offers.DecimalNumber.ZERO;
 import static awsm.infra.time.TimeMachine.clock;
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 import awsm.domain.offers.DecimalNumber;
 import awsm.infra.hibernate.HibernateConstructor;
-import awsm.infra.media.Media;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.function.Predicate;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -24,27 +22,21 @@ class Transaction {
       DecimalNumber apply(DecimalNumber amount, DecimalNumber balance) {
         return balance.plus(amount);
       }
-
-      @Override
-      public String toString() {
-        return "deposit";
-      }
     },
 
-    WITHDRAW {
+    WITHDRAWAL {
       @Override
       DecimalNumber apply(DecimalNumber amount, DecimalNumber balance) {
         return balance.minus(amount);
-      }
-
-      @Override
-      public String toString() {
-        return "withdrawal";
       }
     };
 
     abstract DecimalNumber apply(DecimalNumber amount, DecimalNumber balance);
 
+    @Override
+    public String toString() {
+      return name().toLowerCase();
+    }
   }
 
   private DecimalNumber amount;
@@ -63,38 +55,32 @@ class Transaction {
   private Transaction() {
   }
 
-  void printTo(Media nested) {
-    nested.print("time", bookingTime.truncatedTo(MINUTES).format(ISO_DATE_TIME));
-    nested.print(type.toString(), amount.toString());
-  }
-
   LocalDateTime bookingTime() {
     return bookingTime;
+  }
+
+  LocalDate bookingDate() {
+    return bookingTime.toLocalDate();
   }
 
   Amount amount() {
     return new Amount();
   }
 
-  boolean isWithdrawal() {
-    return type == Type.WITHDRAW;
-  }
-
-  boolean isDeposit() {
-    return type == Type.DEPOSIT;
-  }
-
-  boolean isBooked(LocalDate someDay) {
-    return bookingTime.toLocalDate().isEqual(someDay);
-  }
-
-  boolean isBookedWithin(LocalDateRange dateRange) {
-    var bookingDate = bookingTime.toLocalDate();
-    return dateRange.contains(bookingDate);
+  Type type() {
+    return type;
   }
 
   DecimalNumber apply(DecimalNumber balance) {
     return type.apply(amount, balance);
+  }
+
+  static Predicate<Transaction> bookedBefore(LocalDate date) {
+    return tx -> LocalDateRange.ofUnboundedStart(date).contains(tx.bookingDate());
+  }
+
+  static Predicate<Transaction> bookedDuring(LocalDate from, LocalDate to) {
+    return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate());
   }
 
   class Amount {
@@ -103,11 +89,11 @@ class Transaction {
     }
 
     DecimalNumber withdrawal() {
-      return isWithdrawal() ? amount : ZERO;
+      return type == Type.WITHDRAWAL ? amount : ZERO;
     }
 
     DecimalNumber deposit() {
-      return isDeposit() ? amount : ZERO;
+      return type == Type.DEPOSIT ? amount : ZERO;
     }
   }
 
