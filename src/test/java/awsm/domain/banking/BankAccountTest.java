@@ -95,7 +95,7 @@ class BankAccountTest {
 
     var e = assertThrows(IllegalStateException.class, () ->
         account.withdraw(new DecimalNumber("1.00")));
-    assertThat(e).hasMessage("Cannot withdraw funds from closed account.");
+    assertThat(e).hasMessage("Account is closed.");
   }
 
   @Test
@@ -106,7 +106,7 @@ class BankAccountTest {
     var e = assertThrows(IllegalStateException.class, () ->
         account.deposit(new DecimalNumber("100.00"))
     );
-    assertThat(e).hasMessage("Cannot deposit funds to closed account.");
+    assertThat(e).hasMessage("Account is closed.");
   }
 
   @Test
@@ -116,7 +116,7 @@ class BankAccountTest {
     var e = assertThrows(IllegalStateException.class, () ->
         account.withdraw(new DecimalNumber("1.00")));
 
-    assertThat(e).hasMessage("Cannot withdraw more funds than available on your account.");
+    assertThat(e).hasMessage("Not enough funds available on your account.");
   }
 
   @Test
@@ -127,7 +127,7 @@ class BankAccountTest {
     var e = assertThrows(IllegalStateException.class, () ->
         account.withdraw(new DecimalNumber("101.00")));
 
-    assertThat(e).hasMessage("Cannot withdraw funds. Daily withdrawal limit (100.00) reached.");
+    assertThat(e).hasMessage("Daily withdrawal limit (100.00) reached.");
   }
 
   private WithdrawalLimit hundredADay() {

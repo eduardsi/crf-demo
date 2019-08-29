@@ -9,21 +9,37 @@ import static javax.json.Json.createObjectBuilder;
 import awsm.domain.offers.DecimalNumber;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.json.JsonObject;
+import org.threeten.extra.LocalDateRange;
 
-public class BankStatement {
+class BankStatement {
 
-  private final Collection<Tx> transactions;
+  private final Collection<TxEntry> entries = new ArrayList<>();
 
   private final Balance closingBalance;
 
   private final Balance startingBalance;
 
-  BankStatement(Balance startingBalance, Balance closingBalance, Collection<Tx> transactions) {
-    this.startingBalance = startingBalance;
-    this.closingBalance = closingBalance;
-    this.transactions = transactions;
+  BankStatement(LocalDate from, LocalDate to, Transactions transactions) {
+    var startingBalance = transactions.within(LocalDateRange.ofUnboundedStart(from)).sum();
+
+    var closingBalance = transactions
+        .within(LocalDateRange.ofClosed(from, to))
+        .stream()
+        .foldLeft(startingBalance, (balance, tx) -> {
+          var runningBalance = tx.apply(balance);
+          entries.add(new TxEntry(
+              tx.bookingTime(),
+              tx.amount().withdrawal(),
+              tx.amount().deposit(),
+              runningBalance));
+          return runningBalance;
+        });
+
+    this.startingBalance = new Balance(from, startingBalance);
+    this.closingBalance = new Balance(to, closingBalance);
   }
 
   public String json() {
@@ -32,13 +48,13 @@ public class BankStatement {
     self.add("closingBalance", closingBalance.json());
 
     var children = createArrayBuilder();
-    transactions.forEach(tx -> children.add(tx.json()));
+    entries.forEach(txEntry -> children.add(txEntry.json()));
     self.add("transactions", children);
 
     return self.build().toString();
   }
 
-  static class Tx {
+  static class TxEntry {
 
     private final LocalDateTime time;
 
@@ -48,7 +64,7 @@ public class BankStatement {
 
     private final DecimalNumber balance;
 
-    Tx(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
+    TxEntry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;

@@ -7,8 +7,6 @@ import static com.google.common.base.Predicates.and;
 import static java.time.LocalDate.now;
 import static java.util.Objects.requireNonNull;
 
-import awsm.domain.banking.BankStatement.Balance;
-import awsm.domain.banking.BankStatement.Tx;
 import awsm.domain.offers.DecimalNumber;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.time.LocalDate;
@@ -24,8 +22,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OrderColumn;
+import javax.persistence.Transient;
 import javax.persistence.Version;
-import org.threeten.extra.LocalDateRange;
 
 @Entity
 public class BankAccount {
@@ -48,7 +46,10 @@ public class BankAccount {
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
-  private List<Transaction> transactions = new ArrayList<>();
+  private List<Transaction> tx = new ArrayList<>();
+
+  @Transient
+  private transient Transactions transactions = new Transactions(tx);
 
   @Version
   private long version;
@@ -61,76 +62,25 @@ public class BankAccount {
   private BankAccount() {
   }
 
-  private Transactions transactions() {
-    return new Transactions(this.transactions);
-  }
-
   public Transaction withdraw(DecimalNumber amount) {
-    checkState(!isClosed(), "Cannot withdraw funds from closed account.");
-    var tx = transactions().withdrawal(amount);
-    ensurePositiveBalance();
-    ensureWithdrawalLimitIsNotExceeded();
+    new IsOpen().enforce();
+    var tx = transactions.withdrawal(amount);
+    new BalanceIsPositive().enforce();
+    new WithdrawalLimitNotExceeded().enforce();
     return tx;
   }
 
   public Transaction deposit(DecimalNumber amount) {
-    checkState(!isClosed(), "Cannot deposit funds to closed account.");
-    return transactions().deposit(amount);
-  }
-
-  private boolean isClosed() {
-    return status.equals(Status.CLOSED);
-  }
-
-  private void ensurePositiveBalance() {
-    checkState(transactions().sum().isEqualOrGreaterThan(ZERO),
-        "Cannot withdraw more funds than available on your account.");
-  }
-
-  private void ensureWithdrawalLimitIsNotExceeded() {
-    var withdrawnToday = totalWithdrawn(now(clock()));
-    var dailyLimit = withdrawalLimit.dailyLimit();
-    var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
-    checkState(withinDailyLimit,
-        "Cannot withdraw funds. Daily withdrawal limit (%s) reached.", dailyLimit);
-  }
-
-  private DecimalNumber totalWithdrawn(LocalDate someDay) {
-    return transactions().sumIf(
-        and(
-            tx -> tx.isWithdrawal(),
-            tx -> tx.isBooked(someDay)))
-        .abs();
+    new IsOpen().enforce();
+    return transactions.deposit(amount);
   }
 
   public DecimalNumber balance() {
-    return transactions().sum();
+    return transactions.sum();
   }
 
   public BankStatement statement(LocalDate from, LocalDate to) {
-
-    var transactionsForStatement = new ArrayList<Tx>();
-
-    var startingBalance = transactions().within(LocalDateRange.ofUnboundedStart(from)).sum();
-
-    var closingBalance = transactions()
-        .within(LocalDateRange.ofClosed(from, to))
-        .stream()
-        .foldLeft(startingBalance, (balance, tx) -> {
-          var runningBalance = tx.apply(balance);
-          transactionsForStatement.add(new Tx(
-              tx.bookingTime(),
-              tx.amount().withdrawal(),
-              tx.amount().deposit(),
-              runningBalance));
-          return runningBalance;
-        });
-
-    return new BankStatement(
-        new Balance(from, startingBalance),
-        new Balance(to, closingBalance),
-        transactionsForStatement
-    );
+    return new BankStatement(from, to, transactions);
   }
 
   public void close() {
@@ -140,4 +90,39 @@ public class BankAccount {
   public Long id() {
     return requireNonNull(id, "ID is null");
   }
+
+  private class IsOpen {
+    void enforce() {
+      checkState(isOpen(), "Account is closed.");
+    }
+
+    private boolean isOpen() {
+      return status.equals(Status.OPEN);
+    }
+  }
+
+  private class BalanceIsPositive {
+    void enforce() {
+      var balanceIsPositive = transactions.sum().isEqualOrGreaterThan(ZERO);
+      checkState(balanceIsPositive, "Not enough funds available on your account.");
+    }
+  }
+
+  private class WithdrawalLimitNotExceeded {
+    void enforce() {
+      var withdrawnToday = totalWithdrawn(now(clock()));
+      var dailyLimit = withdrawalLimit.dailyLimit();
+      var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
+      checkState(withinDailyLimit, "Daily withdrawal limit (%s) reached.", dailyLimit);
+    }
+
+    private DecimalNumber totalWithdrawn(LocalDate someDay) {
+      return transactions.sumIf(
+          and(
+              tx -> tx.isWithdrawal(),
+              tx -> tx.isBooked(someDay)))
+          .abs();
+    }
+  }
+
 }

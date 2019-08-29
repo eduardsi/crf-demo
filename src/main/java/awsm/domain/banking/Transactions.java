@@ -5,7 +5,6 @@ import static awsm.domain.banking.Transaction.Type.WITHDRAW;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import awsm.domain.offers.DecimalNumber;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
 import one.util.streamex.StreamEx;
@@ -13,7 +12,7 @@ import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
-  private final List<Transaction> transactions;
+  private List<Transaction> transactions;
 
   Transactions(List<Transaction> transactions) {
     this.transactions = transactions;
