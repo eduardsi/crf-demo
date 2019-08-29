@@ -7,6 +7,8 @@ import javax.persistence.Converter;
 
 public class DecimalNumber {
 
+  public static final DecimalNumber ZERO = new DecimalNumber(BigDecimal.ZERO);
+
   private final BigDecimal decimal;
 
   public DecimalNumber(BigDecimal decimal) {
@@ -22,9 +24,18 @@ public class DecimalNumber {
     return new DecimalNumber(mult);
   }
 
-  DecimalNumber plus(DecimalNumber other) {
+  public DecimalNumber plus(DecimalNumber other) {
     var inc = this.decimal.add(other.decimal);
     return new DecimalNumber(inc);
+  }
+
+  public DecimalNumber minus(DecimalNumber other) {
+    var dec = this.decimal.subtract(other.decimal);
+    return new DecimalNumber(dec);
+  }
+
+  public DecimalNumber abs() {
+    return new DecimalNumber(this.decimal.abs());
   }
 
   public boolean isEqualOrGreaterThan(DecimalNumber other) {

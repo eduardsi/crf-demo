@@ -17,15 +17,18 @@ repositories {
     maven {
         url = uri("https://jitpack.io")
     }
+    maven {
+        url = uri("http://repo.spring.io/libs-milestone")
+    }
 }
 
-val springVersion = "2.1.7.RELEASE"
+val springVersion = "2.2.0.M5"
 val guavaVersion = "27.0.1-jre"
 
 plugins {
     java
     jacoco
-    checkstyle
+//    checkstyle
     id("org.springframework.boot") version "2.1.7.RELEASE"
     id("net.ltgt.errorprone") version "0.8.1"
 }
@@ -34,14 +37,15 @@ group = "net.sizovs"
 version = "UNSPECIFIED"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_12
-    targetCompatibility = JavaVersion.VERSION_12
+    sourceCompatibility = JavaVersion.VERSION_13
+    targetCompatibility = JavaVersion.VERSION_13
 }
 
 
-checkstyle {
-    toolVersion = "8.23"
-}
+// doesn't work in Java 13 yet
+//checkstyle {
+//    toolVersion = "8.23"
+//}
 
 tasks {
     "check" {
@@ -50,6 +54,7 @@ tasks {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("--enable-preview")
     options.errorprone {
         disableWarningsInGeneratedCode.set(true)
         disable("TypeParameterUnusedInFormals")
@@ -69,6 +74,12 @@ tasks.withType<Test> {
     timeout.set(Duration.ofMinutes(2))
     useJUnitPlatform()
 }
+
+//tasks.test {
+//    extensions.configure(JacocoTaskExtension::class) {
+//        excludes = listOf("$buildDir/generated")
+//    }
+//}
 
 tasks.jacocoTestCoverageVerification {
     violationRules {
@@ -99,11 +110,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.springframework:spring-webflux:5.1.9.RELEASE")
+    implementation("org.glassfish:javax.json:1.1.4")
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("com.machinezoo.noexception:noexception:1.3.4")
     implementation("org.msgpack:jackson-dataformat-msgpack:0.8.17")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
-    implementation("javax.xml.bind:jaxb-api:2.3.0")
+    implementation("one.util:streamex:0.7.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
 
 

@@ -11,7 +11,8 @@
 .project
 .settings
 .vscode
+out
 bin
 build
-out
+media
 /src/test/resources/application.yml

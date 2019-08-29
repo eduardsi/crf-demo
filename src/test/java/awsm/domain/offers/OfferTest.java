@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import awsm.util.concurrency.Threads;
-import awsm.util.concurrency.Transactions;
+import awsm.util.tx.Transactions;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

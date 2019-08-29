@@ -1,4 +1,4 @@
-package awsm.util.concurrency;
+package awsm.util.tx;
 
 import java.util.function.Supplier;
 import org.springframework.transaction.PlatformTransactionManager;
