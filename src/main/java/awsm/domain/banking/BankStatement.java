@@ -45,7 +45,7 @@ class BankStatement {
     media.print("transactions", entries, (nested, entry) -> entry.printTo(nested));
   }
 
-  static class TxEntry {
+  private static class TxEntry {
 
     private final LocalDateTime time;
 
@@ -55,7 +55,7 @@ class BankStatement {
 
     private final DecimalNumber balance;
 
-    TxEntry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
+    private TxEntry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;
@@ -70,12 +70,12 @@ class BankStatement {
     }
   }
 
-  static class Balance {
+  private static class Balance {
 
     private final DecimalNumber amount;
     private final LocalDate date;
 
-    Balance(LocalDate date, DecimalNumber amount) {
+    private Balance(LocalDate date, DecimalNumber amount) {
       this.amount = amount;
       this.date = date;
     }
