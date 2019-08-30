@@ -15,7 +15,7 @@ import java.util.Collection;
 
 class BankStatement {
 
-  private final Collection<TxEntry> entries = new ArrayList<>();
+  private final Collection<Entry> entries = new ArrayList<>();
 
   private final Balance closingBalance;
 
@@ -32,7 +32,7 @@ class BankStatement {
   }
 
   private void enter(Transaction tx, DecimalNumber balance) {
-    entries.add(new TxEntry(
+    entries.add(new Entry(
         tx.bookingTime(),
         tx.amount().withdrawal(),
         tx.amount().deposit(),
@@ -45,7 +45,7 @@ class BankStatement {
     media.print("transactions", entries, (nested, entry) -> entry.printTo(nested));
   }
 
-  private static class TxEntry {
+  private static class Entry {
 
     private final LocalDateTime time;
 
@@ -55,7 +55,7 @@ class BankStatement {
 
     private final DecimalNumber balance;
 
-    private TxEntry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
+    private Entry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;
