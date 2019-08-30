@@ -31,12 +31,12 @@ class BankStatement {
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void enter(Transaction tx, DecimalNumber runningBalance) {
+  private void enter(Transaction tx, DecimalNumber balance) {
     entries.add(new TxEntry(
         tx.bookingTime(),
         tx.amount().withdrawal(),
         tx.amount().deposit(),
-        runningBalance));
+        balance));
   }
 
   public void printTo(Media media) {
