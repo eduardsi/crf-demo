@@ -18,19 +18,19 @@ class Transactions {
   }
 
   Transactions thatAre(Predicate<Transaction> condition) {
-    return new Transactions(stream().filter(condition).toList());
-  }
-
-  DecimalNumber balance(DecimalNumber startingBalance, BiConsumer<DecimalNumber, Transaction> balanceConsumer) {
-    return stream().foldLeft(startingBalance, (runningBalance, tx) -> {
-      var newBalance = tx.apply(runningBalance);
-      balanceConsumer.accept(newBalance, tx);
-      return newBalance;
-    });
+    return new Transactions(stream().filter(condition).toImmutableList());
   }
 
   DecimalNumber balance() {
-    return balance(DecimalNumber.ZERO, (decimalNumber, tx) -> {});
+    return balance(DecimalNumber.ZERO, (balance, tx) -> {});
+  }
+
+  DecimalNumber balance(DecimalNumber seed, BiConsumer<DecimalNumber, Transaction> consumer) {
+    return stream().foldLeft(seed, (balance, transaction) -> {
+      var newBalance = transaction.apply(balance);
+      consumer.accept(newBalance, transaction);
+      return newBalance;
+    });
   }
 
   private StreamEx<Transaction> stream() {
