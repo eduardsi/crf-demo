@@ -72,7 +72,7 @@ public class BankAccount {
     transactions.add(transaction);
 
     new EnforcePositiveBalance();
-    new EnforceWithdrawalLimitNotExceeded();
+    new EnforceWithdrawalLimits();
     return transaction;
   }
 
@@ -119,8 +119,8 @@ public class BankAccount {
     }
   }
 
-  private class EnforceWithdrawalLimitNotExceeded {
-    private EnforceWithdrawalLimitNotExceeded() {
+  private class EnforceWithdrawalLimits {
+    private EnforceWithdrawalLimits() {
       var withdrawnToday = totalWithdrawn(now(clock()));
       var dailyLimit = withdrawalLimit.dailyLimit();
       var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
