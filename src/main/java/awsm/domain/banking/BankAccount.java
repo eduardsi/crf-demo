@@ -126,15 +126,16 @@ public class BankAccount {
       var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
       checkState(withinDailyLimit, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
-  }
 
-  private DecimalNumber totalWithdrawn(LocalDate someDay) {
-    return transactions().thatAre(
-        and(
-            tx -> tx.type() == WITHDRAWAL,
-            tx -> tx.bookingDate().isEqual(someDay)))
-        .balance()
-        .abs();
+    private DecimalNumber totalWithdrawn(LocalDate someDay) {
+      return transactions().thatAre(
+          and(
+              tx -> tx.type() == WITHDRAWAL,
+              tx -> tx.bookingDate().isEqual(someDay)))
+          .balance()
+          .abs();
+    }
+
   }
 }
 
