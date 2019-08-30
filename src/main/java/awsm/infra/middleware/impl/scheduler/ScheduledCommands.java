@@ -3,10 +3,10 @@ package awsm.infra.middleware.impl.scheduler;
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.STATUS;
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.TOUCH_TIMES;
+import static javax.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,7 +34,7 @@ class ScheduledCommands {
 
     return entityManager
         .createQuery(where)
-        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+        .setLockMode(PESSIMISTIC_WRITE)
         .setMaxResults(limit)
         .getResultStream();
   }
