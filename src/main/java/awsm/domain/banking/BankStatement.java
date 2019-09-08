@@ -39,10 +39,23 @@ class BankStatement {
         balance));
   }
 
+  // alternative: public DTO (if multiple formats),
+  // but package private constructor that accepts entity.
   public void printTo(Media media) {
-    media.print("startingBalance", nested -> startingBalance.printTo(nested));
-    media.print("closingBalance", nested -> closingBalance.printTo(nested));
-    media.print("transactions", entries, (nested, entry) -> entry.printTo(nested));
+    media.print("startingBalance", nested -> {
+      nested.print("amount", startingBalance.amount);
+      nested.print("date", startingBalance.date.format(ISO_DATE));
+    });
+    media.print("closingBalance", nested -> {
+      nested.print("amount", closingBalance.amount);
+      nested.print("date", closingBalance.date.format(ISO_DATE));
+    });
+    media.print("transactions", entries, (nested, entry) -> {
+      nested.print("time", entry.time.format(ISO_LOCAL_DATE_TIME));
+      nested.print("withdrawal", entry.withdrawal);
+      nested.print("deposit", entry.deposit);
+      nested.print("balance", entry.balance);
+    });
   }
 
   private static class Entry {
@@ -62,12 +75,6 @@ class BankStatement {
       this.balance = balance;
     }
 
-    private void printTo(Media media) {
-      media.print("time", time.format(ISO_LOCAL_DATE_TIME));
-      media.print("withdrawal", withdrawal.toString());
-      media.print("deposit", deposit.toString());
-      media.print("balance", balance.toString());
-    }
   }
 
   private static class Balance {
@@ -79,12 +86,6 @@ class BankStatement {
       this.amount = amount;
       this.date = date;
     }
-
-    private void printTo(Media media) {
-      media.print("amount", amount.toString());
-      media.print("date", date.format(ISO_DATE));
-    }
-
 
   }
 }
