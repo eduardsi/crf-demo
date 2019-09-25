@@ -6,7 +6,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
-import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.$;
 import awsm.infra.media.Media;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,7 +31,7 @@ class BankStatement {
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void enter(Transaction tx, DecimalNumber balance) {
+  private void enter(Transaction tx, $ balance) {
     entries.add(new Entry(
         tx.bookingTime(),
         tx.amount().withdrawal(),
@@ -62,13 +62,13 @@ class BankStatement {
 
     private final LocalDateTime time;
 
-    private final DecimalNumber withdrawal;
+    private final $ withdrawal;
 
-    private final DecimalNumber deposit;
+    private final $ deposit;
 
-    private final DecimalNumber balance;
+    private final $ balance;
 
-    private Entry(LocalDateTime time, DecimalNumber withdrawal, DecimalNumber deposit, DecimalNumber balance) {
+    private Entry(LocalDateTime time, $ withdrawal, $ deposit, $ balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;
@@ -79,10 +79,10 @@ class BankStatement {
 
   private static class Balance {
 
-    private final DecimalNumber amount;
+    private final $ amount;
     private final LocalDate date;
 
-    private Balance(LocalDate date, DecimalNumber amount) {
+    private Balance(LocalDate date, $ amount) {
       this.amount = amount;
       this.date = date;
     }

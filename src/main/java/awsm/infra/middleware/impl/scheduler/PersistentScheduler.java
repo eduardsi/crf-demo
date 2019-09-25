@@ -45,7 +45,7 @@ class PersistentScheduler implements Scheduler {
 
   private Stream<CompletableFuture> batch() {
     return scheduledCommands
-        .listPendingTouchedLessThanThreeTimes(BATCH_SIZE)
+        .list(BATCH_SIZE)
         .map(c -> c.executeIn(THREAD_POOL));
   }
 

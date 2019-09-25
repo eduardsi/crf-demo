@@ -3,7 +3,7 @@ package awsm.application;
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 import static com.google.common.base.Preconditions.checkState;
 
-import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.$;
 import awsm.domain.offers.Offers;
 import awsm.infra.hashing.UnhashId;
 import awsm.infra.middleware.Command;
@@ -47,8 +47,8 @@ class AcceptOffer implements Command<ReturnsNothing> {
       var offerId = new UnhashId(cmd.offerId).asLong();
       var offer = offers.singleById(offerId).orElseThrow();
 
-      var limit = new DecimalNumber(cmd.limit);
-      var withinALimit = limit.isEqualOrGreaterThan(offer.price());
+      var limit = $.of(cmd.limit);
+      var withinALimit = limit.isGe(offer.price());
 
       checkState(withinALimit, "Offer price is not within a limit (%s/%s)", offer.price(), cmd.limit);
 

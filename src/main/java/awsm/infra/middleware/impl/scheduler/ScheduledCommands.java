@@ -22,15 +22,15 @@ class ScheduledCommands {
     entityManager.persist(command);
   }
 
-  Stream<ScheduledCommand> listPendingTouchedLessThanThreeTimes(int limit) {
-    var criteriaBuilder = entityManager.getCriteriaBuilder();
-    var criteria = criteriaBuilder.createQuery(ScheduledCommand.class);
+  Stream<ScheduledCommand> list(int limit) {
+    var it = entityManager.getCriteriaBuilder();
+    var criteria = it.createQuery(ScheduledCommand.class);
     var root = criteria.from(ScheduledCommand.class);
 
     var where = criteria.where(
-        criteriaBuilder.and(
-          criteriaBuilder.lessThan(root.get(TOUCH_TIMES), 3),
-          criteriaBuilder.equal(root.get(STATUS), PENDING)));
+        it.and(
+          it.lessThan(root.get(TOUCH_TIMES), 3),
+          it.equal(root.get(STATUS), PENDING)));
 
     return entityManager
         .createQuery(where)

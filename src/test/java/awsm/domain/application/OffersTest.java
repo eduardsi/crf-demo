@@ -37,7 +37,7 @@ class OffersTest {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    raise(offerId, "0.50")
+    raise(offerId, "50.00")
         .andExpect(status().isOk())
         .andExpect(content().string("150.00"));
   }

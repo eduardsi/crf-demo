@@ -2,14 +2,14 @@ package awsm.domain.banking;
 
 import static awsm.domain.banking.Transaction.Type.DEPOSIT;
 import static awsm.domain.banking.Transaction.Type.WITHDRAWAL;
-import static awsm.domain.offers.DecimalNumber.ZERO;
+import static awsm.domain.offers.$.ZERO;
 import static awsm.infra.time.TimeMachine.clock;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.and;
 import static java.time.LocalDate.now;
 import static java.util.Objects.requireNonNull;
 
-import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.$;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class BankAccount {
     return new Transactions(transactions);
   }
 
-  public Transaction withdraw(DecimalNumber amount) {
+  public Transaction withdraw($ amount) {
     new EnforceOpen();
 
     var transaction = new Transaction(WITHDRAWAL, amount);
@@ -76,14 +76,14 @@ public class BankAccount {
     return transaction;
   }
 
-  public Transaction deposit(DecimalNumber amount) {
+  public Transaction deposit($ amount) {
     new EnforceOpen();
     var transaction = new Transaction(DEPOSIT, amount);
     transactions.add(transaction);
     return transaction;
   }
 
-  public DecimalNumber balance() {
+  public $ balance() {
     return transactions().balance();
   }
 
@@ -115,7 +115,7 @@ public class BankAccount {
     }
 
     private boolean isPositiveBalance() {
-      return transactions().balance().isEqualOrGreaterThan(ZERO);
+      return transactions().balance().isGe(ZERO);
     }
   }
 
@@ -123,11 +123,11 @@ public class BankAccount {
     private EnforceWithdrawalLimits() {
       var withdrawnToday = totalWithdrawn(now(clock()));
       var dailyLimit = withdrawalLimit.dailyLimit();
-      var withinDailyLimit = dailyLimit.isEqualOrGreaterThan(withdrawnToday);
+      var withinDailyLimit = dailyLimit.isGe(withdrawnToday);
       checkState(withinDailyLimit, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
-    private DecimalNumber totalWithdrawn(LocalDate someDay) {
+    private $ totalWithdrawn(LocalDate someDay) {
       return transactions().thatAre(
           and(
               tx -> tx.type() == WITHDRAWAL,

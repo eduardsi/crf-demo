@@ -28,12 +28,12 @@ public class Offer {
   @Enumerated(EnumType.STRING)
   private Status status = PENDING;
 
-  private DecimalNumber price;
+  private $ price;
 
   @Version
   private long version;
 
-  public Offer(DecimalNumber price) {
+  public Offer($ price) {
     this.price = price;
   }
 
@@ -41,9 +41,8 @@ public class Offer {
   private Offer() {
   }
 
-  public void raiseBy(DecimalNumber ratio) {
-    var increment = this.price.multiply(ratio);
-    this.price = this.price.plus(increment);
+  public void raiseBy($ margin) {
+    this.price = this.price.add(margin);
   }
 
   public void accept() {
@@ -51,7 +50,7 @@ public class Offer {
     this.status = Status.ACCEPTED;
   }
 
-  public DecimalNumber price() {
+  public $ price() {
     return price;
   }
 

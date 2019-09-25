@@ -29,14 +29,14 @@ class OfferTest {
     var tx = new Transactions(txManager);
 
     var offerId = tx.wrap(() -> {
-      var anOffer = new Offer(new DecimalNumber("10.00"));
+      var anOffer = new Offer($.of("10.00"));
       offers.add(anOffer);
       return anOffer.id();
     }).get();
 
     threads.spinOff(tx.wrap(() -> {
       var offer = offers.singleById(offerId).orElseThrow();
-      offer.raiseBy(new DecimalNumber("10.00"));
+      offer.raiseBy($.of("1.00"));
       threads.sync();
     }));
 

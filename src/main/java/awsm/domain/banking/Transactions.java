@@ -2,7 +2,7 @@ package awsm.domain.banking;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 
-import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.$;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -21,11 +21,11 @@ class Transactions {
     return new Transactions(stream().filter(condition).toImmutableList());
   }
 
-  DecimalNumber balance() {
-    return balance(DecimalNumber.ZERO, (balance, tx) -> {});
+  $ balance() {
+    return balance($.ZERO, (balance, tx) -> {});
   }
 
-  DecimalNumber balance(DecimalNumber seed, BiConsumer<DecimalNumber, Transaction> consumer) {
+  $ balance($ seed, BiConsumer<$, Transaction> consumer) {
     return stream().foldLeft(seed, (balance, transaction) -> {
       var newBalance = transaction.apply(balance);
       consumer.accept(newBalance, transaction);

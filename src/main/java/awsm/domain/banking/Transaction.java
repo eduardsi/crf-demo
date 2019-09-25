@@ -1,9 +1,9 @@
 package awsm.domain.banking;
 
-import static awsm.domain.offers.DecimalNumber.ZERO;
+import static awsm.domain.offers.$.ZERO;
 import static awsm.infra.time.TimeMachine.clock;
 
-import awsm.domain.offers.DecimalNumber;
+import awsm.domain.offers.$;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,19 +19,19 @@ class Transaction {
   enum Type {
     DEPOSIT {
       @Override
-      DecimalNumber apply(DecimalNumber amount, DecimalNumber balance) {
-        return balance.plus(amount);
+      $ apply($ amount, $ balance) {
+        return balance.add(amount);
       }
     },
 
     WITHDRAWAL {
       @Override
-      DecimalNumber apply(DecimalNumber amount, DecimalNumber balance) {
-        return balance.minus(amount);
+      $ apply($ amount, $ balance) {
+        return balance.subtract(amount);
       }
     };
 
-    abstract DecimalNumber apply(DecimalNumber amount, DecimalNumber balance);
+    abstract $ apply($ amount, $ balance);
 
     @Override
     public String toString() {
@@ -39,14 +39,14 @@ class Transaction {
     }
   }
 
-  private DecimalNumber amount;
+  private $ amount;
 
   private LocalDateTime bookingTime = LocalDateTime.now(clock());
 
   @Enumerated(EnumType.STRING)
   private Type type;
 
-  Transaction(Type type, DecimalNumber amount) {
+  Transaction(Type type, $ amount) {
     this.type = type;
     this.amount = amount;
   }
@@ -71,7 +71,7 @@ class Transaction {
     return type;
   }
 
-  DecimalNumber apply(DecimalNumber balance) {
+  $ apply($ balance) {
     return type.apply(amount, balance);
   }
 
@@ -88,11 +88,11 @@ class Transaction {
     private Amount() {
     }
 
-    DecimalNumber withdrawal() {
+    $ withdrawal() {
       return type == Type.WITHDRAWAL ? amount : ZERO;
     }
 
-    DecimalNumber deposit() {
+    $ deposit() {
       return type == Type.DEPOSIT ? amount : ZERO;
     }
   }
