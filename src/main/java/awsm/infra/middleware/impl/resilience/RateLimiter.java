@@ -9,15 +9,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 class RateLimiter {
 
+  private final int limit;
   private final Semaphore limiter;
 
-  RateLimiter(int limiter) {
-    this.limiter = new Semaphore(limiter);
+  RateLimiter(int limit) {
+    this.limiter = new Semaphore(limit);
+    this.limit = limit;
   }
 
   <R> R limit(Supplier<R> unlimited) {
     if (!limiter.tryAcquire()) {
-      throw new ThrottlingException(limiter.availablePermits());
+      throw new ThrottlingException(limit);
     }
     try {
       return unlimited.get();
@@ -27,9 +29,9 @@ class RateLimiter {
   }
 
   @ResponseStatus(code = HttpStatus.TOO_MANY_REQUESTS)
-  private static class ThrottlingException extends RuntimeException {
+  static class ThrottlingException extends RuntimeException {
     private ThrottlingException(int maxPermits) {
-      super(format("Reached the maximum number of permitted requests (%s)", maxPermits));
+      super(format("Reached the maximum number of permitted concurrent requests (%s)", maxPermits));
     }
   }
 }

@@ -4,8 +4,8 @@ import static com.machinezoo.noexception.Exceptions.sneak;
 import static com.pivovarit.collectors.ParallelCollectors.parallelToList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.text.CharSequenceLength.hasLength;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -93,10 +93,10 @@ class RegistrationTest {
     }
 
     @Test
-    void returns_a_member_id_upon_completion() throws Exception {
+    void returns_a_hashed_member_id_upon_completion() throws Exception {
       register()
           .andExpect(status().isOk())
-          .andExpect(content().string(anything()));
+          .andExpect(content().string(hasLength(10)));
     }
 
     @Test
