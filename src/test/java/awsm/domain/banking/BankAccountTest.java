@@ -1,16 +1,15 @@
 package awsm.domain.banking;
 
 import static awsm.domain.offers.$.$;
-import static awsm.infra.time.TimeMachine.clock;
 import static awsm.infra.time.TimeMachine.freezeEpoch;
 import static awsm.infra.time.TimeMachine.offset;
+import static awsm.infra.time.TimeMachine.today;
 import static java.time.Duration.ofDays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 import awsm.infra.media.JsonMedia;
-import java.time.LocalDate;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,11 +32,11 @@ class BankAccountTest {
     account.deposit($("100.00"));
 
     offset(ofDays(1));
-    var from = LocalDate.now(clock());
+    var from = today();
     account.deposit($("99.00"));
 
     offset(ofDays(1));
-    var to = LocalDate.now(clock());
+    var to = today();
     account.withdraw($("98.00"));
 
     offset(ofDays(1));
