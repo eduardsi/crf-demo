@@ -47,7 +47,7 @@ class AcceptOffer implements Command<ReturnsNothing> {
       var offerId = new UnhashId(cmd.offerId).asLong();
       var offer = offers.singleById(offerId).orElseThrow();
 
-      var limit = $.of(cmd.limit);
+      var limit = $.$(cmd.limit);
       var withinALimit = limit.isGe(offer.price());
 
       checkState(withinALimit, "Offer price is not within a limit (%s/%s)", offer.price(), cmd.limit);

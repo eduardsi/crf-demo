@@ -41,7 +41,7 @@ class PlaceOffer implements Command<CharSequence> {
 
     @Override
     public CharSequence react(PlaceOffer cmd) {
-      var price = $.of(cmd.price);
+      var price = $.$(cmd.price);
       var offer = new Offer(price);
       offers.add(offer);
       return new HashId(offer.id());

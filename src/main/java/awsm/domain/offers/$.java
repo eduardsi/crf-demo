@@ -29,11 +29,11 @@ public interface $ {
 
   BigDecimal big();
 
-  static $ of(BigDecimal decimal) {
+  static $ $(BigDecimal decimal) {
     return new Const(decimal);
   }
 
-  static $ of(String decimal) {
+  static $ $(String decimal) {
     return new Const(decimal);
   }
 
@@ -87,4 +87,6 @@ public interface $ {
 
     }
   }
+
+
 }

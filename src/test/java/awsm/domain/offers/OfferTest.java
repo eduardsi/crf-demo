@@ -1,5 +1,6 @@
 package awsm.domain.offers;
 
+import static awsm.domain.offers.$.$;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,14 +30,14 @@ class OfferTest {
     var tx = new Transactions(txManager);
 
     var offerId = tx.wrap(() -> {
-      var anOffer = new Offer($.of("10.00"));
+      var anOffer = new Offer($("10.00"));
       offers.add(anOffer);
       return anOffer.id();
     }).get();
 
     threads.spinOff(tx.wrap(() -> {
       var offer = offers.singleById(offerId).orElseThrow();
-      offer.raiseBy($.of("1.00"));
+      offer.raiseBy($("1.00"));
       threads.sync();
     }));
 

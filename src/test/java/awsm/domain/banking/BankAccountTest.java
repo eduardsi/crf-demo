@@ -1,5 +1,6 @@
 package awsm.domain.banking;
 
+import static awsm.domain.offers.$.$;
 import static awsm.infra.time.TimeMachine.clock;
 import static awsm.infra.time.TimeMachine.freezeEpoch;
 import static awsm.infra.time.TimeMachine.offset;
@@ -8,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
-import awsm.domain.offers.$;
 import awsm.infra.media.JsonMedia;
 import java.time.LocalDate;
 import org.json.JSONException;
@@ -30,18 +30,18 @@ class BankAccountTest {
     var account = new BankAccount(hundredADay());
 
     offset(ofDays(1));
-    account.deposit($.of("100.00"));
+    account.deposit($("100.00"));
 
     offset(ofDays(1));
     var from = LocalDate.now(clock());
-    account.deposit($.of("99.00"));
+    account.deposit($("99.00"));
 
     offset(ofDays(1));
     var to = LocalDate.now(clock());
-    account.withdraw($.of("98.00"));
+    account.withdraw($("98.00"));
 
     offset(ofDays(1));
-    account.withdraw($.of("2.00"));
+    account.withdraw($("2.00"));
 
     var media = new JsonMedia();
     account.statement(from, to).printTo(media);
@@ -80,23 +80,23 @@ class BankAccountTest {
 
     var account = new BankAccount(hundredADay());
 
-    var depositTx = account.deposit($.of("100.00"));
+    var depositTx = account.deposit($("100.00"));
     assertThat(depositTx).isNotNull();
 
-    var withdrawalTx = account.withdraw($.of("50.00"));
+    var withdrawalTx = account.withdraw($("50.00"));
     assertThat(withdrawalTx).isNotNull();
 
-    assertThat(account.balance()).isEqualTo($.of("50.00"));
+    assertThat(account.balance()).isEqualTo($("50.00"));
   }
 
   @Test
   void cannot_withdraw_from_a_closed_account() {
     var account = new BankAccount(hundredADay());
-    account.deposit($.of("100.00"));
+    account.deposit($("100.00"));
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw($.of("1.00")));
+        account.withdraw($("1.00")));
     assertThat(e).hasMessage("Account is closed.");
   }
 
@@ -106,7 +106,7 @@ class BankAccountTest {
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.deposit($.of("100.00"))
+        account.deposit($("100.00"))
     );
     assertThat(e).hasMessage("Account is closed.");
   }
@@ -116,7 +116,7 @@ class BankAccountTest {
     var account = new BankAccount(hundredADay());
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw($.of("1.00")));
+        account.withdraw($("1.00")));
 
     assertThat(e).hasMessage("Not enough funds available on your account.");
   }
@@ -124,9 +124,9 @@ class BankAccountTest {
   @Test
   void cannot_withdraw_more_than_allowed_by_the_daily_limit() {
     var account = new BankAccount(hundredADay());
-    account.deposit($.of("1000.00"));
+    account.deposit($("1000.00"));
 
-    var e = assertThrows(IllegalStateException.class, () -> account.withdraw($.of("101.00")));
+    var e = assertThrows(IllegalStateException.class, () -> account.withdraw($("101.00")));
 
     assertThat(e).hasMessage("Daily withdrawal limit (100.00) reached.");
   }
@@ -140,7 +140,7 @@ class BankAccountTest {
   }
 
   private WithdrawalLimit hundredADay() {
-    var dailyLimit = $.of("100.00");
+    var dailyLimit = $("100.00");
     return new WithdrawalLimit(dailyLimit);
   }
 
