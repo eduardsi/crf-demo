@@ -93,7 +93,7 @@ class BankAccountTest {
   void cannot_withdraw_from_a_closed_account() {
     var account = new BankAccount(hundredADay());
     account.deposit($.of("100.00"));
-    account.close();
+    account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
         account.withdraw($.of("1.00")));
@@ -103,7 +103,7 @@ class BankAccountTest {
   @Test
   void cannot_deposit_if_closed() {
     var account = new BankAccount(hundredADay());
-    account.close();
+    account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
         account.deposit($.of("100.00"))
@@ -126,15 +126,29 @@ class BankAccountTest {
     var account = new BankAccount(hundredADay());
     account.deposit($.of("1000.00"));
 
-    var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw($.of("101.00")));
+    var e = assertThrows(IllegalStateException.class, () -> account.withdraw($.of("101.00")));
 
     assertThat(e).hasMessage("Daily withdrawal limit (100.00) reached.");
+  }
+
+  @Test
+  void cannot_close_if_some_unsatisfied_obligations_exist() {
+    var account = new BankAccount(hundredADay());
+
+    var e = assertThrows(IllegalStateException.class, () -> account.close(new SomeUnsatisfiedObligations()));
+    assertThat(e).hasMessage("Bank account cannot be closed because a holder has unsatified obligations");
   }
 
   private WithdrawalLimit hundredADay() {
     var dailyLimit = $.of("100.00");
     return new WithdrawalLimit(dailyLimit);
+  }
+
+  private static class SomeUnsatisfiedObligations implements UnsatisfiedObligations {
+    @Override
+    public boolean exist() {
+      return true;
+    }
   }
 
 }

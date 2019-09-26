@@ -91,7 +91,8 @@ public class BankAccount {
     return new BankStatement(from, to, transactions());
   }
 
-  public void close() {
+  public void close(UnsatisfiedObligations unsatisfiedObligations) {
+    checkState(!unsatisfiedObligations.exist(), "Bank account cannot be closed because a holder has unsatified obligations");
     status = Status.CLOSED;
   }
 
