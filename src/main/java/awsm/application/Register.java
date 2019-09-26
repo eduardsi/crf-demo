@@ -7,11 +7,10 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 import awsm.domain.administration.Administrator;
 import awsm.domain.administration.Administrators;
 import awsm.domain.registration.Email;
-import awsm.domain.registration.Email.NotBlacklisted;
-import awsm.domain.registration.Email.Unique;
 import awsm.domain.registration.Member;
 import awsm.domain.registration.Members;
 import awsm.domain.registration.Name;
+import awsm.domain.registration.RegistrationEmail;
 import awsm.infra.hashing.HashId;
 import awsm.infra.jackson.JacksonConstructor;
 import awsm.infra.middleware.Command;
@@ -100,10 +99,7 @@ class Register implements Command<CharSequence> {
           ).check(cmd);
 
       var name = new Name(cmd.firstName, cmd.lastName);
-      var registrationEmail =
-          new NotBlacklisted(blacklist,
-              new Unique(uniqueness,
-                  email.memoized()));
+      var registrationEmail = new RegistrationEmail(email.memoized(), uniqueness, blacklist);
 
       var member = new Member(name, registrationEmail);
       members.add(member);

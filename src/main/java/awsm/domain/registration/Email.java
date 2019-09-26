@@ -29,7 +29,6 @@ public class Email implements Serializable {
 
   @HibernateConstructor
   private Email() {
-
   }
 
   @Override
@@ -52,9 +51,9 @@ public class Email implements Serializable {
   }
 
   @Embeddable
-  public static class Unique extends Email {
+  static class Unique extends Email {
 
-    public Unique(Uniqueness uniqueness, Email email) {
+    Unique(Uniqueness uniqueness, Email email) {
       super(email);
       if (!uniqueness.guaranteed(this)) {
         throw new NotUniqueException(this);
@@ -75,9 +74,9 @@ public class Email implements Serializable {
 
 
   @Embeddable
-  public static class NotBlacklisted extends Email {
+  static class NotBlacklisted extends Email {
 
-    public NotBlacklisted(Blacklist blacklist, Unique email) {
+    NotBlacklisted(Blacklist blacklist, Email email) {
       super(email);
       if (!blacklist.allows(email)) {
         throw new BlacklistedException(email);

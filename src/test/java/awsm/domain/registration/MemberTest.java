@@ -3,8 +3,6 @@ package awsm.domain.registration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import awsm.domain.DomainEvent;
-import awsm.domain.registration.Email.NotBlacklisted;
-import awsm.domain.registration.Email.Unique;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,9 +17,7 @@ class MemberTest {
 
     var member = new Member(
         new Name("Uncle", "Bob"),
-          new NotBlacklisted(blacklist,
-              new Unique(uniqueness,
-                  new Email("uncle@domain.com"))));
+        new RegistrationEmail(new Email("uncle@domain.com"), uniqueness, blacklist));
 
     var event = (NewMemberEvent) DomainEvent.lastPublished.get();
     assertThat(event.member()).isEqualTo(member);

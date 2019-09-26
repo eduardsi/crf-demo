@@ -27,7 +27,7 @@ public class Member {
   @Embedded
   private Name name;
 
-  public Member(Name name, Email.NotBlacklisted email) {
+  public Member(Name name, RegistrationEmail email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
     new NewMemberEvent(this).schedule();
