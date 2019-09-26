@@ -23,8 +23,12 @@ public interface $ {
     return new Const(this.big().abs());
   }
 
-  default boolean isGe($ other) {
+  default boolean isAtLeast($ other) {
     return this.big().compareTo(other.big()) >= 0;
+  }
+
+  default boolean isAtMost($ other) {
+    return this.big().compareTo(other.big()) <= 0;
   }
 
   BigDecimal big();

@@ -115,14 +115,14 @@ public class BankAccount {
     }
 
     private boolean isPositiveBalance() {
-      return transactions().balance().isGe(ZERO);
+      return transactions().balance().isAtLeast(ZERO);
     }
   }
 
   private class EnforceWithdrawalLimits {
     private EnforceWithdrawalLimits() {
       var dailyLimit = withdrawalLimit.dailyLimit();
-      var notExceeded = dailyLimit.isGe(withdrawn(today()));
+      var notExceeded = withdrawn(today()).isAtMost(dailyLimit);
       checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 

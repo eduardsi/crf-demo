@@ -1,9 +1,9 @@
 package awsm.application;
 
+import static awsm.domain.offers.$.$;
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 import static com.google.common.base.Preconditions.checkState;
 
-import awsm.domain.offers.$;
 import awsm.domain.offers.Offers;
 import awsm.infra.hashing.UnhashId;
 import awsm.infra.middleware.Command;
@@ -47,10 +47,10 @@ class AcceptOffer implements Command<ReturnsNothing> {
       var offerId = new UnhashId(cmd.offerId).asLong();
       var offer = offers.singleById(offerId).orElseThrow();
 
-      var limit = $.$(cmd.limit);
-      var withinALimit = limit.isGe(offer.price());
+      var limit = $(cmd.limit);
+      var notReached = offer.price().isAtMost(limit);
 
-      checkState(withinALimit, "Offer price is not within a limit (%s/%s)", offer.price(), cmd.limit);
+      checkState(notReached, "Offer price is not within a limit (%s/%s)", offer.price(), cmd.limit);
 
       offer.accept();
 
