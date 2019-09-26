@@ -5,6 +5,7 @@ import static java.time.ZoneId.systemDefault;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalDate;
 
 public class TimeMachine {
 
@@ -12,6 +13,10 @@ public class TimeMachine {
 
   public static Clock clock() {
     return clock.get();
+  }
+
+  public static LocalDate today() {
+    return LocalDate.now(clock());
   }
 
   public static void freezeEpoch() {

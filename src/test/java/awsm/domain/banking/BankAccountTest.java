@@ -20,6 +20,8 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 @DisplayName("bank account")
 class BankAccountTest {
 
+  private BankAccount account = new BankAccount(new WithdrawalLimit($("100.00")));
+
   @BeforeEach
   void beforeEach() {
     freezeEpoch();
@@ -27,8 +29,6 @@ class BankAccountTest {
 
   @Test
   void provides_a_statement_for_a_given_time_interval() throws JSONException {
-    var account = new BankAccount(hundredADay());
-
     offset(ofDays(1));
     account.deposit($("100.00"));
 
@@ -77,9 +77,6 @@ class BankAccountTest {
 
   @Test
   void supports_money_deposits_and_withdrawals() {
-
-    var account = new BankAccount(hundredADay());
-
     var depositTx = account.deposit($("100.00"));
     assertThat(depositTx).isNotNull();
 
@@ -91,7 +88,6 @@ class BankAccountTest {
 
   @Test
   void cannot_withdraw_from_a_closed_account() {
-    var account = new BankAccount(hundredADay());
     account.deposit($("100.00"));
     account.close(UnsatisfiedObligations.NONE);
 
@@ -102,7 +98,6 @@ class BankAccountTest {
 
   @Test
   void cannot_deposit_if_closed() {
-    var account = new BankAccount(hundredADay());
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
@@ -113,8 +108,6 @@ class BankAccountTest {
 
   @Test
   void cannot_withdraw_more_funds_than_available() {
-    var account = new BankAccount(hundredADay());
-
     var e = assertThrows(IllegalStateException.class, () ->
         account.withdraw($("1.00")));
 
@@ -123,7 +116,6 @@ class BankAccountTest {
 
   @Test
   void cannot_withdraw_more_than_allowed_by_the_daily_limit() {
-    var account = new BankAccount(hundredADay());
     account.deposit($("1000.00"));
 
     var e = assertThrows(IllegalStateException.class, () -> account.withdraw($("101.00")));
@@ -133,16 +125,11 @@ class BankAccountTest {
 
   @Test
   void cannot_close_if_some_unsatisfied_obligations_exist() {
-    var account = new BankAccount(hundredADay());
-
     var e = assertThrows(IllegalStateException.class, () -> account.close(new SomeUnsatisfiedObligations()));
     assertThat(e).hasMessage("Bank account cannot be closed because a holder has unsatified obligations");
   }
 
-  private WithdrawalLimit hundredADay() {
-    var dailyLimit = $("100.00");
-    return new WithdrawalLimit(dailyLimit);
-  }
+
 
   private static class SomeUnsatisfiedObligations implements UnsatisfiedObligations {
     @Override

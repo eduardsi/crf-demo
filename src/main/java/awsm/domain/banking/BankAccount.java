@@ -3,10 +3,9 @@ package awsm.domain.banking;
 import static awsm.domain.banking.Transaction.Type.DEPOSIT;
 import static awsm.domain.banking.Transaction.Type.WITHDRAWAL;
 import static awsm.domain.offers.$.ZERO;
-import static awsm.infra.time.TimeMachine.clock;
+import static awsm.infra.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.and;
-import static java.time.LocalDate.now;
 import static java.util.Objects.requireNonNull;
 
 import awsm.domain.offers.$;
@@ -60,7 +59,7 @@ public class BankAccount {
   private BankAccount() {
   }
 
-  // unfortunately, I can't persist Transactions in Hibernate :(  only Lists, ArrayList and other crap.
+  // unfortunately, I can't persist Transactions in Hibernate :(
   private Transactions transactions() {
     return new Transactions(transactions);
   }
@@ -122,13 +121,12 @@ public class BankAccount {
 
   private class EnforceWithdrawalLimits {
     private EnforceWithdrawalLimits() {
-      var withdrawnToday = totalWithdrawn(now(clock()));
       var dailyLimit = withdrawalLimit.dailyLimit();
-      var withinDailyLimit = dailyLimit.isGe(withdrawnToday);
-      checkState(withinDailyLimit, "Daily withdrawal limit (%s) reached.", dailyLimit);
+      var notExceeded = dailyLimit.isGe(withdrawn(today()));
+      checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
-    private $ totalWithdrawn(LocalDate someDay) {
+    private $ withdrawn(LocalDate someDay) {
       return transactions().thatAre(
           and(
               tx -> tx.type() == WITHDRAWAL,
@@ -136,7 +134,7 @@ public class BankAccount {
           .balance()
           .abs();
     }
-
   }
+
 }
 
