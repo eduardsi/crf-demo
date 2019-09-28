@@ -123,12 +123,10 @@ class BankAccountTest {
   }
 
   @Test
-  void cannot_close_if_some_unsatisfied_obligations_exist() {
+  void cannot_be_closed_if_some_unsatisfied_obligations_exist() {
     var e = assertThrows(IllegalStateException.class, () -> account.close(new SomeUnsatisfiedObligations()));
     assertThat(e).hasMessage("Bank account cannot be closed because a holder has unsatified obligations");
   }
-
-
 
   private static class SomeUnsatisfiedObligations implements UnsatisfiedObligations {
     @Override

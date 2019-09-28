@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 class AcceptOffer implements Command<ReturnsNothing> {
 
+
   private final String offerId;
   private final BigDecimal limit;
 

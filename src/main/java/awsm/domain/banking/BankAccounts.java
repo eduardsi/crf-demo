@@ -16,4 +16,8 @@ class BankAccounts {
     entityManager.persist(account);
   }
 
+  public BankAccount singleById(long id) {
+    return entityManager.find(BankAccount.class, id);
+  }
+
 }

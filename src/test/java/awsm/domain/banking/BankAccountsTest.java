@@ -22,13 +22,18 @@ class BankAccountsTest {
   void supports_adding() {
     var transactions = new Transactions(txManager);
     var limit = new WithdrawalLimit($("100.00"));
-    var account = new BankAccount(limit);
+    var newAccount = new BankAccount(limit);
 
-    account.deposit($("50.00"));
-    account.withdraw($("20.00"));
-    transactions.wrap(() -> accounts.add(account)).run();
+    newAccount.deposit($("50.00"));
+    newAccount.withdraw($("20.00"));
+    transactions.wrap(() -> accounts.add(newAccount)).run();
 
-    assertThat(account.id()).isNotNull();
+    assertThat(newAccount.id()).isNotNull();
+
+    transactions.wrap(() -> {
+      var existingAccount = accounts.singleById(newAccount.id());
+      assertThat(existingAccount.balance()).isEqualTo($("30.00"));
+    }).run();
   }
 
 }

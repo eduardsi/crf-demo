@@ -2,6 +2,7 @@ package awsm.domain.banking;
 
 import static awsm.domain.banking.Transaction.Type.DEPOSIT;
 import static awsm.domain.banking.Transaction.Type.WITHDRAWAL;
+import static awsm.domain.banking.Transactions.unmodifiable;
 import static awsm.domain.offers.$.ZERO;
 import static awsm.infra.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
@@ -46,7 +47,7 @@ public class BankAccount {
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
-  private List<Transaction> transactions = new ArrayList<>();
+  private List<Transaction> committedTransactions = new ArrayList<>();
 
   @Version
   private long version;
@@ -59,35 +60,35 @@ public class BankAccount {
   private BankAccount() {
   }
 
-  // unfortunately, I can't persist Transactions in Hibernate :(
-  private Transactions transactions() {
-    return new Transactions(transactions);
-  }
-
   public Transaction withdraw($ amount) {
     new EnforceOpen();
 
-    var transaction = new Transaction(WITHDRAWAL, amount);
-    transactions.add(transaction);
+    var tx = new Transaction(WITHDRAWAL, amount);
+    var uncommittedTransactions = unmodifiable(committedTransactions).with(tx);
 
-    new EnforcePositiveBalance();
-    new EnforceWithdrawalLimits();
-    return transaction;
+    new EnforcePositiveBalance(uncommittedTransactions);
+    new EnforceWithdrawalLimits(uncommittedTransactions);
+
+    committedTransactions.add(tx);
+
+    return tx;
   }
 
   public Transaction deposit($ amount) {
     new EnforceOpen();
-    var transaction = new Transaction(DEPOSIT, amount);
-    transactions.add(transaction);
-    return transaction;
+
+    var tx = new Transaction(DEPOSIT, amount);
+    committedTransactions.add(tx);
+
+    return tx;
   }
 
   public $ balance() {
-    return transactions().balance();
+    return unmodifiable(committedTransactions).balance();
   }
 
   public BankStatement statement(LocalDate from, LocalDate to) {
-    return new BankStatement(from, to, transactions());
+    return new BankStatement(from, to, unmodifiable(committedTransactions));
   }
 
   public void close(UnsatisfiedObligations unsatisfiedObligations) {
@@ -110,24 +111,32 @@ public class BankAccount {
   }
 
   private class EnforcePositiveBalance {
-    private EnforcePositiveBalance() {
+
+    private final Transactions uncommittedTransactions;
+
+    private EnforcePositiveBalance(Transactions uncommittedTransactions) {
+      this.uncommittedTransactions = uncommittedTransactions;
       checkState(isPositiveBalance(), "Not enough funds available on your account.");
     }
 
     private boolean isPositiveBalance() {
-      return transactions().balance().isAtLeast(ZERO);
+      return uncommittedTransactions.balance().isAtLeast(ZERO);
     }
   }
 
   private class EnforceWithdrawalLimits {
-    private EnforceWithdrawalLimits() {
+
+    private final Transactions uncommittedTransactions;
+
+    private EnforceWithdrawalLimits(Transactions uncommittedTransactions) {
+      this.uncommittedTransactions = uncommittedTransactions;
       var dailyLimit = withdrawalLimit.dailyLimit();
       var notExceeded = withdrawn(today()).isAtMost(dailyLimit);
       checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
     private $ withdrawn(LocalDate someDay) {
-      return transactions().thatAre(
+      return uncommittedTransactions.thatAre(
           and(
               tx -> tx.type() == WITHDRAWAL,
               tx -> tx.bookingDate().isEqual(someDay)))

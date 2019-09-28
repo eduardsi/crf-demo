@@ -9,7 +9,6 @@ public interface Reaction<C extends Command<R>, R> {
 
   default boolean matches(C cmd) {
     TypeToken<C> commandTypeInAGeneric = new TypeToken<>(getClass()) {
-
     };
     return commandTypeInAGeneric.isSubtypeOf(cmd.getClass());
   }

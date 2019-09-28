@@ -1,6 +1,7 @@
 package awsm.application;
 
-import awsm.domain.offers.$;
+import static awsm.domain.offers.$.$;
+
 import awsm.domain.offers.Offer;
 import awsm.domain.offers.Offers;
 import awsm.infra.hashing.HashId;
@@ -34,14 +35,13 @@ class PlaceOffer implements Command<CharSequence> {
 
     private final Offers offers;
 
-
     Re(Offers offers) {
       this.offers = offers;
     }
 
     @Override
     public CharSequence react(PlaceOffer cmd) {
-      var price = $.$(cmd.price);
+      var price = $(cmd.price);
       var offer = new Offer(price);
       offers.add(offer);
       return new HashId(offer.id());

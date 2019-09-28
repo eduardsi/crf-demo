@@ -3,7 +3,7 @@ package awsm.domain.banking;
 import static com.google.common.collect.ImmutableList.copyOf;
 
 import awsm.domain.offers.$;
-import java.util.Collection;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -11,10 +11,10 @@ import one.util.streamex.StreamEx;
 
 class Transactions {
 
-  private Collection<Transaction> transactions;
+  private final List<Transaction> transactions;
 
-  Transactions(List<Transaction> transactions) {
-    this.transactions = copyOf(transactions);
+  private Transactions(List<Transaction> transactions) {
+    this.transactions = transactions;
   }
 
   Transactions thatAre(Predicate<Transaction> condition) {
@@ -33,8 +33,18 @@ class Transactions {
     });
   }
 
+  Transactions with(Transaction tx) {
+    return new Transactions(ImmutableList.<Transaction>builder()
+        .addAll(transactions)
+        .add(tx)
+        .build());
+  }
+
   private StreamEx<Transaction> stream() {
     return StreamEx.of(transactions);
   }
 
+  static Transactions unmodifiable(List<Transaction> transactions) {
+    return new Transactions(copyOf(transactions));
+  }
 }
