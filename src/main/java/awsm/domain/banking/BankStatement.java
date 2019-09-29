@@ -5,9 +5,10 @@ import static awsm.domain.banking.Transaction.bookedDuring;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static java.time.temporal.ChronoUnit.MINUTES;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 
 import awsm.domain.offers.$;
-import awsm.infra.media.Media;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.Collection;
 
 class BankStatement {
 
-  private final Collection<Entry> entries = new ArrayList<>();
+  private final Collection<Entry> transactions = new ArrayList<>();
 
   private final Balance closingBalance;
 
@@ -32,30 +33,34 @@ class BankStatement {
   }
 
   private void enter(Transaction tx, $ balance) {
-    entries.add(new Entry(
+    transactions.add(new Entry(
         tx.bookingTime(),
         tx.amount().withdrawal(),
         tx.amount().deposit(),
         balance));
   }
 
-  // alternative: public DTO (if multiple formats),
-  // but package private constructor that accepts entity.
-  public void printTo(Media media) {
-    media.print("startingBalance", nested -> {
-      nested.print("amount", startingBalance.amount);
-      nested.print("date", startingBalance.date.format(ISO_DATE));
-    });
-    media.print("closingBalance", nested -> {
-      nested.print("amount", closingBalance.amount);
-      nested.print("date", closingBalance.date.format(ISO_DATE));
-    });
-    media.print("transactions", entries, (nested, entry) -> {
-      nested.print("time", entry.time.format(ISO_LOCAL_DATE_TIME));
-      nested.print("withdrawal", entry.withdrawal);
-      nested.print("deposit", entry.deposit);
-      nested.print("balance", entry.balance);
-    });
+  public String json() {
+    var root = createObjectBuilder();
+
+    root.add("startingBalance", createObjectBuilder()
+        .add("amount", startingBalance.amount + "")
+        .add("date", startingBalance.date.format(ISO_DATE)));
+
+    root.add("closingBalance", createObjectBuilder()
+        .add("amount", closingBalance.amount + "")
+        .add("date", closingBalance.date.format(ISO_DATE)));
+
+    var items = createArrayBuilder();
+    transactions.forEach(tx -> items.add(createObjectBuilder()
+        .add("time", tx.time.format(ISO_LOCAL_DATE_TIME))
+        .add("withdrawal", tx.withdrawal + "")
+        .add("deposit", tx.deposit + "")
+        .add("balance", tx.balance + "")));
+
+    root.add("transactions", items);
+
+    return root.build().toString();
   }
 
   private static class Entry {

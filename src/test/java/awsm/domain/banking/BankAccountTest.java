@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
-import awsm.infra.media.JsonMedia;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,8 +41,7 @@ class BankAccountTest {
     offset(ofDays(1));
     account.withdraw($("2.00"));
 
-    var media = new JsonMedia();
-    account.statement(from, to).printTo(media);
+    var actual = account.statement(from, to).json();
     var expected = """
       {
         "startingBalance": {
@@ -71,7 +69,7 @@ class BankAccountTest {
        }
     """;
 
-    assertEquals(expected, "" + media, JSONCompareMode.STRICT);
+    assertEquals(expected, actual, JSONCompareMode.STRICT);
   }
 
   @Test
