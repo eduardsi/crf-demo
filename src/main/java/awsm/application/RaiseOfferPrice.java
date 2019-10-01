@@ -1,6 +1,7 @@
 package awsm.application;
 
-import awsm.domain.offers.$;
+import static awsm.domain.offers.$.$;
+
 import awsm.domain.offers.Offers;
 import awsm.infra.hashing.UnhashId;
 import awsm.infra.middleware.Command;
@@ -43,7 +44,7 @@ class RaiseOfferPrice implements Command<BigDecimal> {
     public BigDecimal react(RaiseOfferPrice cmd) {
       var offerId = new UnhashId(cmd.offerId).asLong();
       var offer = offers.singleById(offerId).orElseThrow();
-      var ratio = $.$(cmd.ratio);
+      var ratio = $(cmd.ratio);
       offer.raiseBy(ratio);
       return offer.price().big();
     }

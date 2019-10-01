@@ -1,10 +1,8 @@
 package awsm.domain.banking;
 
 import static awsm.domain.offers.$.$;
-import static awsm.infra.time.TimeMachine.freezeEpoch;
-import static awsm.infra.time.TimeMachine.offset;
 import static awsm.infra.time.TimeMachine.today;
-import static java.time.Duration.ofDays;
+import static awsm.infra.time.TimeMachine.with;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -14,31 +12,35 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.threeten.extra.Days;
+import org.threeten.extra.MutableClock;
 
 @DisplayName("bank account")
 class BankAccountTest {
 
   private BankAccount account = new BankAccount(new WithdrawalLimit($("100.00")));
 
+  private MutableClock clock = MutableClock.epochUTC();
+
   @BeforeEach
   void beforeEach() {
-    freezeEpoch();
+    with(clock);
   }
 
   @Test
   void provides_a_statement_for_a_given_time_interval() throws JSONException {
-    offset(ofDays(1));
+    clock.add(Days.ONE);
     account.deposit($("100.00"));
 
-    offset(ofDays(1));
+    clock.add(Days.ONE);
     var from = today();
     account.deposit($("99.00"));
 
-    offset(ofDays(1));
+    clock.add(Days.ONE);
     var to = today();
     account.withdraw($("98.00"));
 
-    offset(ofDays(1));
+    clock.add(Days.ONE);
     account.withdraw($("2.00"));
 
     var actual = account.statement(from, to).json();
@@ -54,13 +56,13 @@ class BankAccountTest {
         },
         "transactions":[
           {
-            "time": "1970-01-03T03:00:00",
+            "time": "1970-01-03T00:00:00",
             "deposit": "99.00",
             "withdrawal": "0.00",
             "balance": "199.00"
           },
           {
-            "time": "1970-01-04T03:00:00",
+            "time": "1970-01-04T00:00:00",
             "deposit": "0.00",
             "withdrawal" :"98.00",
             "balance": "101.00"

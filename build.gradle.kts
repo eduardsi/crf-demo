@@ -104,7 +104,7 @@ dependencies {
 
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("org.hashids:hashids:1.0.3")
-    implementation("net.jodah:failsafe:2.3.1") // Timeouts coming in 2.2.0
+    implementation("net.jodah:failsafe:2.3.1")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.threeten:threeten-extra:1.5.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")

@@ -1,10 +1,6 @@
 package awsm.infra.time;
 
-import static java.time.Instant.EPOCH;
-import static java.time.ZoneId.systemDefault;
-
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDate;
 
 public class TimeMachine {
@@ -15,18 +11,12 @@ public class TimeMachine {
     return clock.get();
   }
 
-  public static LocalDate today() {
-    return LocalDate.now(clock());
-  }
-
-  public static void freezeEpoch() {
-    var clock = Clock.fixed(EPOCH, systemDefault());
+  public static void with(Clock clock) {
     TimeMachine.clock.set(clock);
   }
 
-  public static void offset(Duration duration) {
-    var offsetClock = Clock.offset(clock.get(), duration);
-    TimeMachine.clock.set(offsetClock);
+  public static LocalDate today() {
+    return LocalDate.now(clock());
   }
 
 }

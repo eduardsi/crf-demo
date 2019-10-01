@@ -13,6 +13,7 @@ class CorrelationId {
   private final AtomicLong counter = new AtomicLong();
 
   <T> T wrap(Supplier<T> action) {
+
     var closeable = MDC.putCloseable(MDC_KEY, next());
     try (closeable) {
       return action.get();
