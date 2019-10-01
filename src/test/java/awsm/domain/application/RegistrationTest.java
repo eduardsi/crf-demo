@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import awsm.infra.jackson.MsgPack;
 import com.github.javafaker.Faker;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.msgpack.core.MessagePack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,38 +38,6 @@ class RegistrationTest {
 
   @Autowired
   private MockMvc mvc;
-
-  @Nested
-  @DisplayName("with message pack")
-  class MsgPackHttp {
-
-    @Test
-    void returns_a_member_id_upon_completion() throws Exception {
-      var packer = MessagePack.newDefaultBufferPacker();
-      packer
-          .packMapHeader(3)
-          .packString("email")
-          .packString("eduards@sizovs.net")
-          .packString("firstName")
-          .packString("Eduards")
-          .packString("lastName")
-          .packString("Sizovs")
-          .close();
-
-      var response = mvc.perform(post("/members")
-          .content(packer.toByteArray())
-          .accept(MsgPack.MIME)
-          .contentType(MsgPack.MIME))
-          .andExpect(status().isOk())
-          .andReturn().getResponse().getContentAsByteArray();
-
-      var unpacker = MessagePack.newDefaultUnpacker(response);
-      var id = unpacker.unpackString();
-
-      assertThat(id).matches("[a-zA-Z0-9]{10}");
-    }
-
-  }
 
   @Nested
   @DisplayName("with json")

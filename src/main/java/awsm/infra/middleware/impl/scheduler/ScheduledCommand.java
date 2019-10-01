@@ -32,14 +32,14 @@ class ScheduledCommand {
   private Long id;
 
   @Column
-  private long touchTimes;
-
-  @Column
-  private LocalDateTime creationDate = LocalDateTime.now(UTC);
+  private long ranTimes;
 
   @Column
   @Nullable
-  private LocalDateTime touchTime;
+  private LocalDateTime lastRunTime;
+
+  @Column
+  private LocalDateTime creationDate = LocalDateTime.now(UTC);
 
   @Enumerated(EnumType.STRING)
   private Status status = Status.PENDING;
@@ -58,8 +58,8 @@ class ScheduledCommand {
 
   CompletableFuture executeIn(Executor executor) {
     checkState(status == Status.PENDING, "Cannot execute work that is not %s", status);
-    this.touchTimes++;
-    this.touchTime = LocalDateTime.now(UTC);
+    this.ranTimes++;
+    this.lastRunTime = LocalDateTime.now(UTC);
     return CompletableFuture
         .runAsync(() -> this.command.execute(), executor)
         .thenRun(() -> this.status = Status.DONE);

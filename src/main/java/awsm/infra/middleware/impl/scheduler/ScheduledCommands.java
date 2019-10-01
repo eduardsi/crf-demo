@@ -1,8 +1,8 @@
 package awsm.infra.middleware.impl.scheduler;
 
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
+import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.RAN_TIMES;
 import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.STATUS;
-import static awsm.infra.middleware.impl.scheduler.ScheduledCommand_.TOUCH_TIMES;
 import static javax.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 import java.util.stream.Stream;
@@ -29,7 +29,7 @@ class ScheduledCommands {
 
     var where = criteria.where(
         it.and(
-          it.lessThan(root.get(TOUCH_TIMES), 3),
+          it.lessThan(root.get(RAN_TIMES), 3),
           it.equal(root.get(STATUS), PENDING)));
 
     return entityManager
