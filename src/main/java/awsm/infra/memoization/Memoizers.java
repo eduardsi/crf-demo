@@ -31,9 +31,7 @@ public class Memoizers {
 
   public static class SupplierMemoizer<T> {
 
-    private static final String KEY = "SINGLETON";
-
-    private final ConcurrentHashMap<String, T> memoizer = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<SupplierMemoizer, T> memoizer = new ConcurrentHashMap<>();
     private final Supplier<T> nonMemoized;
 
     private SupplierMemoizer(Supplier<T> nonMemoized) {
@@ -41,7 +39,7 @@ public class Memoizers {
     }
 
     public T memoized() {
-      return memoizer.computeIfAbsent(KEY, key -> nonMemoized.get());
+      return memoizer.computeIfAbsent(this, key -> nonMemoized.get());
     }
 
   }
