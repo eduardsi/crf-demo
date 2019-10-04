@@ -6,17 +6,19 @@ import static java.util.Collections.singletonList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Validator<R> {
 
   private final List<Rule<R>> rules = new ArrayList<>();
 
-  public <T> Validator<R> with(AttributeGetter<T> getter, AttributeCheck<T> condition, String message) {
+  public <T> Validator<R> with(Supplier<T> getter, Predicate<T> condition, String message) {
     return with(getter, condition, message, new Nesting.Absent<>());
   }
 
-  public <T> Validator<R> with(AttributeGetter<T> getter, AttributeCheck<T> check, String message, Nesting<R> nested) {
+  public <T> Validator<R> with(Supplier<T> getter, Predicate<T> check, String message, Nesting<R> nested) {
     var rule = new AttributeRule<>(getter, check, value -> format(message, value));
     rule.with(nested.validator());
     rules.add(rule);
@@ -53,30 +55,18 @@ public class Validator<R> {
     }
   }
 
-  @FunctionalInterface
-  public interface AttributeGetter<T> {
-    T attr();
-  }
-
-  public interface AttributeCheck<T> {
-    boolean isTruthy(T attribute);
-  }
-
-  public interface AttributeViolation<T> {
-    String text(T value);
-  }
 
   private interface Rule<R> {
     Collection<String> violations(R entity);
   }
 
   private class AttributeRule<V> implements Rule<R> {
-    private AttributeGetter<V> getter;
-    private AttributeCheck<V> check;
+    private Supplier<V> getter;
+    private Predicate<V> check;
     private AttributeViolation<V> violation;
     private Validator<R> nestedValidator = new Validator<>();
 
-    AttributeRule(AttributeGetter<V> getter, AttributeCheck<V> check, AttributeViolation<V> violation)  {
+    AttributeRule(Supplier<V> getter, Predicate<V> check, AttributeViolation<V> violation)  {
       this.getter = getter;
       this.check = check;
       this.violation = violation;
@@ -88,13 +78,37 @@ public class Validator<R> {
 
     @Override
     public Collection<String> violations(R root) {
-      var attr = this.getter.attr();
-      var truthy = this.check.isTruthy(attr);
+      var attr = this.getter.get();
+      var truthy = this.check.test(attr);
       if (!truthy) {
         return singletonList(violation.text(attr));
       } else {
         return this.nestedValidator.validate(root);
       }
+    }
+
+  }
+
+  @FunctionalInterface
+  private interface AttributeViolation<T> {
+    String text(T value);
+  }
+
+  public static class ValidationException extends RuntimeException {
+
+    private final List<String> violations;
+
+    private ValidationException(List<String> violations) {
+      this.violations = violations;
+    }
+
+    public List<String> violations() {
+      return violations;
+    }
+
+    @Override
+    public String getMessage() {
+      return String.join(", ", violations);
     }
 
   }

@@ -1,6 +1,6 @@
 package awsm.application;
 
-import static awsm.infra.memoization.Memoizers.memoizer;
+import static awsm.infra.memoization.Memoizers.memoized;
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
@@ -80,26 +80,26 @@ class Register implements Command<CharSequence> {
     Re(Members members, Administrators administrators, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
       this.members = members;
       this.administrators = administrators;
-      this.uniqueness = memoizer(uniqueness::guaranteed)::memoized;
-      this.blacklist = memoizer(blacklist::allows)::memoized;
+      this.uniqueness = memoized(uniqueness::guaranteed)::apply;
+      this.blacklist = memoized(blacklist::allows)::apply;
     }
 
     @Override
     public CharSequence react(Register cmd) {
 
-      var email = memoizer(() -> new Email(cmd.email));
+      var email = memoized(() -> new Email(cmd.email));
 
       new Validator<Register>()
           .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
           .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
           .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
               nested
-                  .with(email::memoized, uniqueness::guaranteed, "email is taken")
-                  .with(email::memoized, blacklist::allows,      "email %s is blacklisted")
+                  .with(email, uniqueness::guaranteed, "email is taken")
+                  .with(email, blacklist::allows,      "email %s is blacklisted")
           ).check(cmd);
 
       var name = new Name(cmd.firstName, cmd.lastName);
-      var registrationEmail = new RegistrationEmail(email.memoized(), uniqueness, blacklist);
+      var registrationEmail = new RegistrationEmail(email.get(), uniqueness, blacklist);
 
       var member = new Member(name, registrationEmail);
       members.add(member);
