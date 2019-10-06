@@ -35,8 +35,8 @@ class BankStatement {
   private void enter(Transaction tx, $ balance) {
     transactions.add(new Entry(
         tx.bookingTime(),
-        tx.amount().withdrawal(),
-        tx.amount().deposit(),
+        tx.withdrawn(),
+        tx.deposited(),
         balance));
   }
 

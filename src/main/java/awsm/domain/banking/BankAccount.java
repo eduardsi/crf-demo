@@ -1,12 +1,13 @@
 package awsm.domain.banking;
 
-import static awsm.domain.banking.Transaction.Type.DEPOSIT;
-import static awsm.domain.banking.Transaction.Type.WITHDRAWAL;
+import static awsm.domain.banking.Transaction.bookedOn;
+import static awsm.domain.banking.Transaction.depositOf;
+import static awsm.domain.banking.Transaction.isWithdrawal;
+import static awsm.domain.banking.Transaction.withdrawalOf;
 import static awsm.domain.banking.Transactions.unmodifiable;
 import static awsm.domain.offers.$.ZERO;
 import static awsm.infra.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Predicates.and;
 import static java.util.Objects.requireNonNull;
 
 import awsm.domain.offers.$;
@@ -63,7 +64,7 @@ public class BankAccount {
   public Transaction withdraw($ amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(WITHDRAWAL, amount);
+    var tx = withdrawalOf(amount);
     var uncommittedTransactions = unmodifiable(committedTransactions).with(tx);
 
     new EnforcePositiveBalance(uncommittedTransactions);
@@ -77,7 +78,7 @@ public class BankAccount {
   public Transaction deposit($ amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(DEPOSIT, amount);
+    var tx = depositOf(amount);
     committedTransactions.add(tx);
 
     return tx;
@@ -136,10 +137,9 @@ public class BankAccount {
     }
 
     private $ withdrawn(LocalDate someDay) {
-      return uncommittedTransactions.thatAre(
-          and(
-              tx -> tx.type() == WITHDRAWAL,
-              tx -> tx.bookingDate().isEqual(someDay)))
+      return uncommittedTransactions
+          .thatAre(bookedOn(someDay))
+          .thatAre(isWithdrawal())
           .balance()
           .abs();
     }

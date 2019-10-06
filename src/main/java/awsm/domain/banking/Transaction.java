@@ -3,6 +3,7 @@ package awsm.domain.banking;
 import static awsm.domain.offers.$.ZERO;
 import static awsm.infra.time.TimeMachine.clock;
 
+import awsm.domain.DomainEntity;
 import awsm.domain.offers.$;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.time.LocalDate;
@@ -14,7 +15,7 @@ import javax.persistence.Enumerated;
 import org.threeten.extra.LocalDateRange;
 
 @Embeddable
-class Transaction {
+class Transaction implements DomainEntity {
 
   enum Type {
     DEPOSIT {
@@ -46,7 +47,7 @@ class Transaction {
   @Enumerated(EnumType.STRING)
   private Type type;
 
-  Transaction(Type type, $ amount) {
+  private Transaction(Type type, $ amount) {
     this.type = type;
     this.amount = amount;
   }
@@ -59,20 +60,32 @@ class Transaction {
     return bookingTime;
   }
 
-  LocalDate bookingDate() {
+  private LocalDate bookingDate() {
     return bookingTime.toLocalDate();
-  }
-
-  Amount amount() {
-    return new Amount();
-  }
-
-  Type type() {
-    return type;
   }
 
   $ apply($ balance) {
     return type.apply(amount, balance);
+  }
+
+  $ withdrawn() {
+    return __(isWithdrawal()) ? amount : ZERO;
+  }
+
+  $ deposited() {
+    return __(isDeposit()) ? amount : ZERO;
+  }
+
+  static Predicate<Transaction> isWithdrawal() {
+    return tx -> tx.type == Type.WITHDRAWAL;
+  }
+
+  private static Predicate<Transaction> isDeposit() {
+    return tx -> tx.type == Type.DEPOSIT;
+  }
+
+  static Predicate<Transaction> bookedOn(LocalDate date) {
+    return tx -> tx.bookingDate().isEqual(date);
   }
 
   static Predicate<Transaction> bookedBefore(LocalDate date) {
@@ -83,19 +96,12 @@ class Transaction {
     return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate());
   }
 
-  class Amount {
-
-    private Amount() {
-    }
-
-    $ withdrawal() {
-      return type == Type.WITHDRAWAL ? amount : ZERO;
-    }
-
-    $ deposit() {
-      return type == Type.DEPOSIT ? amount : ZERO;
-    }
+  static Transaction withdrawalOf($ amount) {
+    return new Transaction(Type.WITHDRAWAL, amount);
   }
 
+  static Transaction depositOf($ amount) {
+    return new Transaction(Type.DEPOSIT, amount);
+  }
 
 }
