@@ -15,7 +15,7 @@ public class Throttling implements Middleware {
 
   public Throttling(Collection<RateLimit> rateLimits) {
     this.rateLimits = rateLimits;
-    this.rateLimiters = new ConcurrentHashMap<>();
+    this.rateLimiters = new ConcurrentHashMap<>(rateLimits.size(), 1.0f);
   }
 
   @SuppressWarnings("unchecked")

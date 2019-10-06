@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("Throtting")
+@DisplayName("throtting")
 class ThrottlingTest {
 
   class Hello implements Command<String> {

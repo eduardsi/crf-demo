@@ -1,27 +1,33 @@
 package awsm.domain.application;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.machinezoo.noexception.Exceptions.sneak;
 import static com.pivovarit.collectors.ParallelCollectors.parallelToList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.text.CharSequenceLength.hasLength;
-import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.javafaker.Faker;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import org.assertj.core.api.Condition;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -30,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
-@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("registration")
@@ -39,78 +45,102 @@ class RegistrationTest {
   @Autowired
   private MockMvc mvc;
 
-  @Nested
-  @DisplayName("with json")
-  class JsonHttp {
+  @Value("${blacklist.port}")
+  private int blacklistPort;
 
-    @Test
-    void rate_limits_to_one_registration_at_a_time() {
-      var executor = Executors.newFixedThreadPool(2);
-      var responses = Stream.of(email(), email())
-          .collect(parallelToList(this::register, executor))
-          .join()
-          .stream()
-          .map(ResultActions::andReturn)
-          .map(MvcResult::getResponse)
-          .collect(toList());
+  @Value("${registration.rateLimit}")
+  private int registrationRateLimit;
 
-      assertThat(responses).haveAtLeastOne(new Condition<>(ex -> ex.getStatus() == 200, "status OK"));
-      assertThat(responses).haveAtLeastOne(new Condition<>(ex -> ex.getStatus() == 429, "status too many requests"));
-    }
+  private WireMockServer blacklist;
 
-    @Test
-    void returns_a_hashed_member_id_upon_completion() throws Exception {
-      register()
-          .andExpect(status().isOk())
-          .andExpect(content().string(hasLength(10)));
-    }
+  @BeforeEach
+  void setup() {
+    blacklist = new WireMockServer(blacklistPort);
+    blacklist.start();
 
-    @Test
-    void throws_if_email_is_not_unique() throws Exception {
-      var email = email();
-      register(email)
-          .andExpect(status().isOk());
+    blacklist.stubFor(get(anyUrl())
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("ALLOW")));
 
-      register(email)
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.[0]", is("email is taken")));
-    }
+    blacklist.stubFor(get(urlPathMatching(".*(rotten.com|pornhub.com)"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("BLOCK")));
+  }
 
-    @Test
-    void throws_if_email_or_first_name_or_last_name_are_missing() throws Exception {
-      register("", "", "")
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.[0]", is("firstName is missing")))
-          .andExpect(jsonPath("$.[1]", is("lastName is missing")))
-          .andExpect(jsonPath("$.[2]", is("email is missing")));
-    }
+  @AfterEach
+  void cleaup() {
+    blacklist.stop();
+  }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"pornhub.com", "rotten.com"})
-    void throws_if_email_is_blacklisted(String domain) throws Exception {
-      var email = "eduards@" + domain;
-      register(email)
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.[0]", is("email " + email + " is blacklisted")));
-    }
+  @Test
+  void rate_limits_to_N_registration_at_a_time() {
+    var overflow = registrationRateLimit + 1;
+    var executor = Executors.newFixedThreadPool(overflow);
+    var responses = Stream.generate(() -> email()).limit(overflow)
+        .collect(parallelToList(this::register, executor))
+        .join()
+        .stream()
+        .map(ResultActions::andReturn)
+        .map(MvcResult::getResponse)
+        .collect(toList());
 
-    private ResultActions register() {
-      return this.register(email());
-    }
+    assertThat(responses).haveExactly(registrationRateLimit, new Condition<>(ex -> ex.getStatus() == 200, "status OK"));
+    assertThat(responses).haveExactly(1, new Condition<>(ex -> ex.getStatus() == 429, "status too many requests"));
+  }
 
-    private ResultActions register(String email) {
-      return register(email, "Eduards", "Sizovs");
-    }
+  @Test
+  void returns_a_hashed_member_id_upon_completion() throws Exception {
+    register()
+        .andExpect(status().isOk())
+        .andExpect(content().string(hasLength(10)));
+  }
 
-    private ResultActions register(String email, String firstName, String lastName) {
-      var json = "{" + "\"email\": \"" + email + "\"," + "\"firstName\": \""
-          + firstName + "\"," + "\"lastName\": \"" + lastName + "\"" + "}";
-      return sneak().get(() -> mvc.perform(post("/members")
-          .content(json)
-          .accept(MediaType.APPLICATION_JSON)
-          .contentType(MediaType.APPLICATION_JSON)));
-    }
+  @Test
+  void throws_if_email_is_not_unique() throws Exception {
+    var email = email();
+    register(email)
+        .andExpect(status().isOk());
 
+    register(email)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.[0]", is("email is taken")));
+  }
+
+  @Test
+  void throws_if_email_or_first_name_or_last_name_are_missing() throws Exception {
+    register("", "", "")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.[0]", is("firstName is missing")))
+        .andExpect(jsonPath("$.[1]", is("lastName is missing")))
+        .andExpect(jsonPath("$.[2]", is("email is missing")));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"pornhub.com", "rotten.com"})
+  void throws_if_email_is_blacklisted(String domain) throws Exception {
+    var email = "eduards@" + domain;
+    register(email)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.[0]", is("email " + email + " is blacklisted")));
+  }
+
+  private ResultActions register() {
+    return this.register(email());
+  }
+
+  private ResultActions register(String email) {
+    return register(email, "Eduards", "Sizovs");
+  }
+
+  private ResultActions register(String email, String firstName, String lastName) {
+    var json = "{" + "\"email\": \"" + email + "\"," + "\"firstName\": \""
+        + firstName + "\"," + "\"lastName\": \"" + lastName + "\"" + "}";
+    return sneak().get(() -> mvc.perform(post("/members")
+        .content(json)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)));
   }
 
   private static String email() {

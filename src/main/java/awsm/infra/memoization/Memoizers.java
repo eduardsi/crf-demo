@@ -20,7 +20,7 @@ public class Memoizers {
 
   private static class FunctionMemoizer<F, T> {
 
-    private final Map<F, T> memoizer = new ConcurrentHashMap<>(1);
+    private final Map<F, T> memoizer = new ConcurrentHashMap<>(1, 1.0f);
     private final Function<F, T> nonMemoized;
 
     private FunctionMemoizer(Function<F, T> nonMemoized) {
@@ -35,7 +35,7 @@ public class Memoizers {
 
   private static class SupplierMemoizer<T> {
 
-    private final Map<SupplierMemoizer, T> memoizer = new ConcurrentHashMap<>(1);
+    private final Map<SupplierMemoizer, T> memoizer = new ConcurrentHashMap<>(1, 1.0f);
     private final Supplier<T> nonMemoized;
 
     private SupplierMemoizer(Supplier<T> nonMemoized) {

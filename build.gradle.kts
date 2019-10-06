@@ -107,6 +107,7 @@ dependencies {
     implementation("net.jodah:failsafe:2.3.1")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.threeten:threeten-extra:1.5.0")
+    implementation("com.konghq:unirest-java:3.1.00:standalone")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.springframework:spring-webflux:5.1.9.RELEASE")
@@ -119,8 +120,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
 
 
+    testImplementation("com.github.tomakehurst:wiremock-jre8:2.25.0")
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testImplementation("org.assertj:assertj-core:3.9.1")
+    testImplementation("org.awaitility:awaitility:4.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.1")
     testImplementation("com.github.javafaker:javafaker:1.0.0")

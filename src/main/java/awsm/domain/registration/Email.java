@@ -1,14 +1,26 @@
 package awsm.domain.registration;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.net.http.HttpClient.newHttpClient;
+import static java.net.http.HttpRequest.newBuilder;
+import static java.net.http.HttpResponse.BodyHandlers.ofString;
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 
 import awsm.domain.DomainException;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.io.Serializable;
-import java.util.List;
+import java.net.URI;
+import java.time.Duration;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import net.jodah.failsafe.CircuitBreaker;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.FailsafeExecutor;
+import net.jodah.failsafe.Fallback;
+import net.jodah.failsafe.Timeout;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Embeddable
@@ -123,15 +135,55 @@ public class Email implements Serializable {
     boolean allows(Email email);
 
     @Component
-    class HardCoded implements Blacklist {
+    class External implements Blacklist {
 
-      private static final List<String> BAD_DOMAINS = List.of("pornhub.com", "rotten.com");
+      private static final String ALLOW = "ALLOW";
+
+      private final String url;
+      private final int port;
+
+      private final CircuitBreaker<String> breaker;
+      private final Timeout<String> timeout;
+      private final FailsafeExecutor<String> failsafe;
+
+      public External(@Value("${blacklist.url}") String url, @Value("${blacklist.port}") int port) {
+        this.url = url;
+        this.port = port;
+
+        this.timeout = Timeout.<String>of(ofMillis(1000)).withCancel(true);
+
+        this.breaker = new CircuitBreaker<String>()
+            .withFailureThreshold(4)
+            .withDelay(ofSeconds(30));
+
+        var fallback = Fallback.of(ALLOW);
+
+        this.failsafe = Failsafe.with(fallback, breaker, timeout);
+      }
+
+      Duration timeout() {
+        return timeout.getTimeout();
+      }
+
+      void halfOpenCircuit() {
+        breaker.halfOpen();
+      }
 
       @Override
       public boolean allows(Email email) {
-        return BAD_DOMAINS
-            .stream()
-            .noneMatch(domain -> email.toString().contains(domain));
+        return safelyAllows(email).equals(ALLOW);
+      }
+
+      private String safelyAllows(Email email) {
+        return failsafe.get(() -> unsafelyAllows(email));
+      }
+
+      private String unsafelyAllows(Email email) throws Exception {
+        var uri = new URI(url + ":" + port + "/" + email);
+        var request = newBuilder()
+            .uri(uri)
+            .build();
+        return newHttpClient().send(request, ofString()).body();
       }
 
     }
