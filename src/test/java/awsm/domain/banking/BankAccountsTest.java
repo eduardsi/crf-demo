@@ -2,6 +2,7 @@ package awsm.domain.banking;
 
 import static awsm.domain.offers.$.$;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
 
 import awsm.util.tx.Transactions;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +13,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
 @DisplayName("bank account repository")
 class BankAccountsTest {
 

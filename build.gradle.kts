@@ -107,7 +107,6 @@ dependencies {
     implementation("net.jodah:failsafe:2.3.1")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.threeten:threeten-extra:1.5.0")
-    implementation("com.konghq:unirest-java:3.1.00:standalone")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.springframework:spring-webflux:5.1.9.RELEASE")
