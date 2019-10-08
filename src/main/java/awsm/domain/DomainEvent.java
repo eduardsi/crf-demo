@@ -5,8 +5,6 @@ import static java.util.Objects.requireNonNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 public interface DomainEvent {
 
@@ -48,12 +46,4 @@ public interface DomainEvent {
     }
   }
 
-  interface Listener<T extends DomainEvent> {
-
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    default void beforeCommit(T event) {
-
-    }
-
-  }
 }
