@@ -1,5 +1,6 @@
 package awsm.domain.banking;
 
+import static awsm.domain.banking.BankAccount.Type.SAVINGS;
 import static awsm.domain.offers.$.$;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
@@ -27,7 +28,7 @@ class BankAccountsTest {
   void supports_adding() {
     var transactions = new Transactions(txManager);
     var limit = new WithdrawalLimit($("100.00"));
-    var newAccount = new BankAccount(limit);
+    var newAccount = new BankAccount(SAVINGS, limit);
 
     newAccount.deposit($("50.00"));
     newAccount.withdraw($("20.00"));

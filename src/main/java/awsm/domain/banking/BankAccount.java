@@ -34,6 +34,10 @@ public class BankAccount {
     OPEN, CLOSED
   }
 
+  public enum Type {
+    CHECKING, SAVINGS
+  }
+
   @Id
   @Nullable
   @GeneratedValue
@@ -41,6 +45,10 @@ public class BankAccount {
 
   @Enumerated(EnumType.STRING)
   private Status status = Status.OPEN;
+
+  @SuppressWarnings("unused")
+  @Enumerated(EnumType.STRING)
+  private Type type;
 
   @Embedded
   private WithdrawalLimit withdrawalLimit;
@@ -56,10 +64,12 @@ public class BankAccount {
   @Version
   private long version;
 
-  public BankAccount(WithdrawalLimit withdrawalLimit) {
+  public BankAccount(Type type, WithdrawalLimit withdrawalLimit) {
     this.iban = Iban.newlyGenerated();
+    this.type = type;
     this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
   }
+
 
   @HibernateConstructor
   private BankAccount() {

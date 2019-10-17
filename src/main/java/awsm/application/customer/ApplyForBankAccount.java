@@ -1,5 +1,6 @@
 package awsm.application.customer;
 
+import awsm.domain.banking.BankAccount;
 import awsm.domain.banking.BankAccountApplication;
 import awsm.domain.banking.BankAccountApplications;
 import awsm.domain.registration.Customers;
@@ -10,11 +11,11 @@ import org.springframework.stereotype.Component;
 class ApplyForBankAccount implements Command<ApplyForBankAccount.ApplicationStatus> {
 
   private final Long customerId;
-  private final String currency;
+  private final String type;
 
-  ApplyForBankAccount(Long customerId, String currency) {
+  ApplyForBankAccount(Long customerId, String type) {
     this.customerId = customerId;
-    this.currency = currency;
+    this.type = type;
   }
 
   @Component
@@ -32,9 +33,9 @@ class ApplyForBankAccount implements Command<ApplyForBankAccount.ApplicationStat
     public ApplicationStatus react(ApplyForBankAccount cmd) {
 
       var customer = customers.singleById(cmd.customerId).orElseThrow();
-      System.out.println(cmd.currency);
+      var accountType = BankAccount.Type.valueOf(cmd.type);
 
-      var application = new BankAccountApplication(customer);
+      var application = new BankAccountApplication(customer, accountType);
       applications.add(application);
 
       return new ApplicationStatus();

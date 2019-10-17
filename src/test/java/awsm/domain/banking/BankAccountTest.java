@@ -1,5 +1,6 @@
 package awsm.domain.banking;
 
+import static awsm.domain.banking.BankAccount.Type.SAVINGS;
 import static awsm.domain.offers.$.$;
 import static awsm.infra.time.TimeMachine.today;
 import static awsm.infra.time.TimeMachine.with;
@@ -18,7 +19,7 @@ import org.threeten.extra.MutableClock;
 @DisplayName("bank account")
 class BankAccountTest {
 
-  private BankAccount account = new BankAccount(new WithdrawalLimit($("100.00")));
+  private BankAccount account = new BankAccount(SAVINGS, new WithdrawalLimit($("100.00")));
 
   private MutableClock clock = MutableClock.epochUTC();
 
