@@ -5,13 +5,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-class Lightweight4j implements CommandLineRunner {
+class AwesomeBank implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
   }
 
   public static void main(String[] args) {
-    SpringApplication.run(Lightweight4j.class, args);
+    SpringApplication.run(AwesomeBank.class, args);
   }
 }

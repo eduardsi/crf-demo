@@ -12,8 +12,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@Table(name = "members")
-public class Member {
+@Table(name = "customers")
+public class Customer {
 
   @Id
   @GeneratedValue
@@ -25,19 +25,19 @@ public class Member {
   private Email email;
 
   @Embedded
-  private Name name;
+  private FullName name;
 
-  public Member(Name name, RegistrationEmail email) {
+  public Customer(FullName name, Email email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
-    new NewMemberEvent(this).schedule();
+    new CustomerRegistered(this).schedule();
   }
 
   @HibernateConstructor
-  private Member() {
+  private Customer() {
   }
 
-  public Name name() {
+  public FullName name() {
     return name;
   }
 
@@ -48,6 +48,5 @@ public class Member {
   public Long id() {
     return requireNonNull(id, "ID is null. Perhaps the entity has not been persisted yet?");
   }
-
 
 }

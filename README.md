@@ -1,18 +1,15 @@
-# PipelinR demo app
+# NoFluffBank application
 
-This Spring Boot app demonstrates the basic use of [PipelinR](https://github.com/sizovs/PipelinR) in a service layer.
+This is a demo enterprise Java application, built using some the best practices covered in Effective Java Software Design [course](https://devchampions.com/training/java). 
 
-The starting point is [ApplicationBootstrap](src/main/java/awsm/Lightweight4j.java).
+### Functionality
 
-The application is requires Java 12+.
+##### 🚀 Register a new customer
 
-#### Running application with IDE
-`Lightweight4j` has a main method. Just run it and have fun.
- 
-#### Running application with Gradle
-```
-./gradlew bootRun
-```
+A customer must provide an email, first name and last name.
+
+### Requirements
+- Java 13+.
 
 #### Running tests
 ```

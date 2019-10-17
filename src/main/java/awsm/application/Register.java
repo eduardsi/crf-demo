@@ -7,10 +7,9 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 import awsm.domain.administration.Administrator;
 import awsm.domain.administration.Administrators;
 import awsm.domain.registration.Email;
-import awsm.domain.registration.Member;
-import awsm.domain.registration.Members;
-import awsm.domain.registration.Name;
-import awsm.domain.registration.RegistrationEmail;
+import awsm.domain.registration.Customer;
+import awsm.domain.registration.Customers;
+import awsm.domain.registration.FullName;
 import awsm.infra.hashing.HashId;
 import awsm.infra.jackson.JacksonConstructor;
 import awsm.infra.middleware.Command;
@@ -43,7 +42,7 @@ class Register implements Command<CharSequence> {
 
   @RestController
   static class Http {
-    @PostMapping("/members")
+    @PostMapping("/customers")
     CharSequence accept(@RequestBody Register command) {
       return command.execute();
     }
@@ -69,7 +68,7 @@ class Register implements Command<CharSequence> {
   @Scope(SCOPE_PROTOTYPE)
   static class Re implements Reaction<Register, CharSequence> {
 
-    private final Members members;
+    private final Customers customers;
 
     private final Administrators administrators;
 
@@ -77,8 +76,8 @@ class Register implements Command<CharSequence> {
 
     private final Email.Uniqueness uniqueness;
 
-    Re(Members members, Administrators administrators, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
-      this.members = members;
+    Re(Customers customers, Administrators administrators, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
+      this.customers = customers;
       this.administrators = administrators;
       this.uniqueness = memoized(uniqueness::guaranteed)::apply;
       this.blacklist = memoized(blacklist::allows)::apply;
@@ -87,55 +86,53 @@ class Register implements Command<CharSequence> {
     @Override
     public CharSequence react(Register cmd) {
 
-      var email = memoized(() -> new Email(cmd.email));
-
       new Validator<Register>()
           .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
           .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
           .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
               nested
-                  .with(email, uniqueness::guaranteed, "email is taken")
-                  .with(email, blacklist::allows,      "email %s is blacklisted")
+                  .with(() -> cmd.email, uniqueness::guaranteed, "email is taken")
+                  .with(() -> cmd.email, blacklist::allows,      "email %s is blacklisted")
           ).check(cmd);
 
-      var name = new Name(cmd.firstName, cmd.lastName);
-      var registrationEmail = new RegistrationEmail(email.get(), uniqueness, blacklist);
+      var name = new FullName(cmd.firstName, cmd.lastName);
+      var email = new Email(cmd.email, uniqueness, blacklist);
 
-      var member = new Member(name, registrationEmail);
-      members.add(member);
+      var customer = new Customer(name, email);
+      customers.add(customer);
 
-      var admin = new Administrator(member.id());
+      var admin = new Administrator(customer.id());
       administrators.add(admin);
 
-      var welcome = new Welcome(member.id());
+      var welcome = new Welcome(customer.id());
       welcome.schedule();
 
-      return new HashId(member.id());
+      return new HashId(customer.id());
     }
 
   }
 
   static class Welcome implements Command<ReturnsNothing> {
 
-    private final long memberId;
+    private final long customerId;
 
-    Welcome(@JsonProperty("memberId") long memberId) {
-      this.memberId = memberId;
+    Welcome(@JsonProperty("customerId") long customerId) {
+      this.customerId = customerId;
     }
 
     @Component
     static class Re implements Reaction<Welcome, ReturnsNothing> {
 
-      private final Members members;
+      private final Customers customers;
 
-      private Re(Members members) {
-        this.members = members;
+      private Re(Customers customers) {
+        this.customers = customers;
       }
 
       @Override
       public ReturnsNothing react(Welcome cmd) {
-        var member = members.singleById(cmd.memberId).orElseThrow();
-        System.out.printf("Sending email to %s: Welcome to the Matrix, %s", member.email(), member.name());
+        var customer = customers.singleById(cmd.customerId).orElseThrow();
+        System.out.printf("Sending email to %s: Welcome to the Matrix, %s", customer.email(), customer.name());
         return NOTHING;
       }
     }

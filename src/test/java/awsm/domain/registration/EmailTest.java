@@ -1,5 +1,7 @@
 package awsm.domain.registration;
 
+import static awsm.domain.registration.Email.Blacklist.ALWAYS_ALLOWS;
+import static awsm.domain.registration.Email.Uniqueness.ALWAYS_GUARANTEED;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -24,21 +26,25 @@ class EmailTest {
 
   @Test
   void rejects_blank_values() {
-    assertThrows(IllegalArgumentException.class, () -> new Email(" "));
+    assertThrows(IllegalArgumentException.class, () -> uniqueAndNotBlacklisted(" "));
   }
 
   @Test
   void can_be_turned_to_string() {
-    var email = new Email("whatever@email.com");
+    var email = uniqueAndNotBlacklisted("whatever@email.com");
     assertThat(email + "").isEqualTo("whatever@email.com");
   }
 
   @Test
   void has_proper_equals_and_hash_code() {
     new EqualsTester()
-        .addEqualityGroup(new Email("one@domain.com"), new Email("one@domain.com"))
-        .addEqualityGroup(new Email("another@domain.com"))
+        .addEqualityGroup(uniqueAndNotBlacklisted("one@domain.com"), uniqueAndNotBlacklisted("one@domain.com"))
+        .addEqualityGroup(uniqueAndNotBlacklisted("another@domain.com"))
         .testEquals();
+  }
+
+  private Email uniqueAndNotBlacklisted(String email) {
+    return new Email(email, ALWAYS_GUARANTEED, ALWAYS_ALLOWS);
   }
 
   @Nested
@@ -103,8 +109,8 @@ class EmailTest {
 
   }
 
-  private static Email anyEmail() {
-    return new Email(new Faker().internet().emailAddress());
+  private static String anyEmail() {
+    return new Faker().internet().emailAddress();
   }
 
 }

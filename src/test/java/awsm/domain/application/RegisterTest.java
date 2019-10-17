@@ -92,7 +92,7 @@ class RegisterTest {
   }
 
   @Test
-  void returns_a_hashed_member_id_upon_completion() throws Exception {
+  void returns_a_hashed_customer_id_upon_completion() throws Exception {
     register()
         .andExpect(status().isOk())
         .andExpect(content().string(hasLength(10)));
@@ -138,7 +138,7 @@ class RegisterTest {
   private ResultActions register(String email, String firstName, String lastName) {
     var json = "{" + "\"email\": \"" + email + "\"," + "\"firstName\": \""
         + firstName + "\"," + "\"lastName\": \"" + lastName + "\"" + "}";
-    return sneak().get(() -> mvc.perform(post("/members")
+    return sneak().get(() -> mvc.perform(post("/customers")
         .content(json)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)));

@@ -2,24 +2,24 @@ package awsm.domain.bonus;
 
 import static java.lang.String.format;
 
-import awsm.domain.registration.NewMemberEvent;
+import awsm.domain.registration.CustomerRegistered;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-class BonusPointsForNewMembers {
+class BonusPointsForNewCustomers {
 
   @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-  void whenever(NewMemberEvent event) {
+  void whenever(CustomerRegistered it) {
 
-    var member = event.member();
-    var email = member.email().toString();
+    var customer = it.customer();
+    var email = customer.email().toString();
     var qualifiesForBonus = email.matches("/vip.com/");
     if (qualifiesForBonus) {
-      System.out.println(format("A member %s qualifies for bonus", member.name()));
+      System.out.println(format("A customer %s qualifies for bonus", customer.name()));
     } else {
-      System.out.println(format("No bonus for %s", member.name()));
+      System.out.println(format("No bonus for %s", customer.name()));
     }
 
   }

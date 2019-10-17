@@ -7,7 +7,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +21,8 @@ public class Administrator  {
   @OneToMany(cascade = CascadeType.ALL)
   private Collection<Permission> permissions = new ArrayList<>();
 
-  public Administrator(long memberId) {
-    this.id = memberId;
+  public Administrator(long customerId) {
+    this.id = customerId;
   }
 
 

@@ -27,16 +27,21 @@ import org.springframework.stereotype.Component;
 public class Email implements Serializable {
 
   @Column(unique = true)
-  String email;
+  private String email;
 
-  public Email(String email) {
+  public Email(String email, Uniqueness uniqueness, Blacklist blacklist) {
     var isNotBlank = email != null && !email.isBlank();
     checkArgument(isNotBlank, "Email %s must not be blank", email);
-    this.email = email;
-  }
 
-  Email(Email from) {
-    this.email = from.toString();
+    if (!uniqueness.guaranteed(email)) {
+      throw new NotUniqueException(this);
+    }
+
+    if (!blacklist.allows(email)) {
+      throw new BlacklistedException(this);
+    }
+
+    this.email = email;
   }
 
   @HibernateConstructor
@@ -62,43 +67,11 @@ public class Email implements Serializable {
     return false;
   }
 
-  @Embeddable
-  static class Unique extends Email {
-
-    Unique(Uniqueness uniqueness, Email email) {
-      super(email);
-      if (!uniqueness.guaranteed(this)) {
-        throw new NotUniqueException(this);
-      }
-    }
-
-    @HibernateConstructor
-    private Unique() {
-    }
-
-  }
 
   static class NotUniqueException extends DomainException {
     NotUniqueException(Email email) {
       super("Email " + email + " is not unique");
     }
-  }
-
-
-  @Embeddable
-  static class NotBlacklisted extends Email {
-
-    NotBlacklisted(Blacklist blacklist, Email email) {
-      super(email);
-      if (!blacklist.allows(email)) {
-        throw new BlacklistedException(email);
-      }
-    }
-
-    @HibernateConstructor
-    private NotBlacklisted() {
-    }
-
   }
 
   static class BlacklistedException extends DomainException {
@@ -110,20 +83,22 @@ public class Email implements Serializable {
 
   public interface Uniqueness {
 
-    boolean guaranteed(Email email);
+    Uniqueness ALWAYS_GUARANTEED = email -> true;
+
+    boolean guaranteed(String email);
 
     @Component
-    class AcrossMembers implements Uniqueness {
+    class AcrossCustomers implements Uniqueness {
 
-      private final Members members;
+      private final Customers customers;
 
-      private AcrossMembers(Members members) {
-        this.members = members;
+      private AcrossCustomers(Customers customers) {
+        this.customers = customers;
       }
 
       @Override
-      public boolean guaranteed(Email email) {
-        return members.singleByEmail(email).isEmpty();
+      public boolean guaranteed(String email) {
+        return customers.singleByEmail(email).isEmpty();
       }
 
     }
@@ -132,7 +107,9 @@ public class Email implements Serializable {
 
   public interface Blacklist {
 
-    boolean allows(Email email);
+    Blacklist ALWAYS_ALLOWS = email -> true;
+
+    boolean allows(String email);
 
     @Component
     class External implements Blacklist {
@@ -170,15 +147,15 @@ public class Email implements Serializable {
       }
 
       @Override
-      public boolean allows(Email email) {
+      public boolean allows(String email) {
         return safelyAllows(email).equals(ALLOW);
       }
 
-      private String safelyAllows(Email email) {
+      private String safelyAllows(String email) {
         return failsafe.get(() -> unsafelyAllows(email));
       }
 
-      private String unsafelyAllows(Email email) throws Exception {
+      private String unsafelyAllows(String email) throws Exception {
         var uri = new URI(url + ":" + port + "/" + email);
         var request = newBuilder()
             .uri(uri)

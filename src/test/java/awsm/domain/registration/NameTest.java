@@ -10,7 +10,7 @@ class NameTest {
 
   @Test
   void can_be_turned_to_string() {
-    var name = new Name("Eduards", "Sizovs");
+    var name = new FullName("Eduards", "Sizovs");
     assertThat(name + "").isEqualTo("Eduards Sizovs");
 
   }
