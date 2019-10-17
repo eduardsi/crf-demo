@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("throtting")
 class ThrottlingTest {
 
-  class Hello implements Command<String> {
+  static class Hello implements Command<String> {
 
     private AtomicLong executions = new AtomicLong();
 
@@ -32,7 +32,7 @@ class ThrottlingTest {
     }
   }
 
-  class AtATime implements RateLimit<Hello> {
+  static class AtATime implements RateLimit<Hello> {
     private final int max;
 
     AtATime(int max) {

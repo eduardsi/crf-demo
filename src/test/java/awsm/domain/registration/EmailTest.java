@@ -49,7 +49,7 @@ class EmailTest {
 
   @Nested
   @DisplayName("external blacklist")
-  class ExternalBlacklistFailoverTest {
+  static class ExternalBlacklistFailoverTest {
 
     @Test
     void timeouts_and_allows_all_emails_if_host_is_unreachable() {

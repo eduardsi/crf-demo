@@ -53,6 +53,7 @@ public interface $ {
       this(new BigDecimal(decimal));
     }
 
+    @Override
     public BigDecimal big() {
       return this.decimal;
     }

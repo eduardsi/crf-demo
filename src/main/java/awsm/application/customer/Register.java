@@ -1,4 +1,4 @@
-package awsm.application;
+package awsm.application.customer;
 
 import static awsm.infra.memoization.Memoizers.memoized;
 import static awsm.infra.middleware.ReturnsNothing.NOTHING;

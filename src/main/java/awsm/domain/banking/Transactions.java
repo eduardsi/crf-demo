@@ -1,7 +1,5 @@
 package awsm.domain.banking;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-
 import awsm.domain.offers.$;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -45,6 +43,6 @@ class Transactions {
   }
 
   static Transactions unmodifiable(List<Transaction> transactions) {
-    return new Transactions(copyOf(transactions));
+    return new Transactions(ImmutableList.copyOf(transactions));
   }
 }

@@ -29,7 +29,7 @@ plugins {
     java
     jacoco
 //    checkstyle
-    id("org.springframework.boot") version "2.1.7.RELEASE"
+    id("org.springframework.boot") version "2.2.0.RELEASE"
     id("net.ltgt.errorprone") version "0.8.1"
 }
 
@@ -107,6 +107,7 @@ dependencies {
     implementation("net.jodah:failsafe:2.3.1")
     implementation("com.h2database:h2:1.4.195")
     implementation("org.threeten:threeten-extra:1.5.0")
+    implementation("org.iban4j:iban4j:3.2.1")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.springframework:spring-webflux:5.1.9.RELEASE")

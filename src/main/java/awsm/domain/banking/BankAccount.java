@@ -45,6 +45,9 @@ public class BankAccount {
   @Embedded
   private WithdrawalLimit withdrawalLimit;
 
+  @Embedded
+  private Iban iban;
+
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
@@ -54,6 +57,7 @@ public class BankAccount {
   private long version;
 
   public BankAccount(WithdrawalLimit withdrawalLimit) {
+    this.iban = Iban.newlyGenerated();
     this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
   }
 
@@ -111,7 +115,7 @@ public class BankAccount {
     }
   }
 
-  private class EnforcePositiveBalance {
+  private static class EnforcePositiveBalance {
 
     private final Transactions uncommittedTransactions;
 

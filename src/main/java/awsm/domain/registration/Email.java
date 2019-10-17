@@ -2,15 +2,14 @@ package awsm.domain.registration;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.net.http.HttpClient.newHttpClient;
-import static java.net.http.HttpRequest.newBuilder;
 import static java.net.http.HttpResponse.BodyHandlers.ofString;
-import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 
 import awsm.domain.DomainException;
 import awsm.infra.hibernate.HibernateConstructor;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -127,7 +126,7 @@ public class Email implements Serializable {
         this.url = url;
         this.port = port;
 
-        this.timeout = Timeout.<String>of(ofMillis(1000)).withCancel(true);
+        this.timeout = Timeout.<String>of(ofSeconds(1)).withCancel(true);
 
         this.breaker = new CircuitBreaker<String>()
             .withFailureThreshold(4)
@@ -157,7 +156,7 @@ public class Email implements Serializable {
 
       private String unsafelyAllows(String email) throws Exception {
         var uri = new URI(url + ":" + port + "/" + email);
-        var request = newBuilder()
+        var request = HttpRequest.newBuilder()
             .uri(uri)
             .build();
         return newHttpClient().send(request, ofString()).body();
