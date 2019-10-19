@@ -22,7 +22,7 @@ repositories {
     }
 }
 
-val springVersion = "2.2.0.M5"
+val springVersion = "2.2.0.RELEASE"
 val guavaVersion = "27.0.1-jre"
 
 plugins {
@@ -99,8 +99,8 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.3.3")
     errorprone("com.uber.nullaway:nullaway:0.7.5")
 
-    annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
-    compileOnly("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
+//    annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
+//    compileOnly("org.hibernate:hibernate-jpamodelgen:5.4.4.Final")
 
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("org.hashids:hashids:1.0.3")
@@ -108,7 +108,8 @@ dependencies {
     implementation("com.h2database:h2:1.4.195")
     implementation("org.threeten:threeten-extra:1.5.0")
     implementation("org.iban4j:iban4j:3.2.1")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
+    implementation("org.flywaydb:flyway-core:6.0.7")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.springframework:spring-webflux:5.1.9.RELEASE")
     implementation("org.glassfish:javax.json:1.1.4")
