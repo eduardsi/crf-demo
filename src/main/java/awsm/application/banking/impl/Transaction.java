@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Predicate;
+import jooq.tables.records.BankAccountTxRecord;
 import org.threeten.extra.LocalDateRange;
 
 class Transaction implements DomainEntity {
@@ -54,6 +55,12 @@ class Transaction implements DomainEntity {
     this.amount = $(rs.getBigDecimal("amount"));
     this.bookingTime = rs.getTimestamp("booking_time").toLocalDateTime();
     this.type = Type.valueOf(rs.getString("type"));
+  }
+
+  Transaction(BankAccountTxRecord rec) {
+    this.amount = $(rec.getAmount());
+    this.bookingTime = rec.getBookingTime();
+    this.type = Type.valueOf(rec.getType());
   }
 
   LocalDateTime bookingTime() {

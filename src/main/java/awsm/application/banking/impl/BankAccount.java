@@ -6,13 +6,17 @@ import static awsm.application.trading.impl.$.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static jooq.tables.BankAccount.BANK_ACCOUNT;
+import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
 import awsm.application.trading.impl.$;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 
 public class BankAccount {
 
@@ -23,8 +27,6 @@ public class BankAccount {
   public enum Type {
     CHECKING, SAVINGS
   }
-
-  private Long id;
 
   private Status status;
 
@@ -45,32 +47,25 @@ public class BankAccount {
     this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
   }
 
-  BankAccount(ResultSet rs, List<Transaction> transactions) throws SQLException {
+  BankAccount(DataSource dataSource, long id) {
+    var transactions = DSL.using(dataSource, SQLDialect.POSTGRES)
+        .selectFrom(BANK_ACCOUNT_TX)
+        .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
+        .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
+        .fetchStream()
+        .map(Transaction::new)
+        .collect(Collectors.toList());
+
+    var rec = DSL.using(dataSource, SQLDialect.POSTGRES)
+        .selectFrom(BANK_ACCOUNT)
+        .where(BANK_ACCOUNT.ID.equal(id))
+        .fetchAny();
+
     this.committedTransactions = transactions;
-    this.iban = new Iban(rs.getString("iban"));
-    this.status = Status.valueOf(rs.getString("status"));
-    this.type = Type.valueOf(rs.getString("type"));
-    this.withdrawalLimit = new WithdrawalLimit($(rs.getBigDecimal("daily_limit")));
-  }
-
-  Iban iban() {
-    return iban;
-  }
-
-  Status status() {
-    return status;
-  }
-
-  Type type() {
-    return type;
-  }
-
-  WithdrawalLimit withdrawalLimit() {
-    return withdrawalLimit;
-  }
-
-  List<Transaction> committedTransactions() {
-    return committedTransactions;
+    this.iban = new Iban(rec.getIban());
+    this.status = Status.valueOf(rec.getStatus());
+    this.type = Type.valueOf(rec.getType());
+    this.withdrawalLimit = new WithdrawalLimit($(rec.getDailyLimit()));
   }
 
   public Transaction withdraw($ amount) {
@@ -107,6 +102,40 @@ public class BankAccount {
   public void close(UnsatisfiedObligations unsatisfiedObligations) {
     checkState(!unsatisfiedObligations.exist(), "Bank account cannot be closed because a holder has unsatified obligations");
     status = Status.CLOSED;
+  }
+
+  long saveNew(DataSource dataSource) {
+    var bankAccountId = DSL.using(dataSource, SQLDialect.POSTGRES)
+        .insertInto(BANK_ACCOUNT,
+            BANK_ACCOUNT.IBAN,
+            BANK_ACCOUNT.STATUS,
+            BANK_ACCOUNT.TYPE,
+            BANK_ACCOUNT.DAILY_LIMIT)
+        .values(
+            iban + "",
+            status.name(),
+            type.name(),
+            withdrawalLimit.dailyLimit().big())
+        .returning(BANK_ACCOUNT.ID)
+        .fetchOne()
+        .getId();
+
+
+    for (int i = 0; i < committedTransactions.size(); i++) {
+      var tx = committedTransactions.get(i);
+      DSL.using(dataSource, SQLDialect.POSTGRES)
+          .insertInto(BANK_ACCOUNT_TX,
+              BANK_ACCOUNT_TX.BANK_ACCOUNT_ID,
+              BANK_ACCOUNT_TX.INDEX,
+              BANK_ACCOUNT_TX.AMOUNT,
+              BANK_ACCOUNT_TX.BOOKING_TIME,
+              BANK_ACCOUNT_TX.TYPE)
+          .values(bankAccountId, i, tx.amount().big(), tx.bookingTime(), tx.type().name())
+          .execute();
+    }
+
+    return bankAccountId;
+
   }
 
   private class EnforceOpen {

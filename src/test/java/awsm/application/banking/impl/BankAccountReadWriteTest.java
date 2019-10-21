@@ -5,6 +5,7 @@ import static awsm.application.trading.impl.$.$;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import awsm.util.tx.Transactions;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @SpringBootTest
 @Rollback
-@DisplayName("bank account repository")
-class BankAccountsTest {
+@DisplayName("bank account")
+class BankAccountReadWriteTest {
 
   @Autowired
-  BankAccounts accounts;
+  DataSource dataSource;
 
   @Autowired
   PlatformTransactionManager txManager;
@@ -27,15 +28,15 @@ class BankAccountsTest {
   void supports_adding() {
     var transactions = new Transactions(txManager);
     var limit = new WithdrawalLimit($("100.00"));
-    var newAccount = new BankAccount(SAVINGS, limit);
+    var account = new BankAccount(SAVINGS, limit);
 
-    newAccount.deposit($("50.00"));
-    newAccount.withdraw($("20.00"));
-    var newAccountId = transactions.wrap(() -> accounts.add(newAccount)).get();
+    account.deposit($("50.00"));
+    account.withdraw($("20.00"));
+    var id = transactions.wrap(() -> account.saveNew(dataSource)).get();
 
     transactions.wrap(() -> {
-      var existingAccount = accounts.singleById(newAccountId);
-      assertThat(existingAccount.balance()).isEqualTo($("30.00"));
+      var it = new BankAccount(dataSource, id);
+      assertThat(it.balance()).isEqualTo($("30.00"));
     }).run();
   }
 
