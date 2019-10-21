@@ -16,7 +16,7 @@ class CustomerTest {
   @Test
   void schedules_an_event_upon_creation() {
 
-    var customer = new Customer(
+    new Customer(
         new FullName("Uncle", "Bob"),
         new Email("uncle@domain.com", uniqueness, blacklist));
 

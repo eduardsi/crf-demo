@@ -1,6 +1,7 @@
 package awsm.infrastructure.middleware.impl.scheduler;
 
 import static awsm.infrastructure.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
+import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 import static java.util.concurrent.CompletableFuture.allOf;
 
 import awsm.infrastructure.middleware.Command;
@@ -10,8 +11,10 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,15 +27,15 @@ class PersistentScheduler implements Scheduler {
 
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
-  private final JdbcTemplate jdbc;
+  private final DataSource dataSource;
 
-  public PersistentScheduler(JdbcTemplate jdbc) {
-    this.jdbc = jdbc;
+  public PersistentScheduler(DataSource dataSource) {
+    this.dataSource = dataSource;
   }
 
   @Override
   public void schedule(Command command) {
-    new ScheduledCommand(command).saveNew(jdbc);
+    new ScheduledCommand(command).saveNew(dataSource);
   }
 
   @Transactional(noRollbackFor = CompletionException.class)
@@ -54,25 +57,13 @@ class PersistentScheduler implements Scheduler {
     }
 
     private Stream<ScheduledCommand> list() {
-
-      return jdbc.query("select * from scheduled_command c where c.ran_times < ? and c.status = ? limit ? for update",
-          (rs, rowNo) -> new ScheduledCommand(rs), 3, PENDING.name(), BATCH_SIZE).stream();
-
-
-//      var it = entityManager.getCriteriaBuilder();
-//      var criteria = it.createQuery(ScheduledCommand.class);
-//      var root = criteria.from(ScheduledCommand.class);
-//
-//      var where = criteria.where(
-//          it.and(
-//              it.lessThan(root.get(RAN_TIMES), 3),
-//              it.equal(root.get(STATUS), PENDING)));
-//
-//      return entityManager
-//          .createQuery(where)
-//          .setLockMode(PESSIMISTIC_WRITE)
-//          .setMaxResults(BATCH_SIZE)
-//          .getResultStream();
+      return DSL.using(dataSource, SQLDialect.POSTGRES)
+          .selectFrom(SCHEDULED_COMMAND)
+          .where(SCHEDULED_COMMAND.RAN_TIMES.lessThan(3), SCHEDULED_COMMAND.STATUS.eq(PENDING.name()))
+          .limit(BATCH_SIZE)
+          .forUpdate()
+          .fetchStream()
+          .map(ScheduledCommand::new);
     }
   }
 

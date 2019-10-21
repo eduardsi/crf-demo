@@ -1,10 +1,12 @@
 package awsm.application.registration.impl;
 
-import java.util.HashMap;
+import static jooq.tables.Customer.CUSTOMER;
+
 import java.util.Optional;
 import javax.sql.DataSource;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,24 +21,20 @@ class Customers {
   }
 
   long add(Customer customer) {
-    var args = new HashMap<String, Object>();
-    args.put("email", customer.email() + "");
-    args.put("first_name", customer.name().firstName);
-    args.put("last_name", customer.name().lastName);
-
-    var jdbcInsert = new SimpleJdbcInsert(dataSource);
-    return (long) jdbcInsert
-        .withTableName("customers")
-        .usingGeneratedKeyColumns("id")
-        .executeAndReturnKey(args);
+    return DSL.using(dataSource, SQLDialect.POSTGRES)
+        .insertInto(CUSTOMER, CUSTOMER.EMAIL, CUSTOMER.FIRST_NAME, CUSTOMER.LAST_NAME)
+        .values(customer.email() + "", customer.name().firstName, customer.name().lastName)
+        .returning(CUSTOMER.ID)
+        .fetchOne()
+        .getId();
   }
 
   Customer singleById(long id) {
-    return jdbc.queryForObject("SELECT c.* FROM customers c WHERE c.id = ?", (rs, rowNo) -> new Customer(rs), id);
+    return jdbc.queryForObject("SELECT c.* FROM customer c WHERE c.id = ?", (rs, rowNo) -> new Customer(rs), id);
   }
 
   Optional<Customer> singleByEmail(String email) {
-    var hits = jdbc.query("SELECT c.* FROM customers c WHERE c.email = ?", (rs, rowNo) -> new Customer(rs), email);
+    var hits = jdbc.query("SELECT c.* FROM customer c WHERE c.email = ?", (rs, rowNo) -> new Customer(rs), email);
     return hits.stream().findFirst();
   }
 

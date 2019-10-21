@@ -1,9 +1,12 @@
 package awsm.application.banking.impl;
 
-import java.util.HashMap;
+import static jooq.tables.BankAccount.BANK_ACCOUNT;
+import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
+
 import javax.sql.DataSource;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,27 +21,33 @@ class BankAccounts {
   }
 
   public long add(BankAccount account) {
-    var jdbcInsert = new SimpleJdbcInsert(dataSource)
-        .withTableName("bank_account")
-        .usingGeneratedKeyColumns("id");
+    var bankAccountId = DSL.using(dataSource, SQLDialect.POSTGRES)
+        .insertInto(BANK_ACCOUNT,
+            BANK_ACCOUNT.IBAN,
+            BANK_ACCOUNT.STATUS,
+            BANK_ACCOUNT.TYPE,
+            BANK_ACCOUNT.DAILY_LIMIT)
+        .values(
+            account.iban() + "",
+            account.status().name(),
+            account.type().name(),
+            account.withdrawalLimit().dailyLimit().big())
+        .returning(BANK_ACCOUNT.ID)
+        .fetchOne()
+        .getId();
 
-    var args = new HashMap<String, Object>();
-    args.put("iban", account.iban() + "");
-    args.put("status", account.status().name());
-    args.put("type", account.type().name());
-    args.put("daily_limit", account.withdrawalLimit().dailyLimit().big());
-
-    var bankAccountId = (long) jdbcInsert.executeAndReturnKey(args);
 
     for (int i = 0; i < account.committedTransactions().size(); i++) {
       var tx = account.committedTransactions().get(i);
-      jdbc.update(
-          """
-              INSERT INTO bank_account_tx
-              (bank_account_id, index, amount, booking_time, type) VALUES
-              (?, ?, ?, ?, ?)
-          """,
-          bankAccountId, i, tx.amount().big(), tx.bookingTime(), tx.type().name());
+      DSL.using(dataSource, SQLDialect.POSTGRES)
+          .insertInto(BANK_ACCOUNT_TX,
+              BANK_ACCOUNT_TX.BANK_ACCOUNT_ID,
+              BANK_ACCOUNT_TX.INDEX,
+              BANK_ACCOUNT_TX.AMOUNT,
+              BANK_ACCOUNT_TX.BOOKING_TIME,
+              BANK_ACCOUNT_TX.TYPE)
+          .values(bankAccountId, i, tx.amount().big(), tx.bookingTime(), tx.type().name())
+          .execute();
     }
 
     return bankAccountId;

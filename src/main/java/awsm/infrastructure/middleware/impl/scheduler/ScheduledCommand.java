@@ -1,22 +1,24 @@
 package awsm.infrastructure.middleware.impl.scheduler;
 
+import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 import static com.google.common.base.Preconditions.checkState;
 import static com.machinezoo.noexception.Exceptions.sneak;
 import static java.time.ZoneOffset.UTC;
 
 import awsm.infrastructure.middleware.Command;
+import jooq.tables.records.ScheduledCommandRecord;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 
 class ScheduledCommand {
 
@@ -44,21 +46,24 @@ class ScheduledCommand {
     this.command = command;
   }
 
-  ScheduledCommand(ResultSet rs) throws SQLException {
-    this.ranTimes = rs.getInt("ran_times");
-    this.lastRunTime = rs.getTimestamp("last_run_time") != null ? rs.getTimestamp("last_run_time").toLocalDateTime() : null;
-    this.creationDate = rs.getTimestamp("creation_date").toLocalDateTime();
-    this.status = Status.valueOf(rs.getString("status"));
-    this.command = new CommandConverter().convertToEntityAttribute(rs.getString("command"));
+  ScheduledCommand(ScheduledCommandRecord record) {
+    this.ranTimes = record.getRanTimes();
+    this.lastRunTime = record.getLastRunTime();
+    this.creationDate = record.getCreationDate();
+    this.status = Status.valueOf(record.getStatus());
+    this.command = new CommandConverter().convertToEntityAttribute(record.getCommand());
   }
-  void saveNew(JdbcTemplate jdbcTemplate) {
-    jdbcTemplate.update(
-        """
-              INSERT INTO scheduled_command
-              (ran_times, last_run_time, creation_date, status, command) VALUES
-              (?, ?, ?, ?, ?)
-          """,
-        ranTimes, lastRunTime, creationDate, status.name(), new CommandConverter().convertToDatabaseColumn(command));
+
+  void saveNew(DataSource dataSource) {
+    DSL.using(dataSource, SQLDialect.POSTGRES)
+      .insertInto(SCHEDULED_COMMAND,
+          SCHEDULED_COMMAND.RAN_TIMES,
+          SCHEDULED_COMMAND.LAST_RUN_TIME,
+          SCHEDULED_COMMAND.CREATION_DATE,
+          SCHEDULED_COMMAND.STATUS,
+          SCHEDULED_COMMAND.COMMAND)
+      .values(ranTimes, lastRunTime, creationDate, status.name(), new CommandConverter().convertToDatabaseColumn(command))
+      .execute();
   }
 
   CompletableFuture executeIn(Executor executor) {
