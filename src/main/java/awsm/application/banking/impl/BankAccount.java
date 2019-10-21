@@ -1,21 +1,18 @@
 package awsm.application.banking.impl;
 
-import static awsm.application.banking.impl.Transactions.unmodifiable;
 import static awsm.application.trading.impl.$.$;
 import static awsm.application.trading.impl.$.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
-import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
+import static org.jooq.SQLDialect.POSTGRES;
 
 import awsm.application.trading.impl.$;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import javax.sql.DataSource;
-import org.jooq.SQLDialect;
+import jooq.tables.records.BankAccountRecord;
 import org.jooq.impl.DSL;
 
 public class BankAccount {
@@ -37,10 +34,12 @@ public class BankAccount {
 
   private final Iban iban;
 
-  private final List<Transaction> committedTransactions;
+  private Transactions committedTransactions;
+
+  private Optional<Long> pk = Optional.empty();
 
   public BankAccount(Type type, WithdrawalLimit withdrawalLimit) {
-    this.committedTransactions = new ArrayList<>();
+    this.committedTransactions = Transactions.none();
     this.iban = Iban.newlyGenerated();
     this.type = type;
     this.status = Status.OPEN;
@@ -48,20 +47,13 @@ public class BankAccount {
   }
 
   BankAccount(DataSource dataSource, long id) {
-    var transactions = DSL.using(dataSource, SQLDialect.POSTGRES)
-        .selectFrom(BANK_ACCOUNT_TX)
-        .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
-        .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
-        .fetchStream()
-        .map(Transaction::new)
-        .collect(Collectors.toList());
-
-    var rec = DSL.using(dataSource, SQLDialect.POSTGRES)
+    var rec = DSL.using(dataSource, POSTGRES)
         .selectFrom(BANK_ACCOUNT)
         .where(BANK_ACCOUNT.ID.equal(id))
         .fetchAny();
 
-    this.committedTransactions = transactions;
+    this.pk = Optional.of(id);
+    this.committedTransactions = new Transactions(dataSource, id);
     this.iban = new Iban(rec.getIban());
     this.status = Status.valueOf(rec.getStatus());
     this.type = Type.valueOf(rec.getType());
@@ -72,12 +64,12 @@ public class BankAccount {
     new EnforceOpen();
 
     var tx = Transaction.withdrawalOf(amount);
-    var uncommittedTransactions = unmodifiable(committedTransactions).with(tx);
+    var uncommittedTransactions = committedTransactions.with(tx);
 
     new EnforcePositiveBalance(uncommittedTransactions);
     new EnforceWithdrawalLimits(uncommittedTransactions);
 
-    committedTransactions.add(tx);
+    committedTransactions = uncommittedTransactions;
 
     return tx;
   }
@@ -86,17 +78,20 @@ public class BankAccount {
     new EnforceOpen();
 
     var tx = Transaction.depositOf(amount);
-    committedTransactions.add(tx);
+
+    var uncommittedTransactions = committedTransactions.with(tx);
+
+    committedTransactions = uncommittedTransactions;
 
     return tx;
   }
 
   public $ balance() {
-    return unmodifiable(committedTransactions).balance();
+    return committedTransactions.balance();
   }
 
   public BankStatement statement(LocalDate from, LocalDate to) {
-    return new BankStatement(from, to, unmodifiable(committedTransactions));
+    return new BankStatement(from, to, committedTransactions);
   }
 
   public void close(UnsatisfiedObligations unsatisfiedObligations) {
@@ -104,8 +99,23 @@ public class BankAccount {
     status = Status.CLOSED;
   }
 
+  public void save(DataSource dataSource) {
+    var pk = this.pk.orElseThrow();
+    BankAccountRecord rec = new BankAccountRecord(
+        pk,
+        iban + "",
+        status.name(),
+        type.name(),
+        withdrawalLimit.dailyLimit().big());
+
+    DSL.using(dataSource, POSTGRES)
+        .executeUpdate(rec);
+
+    committedTransactions.save(dataSource, pk);
+  }
+
   long saveNew(DataSource dataSource) {
-    var bankAccountId = DSL.using(dataSource, SQLDialect.POSTGRES)
+    var bankAccountId = DSL.using(dataSource, POSTGRES)
         .insertInto(BANK_ACCOUNT,
             BANK_ACCOUNT.IBAN,
             BANK_ACCOUNT.STATUS,
@@ -120,22 +130,9 @@ public class BankAccount {
         .fetchOne()
         .getId();
 
-
-    for (int i = 0; i < committedTransactions.size(); i++) {
-      var tx = committedTransactions.get(i);
-      DSL.using(dataSource, SQLDialect.POSTGRES)
-          .insertInto(BANK_ACCOUNT_TX,
-              BANK_ACCOUNT_TX.BANK_ACCOUNT_ID,
-              BANK_ACCOUNT_TX.INDEX,
-              BANK_ACCOUNT_TX.AMOUNT,
-              BANK_ACCOUNT_TX.BOOKING_TIME,
-              BANK_ACCOUNT_TX.TYPE)
-          .values(bankAccountId, i, tx.amount().big(), tx.bookingTime(), tx.type().name())
-          .execute();
-    }
+    committedTransactions.save(dataSource, bankAccountId);
 
     return bankAccountId;
-
   }
 
   private class EnforceOpen {
@@ -150,31 +147,31 @@ public class BankAccount {
 
   private static class EnforcePositiveBalance {
 
-    private final Transactions uncommittedTransactions;
+    private final Transactions transactions;
 
-    private EnforcePositiveBalance(Transactions uncommittedTransactions) {
-      this.uncommittedTransactions = uncommittedTransactions;
+    private EnforcePositiveBalance(Transactions transactions) {
+      this.transactions = transactions;
       checkState(isPositiveBalance(), "Not enough funds available on your account.");
     }
 
     private boolean isPositiveBalance() {
-      return uncommittedTransactions.balance().isAtLeast(ZERO);
+      return transactions.balance().isAtLeast(ZERO);
     }
   }
 
   private class EnforceWithdrawalLimits {
 
-    private final Transactions uncommittedTransactions;
+    private final Transactions transactions;
 
-    private EnforceWithdrawalLimits(Transactions uncommittedTransactions) {
-      this.uncommittedTransactions = uncommittedTransactions;
+    private EnforceWithdrawalLimits(Transactions transactions) {
+      this.transactions = transactions;
       var dailyLimit = withdrawalLimit.dailyLimit();
       var notExceeded = withdrawn(today()).isAtMost(dailyLimit);
       checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
     private $ withdrawn(LocalDate someDay) {
-      return uncommittedTransactions
+      return transactions
           .thatAre(Transaction.bookedOn(someDay))
           .thatAre(Transaction.isWithdrawal())
           .balance()

@@ -37,7 +37,15 @@ class BankAccountReadWriteTest {
     transactions.wrap(() -> {
       var it = new BankAccount(dataSource, id);
       assertThat(it.balance()).isEqualTo($("30.00"));
+      it.deposit($("70.00"));
+      it.save(dataSource);
     }).run();
+
+    transactions.wrap(() -> {
+      var it = new BankAccount(dataSource, id);
+      assertThat(it.balance()).isEqualTo($("100.00"));
+    }).run();
+
   }
 
 }

@@ -6,8 +6,6 @@ import static awsm.infrastructure.time.TimeMachine.clock;
 
 import awsm.application.trading.impl.$;
 import awsm.infrastructure.modeling.DomainEntity;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Predicate;
@@ -49,12 +47,6 @@ class Transaction implements DomainEntity {
     this.type = type;
     this.amount = amount;
     this.bookingTime = LocalDateTime.now(clock());
-  }
-
-  Transaction(ResultSet rs) throws SQLException {
-    this.amount = $(rs.getBigDecimal("amount"));
-    this.bookingTime = rs.getTimestamp("booking_time").toLocalDateTime();
-    this.type = Type.valueOf(rs.getString("type"));
   }
 
   Transaction(BankAccountTxRecord rec) {
