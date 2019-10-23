@@ -1,21 +1,25 @@
 package awsm.application.banking.impl;
 
+import static awsm.application.banking.impl.Transactions.Tx.recordOfAccount;
 import static awsm.application.trading.impl.$.$;
 import static awsm.application.trading.impl.$.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
-import static org.jooq.SQLDialect.POSTGRES;
+import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
+import awsm.application.banking.impl.Transactions.Tx;
 import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.DomainEntity;
 import java.time.LocalDate;
 import java.util.Optional;
-import javax.sql.DataSource;
+import java.util.function.Function;
 import jooq.tables.records.BankAccountRecord;
-import org.jooq.impl.DSL;
+import org.jooq.DSLContext;
 
-public class BankAccount {
+public class BankAccount implements DomainEntity<BankAccount> {
 
   enum Status {
     OPEN, CLOSED
@@ -25,45 +29,55 @@ public class BankAccount {
     CHECKING, SAVINGS
   }
 
-  private Status status;
+  private Status status = Status.OPEN;
 
-  @SuppressWarnings("unused")
   private final Type type;
 
   private final WithdrawalLimit withdrawalLimit;
 
   private final Iban iban;
 
-  private Transactions committedTransactions;
+  private Transactions committedTransactions = Transactions.none();
 
-  private Optional<Long> pk = Optional.empty();
+  private Optional<Long> id = Optional.empty();
 
-  public BankAccount(Type type, WithdrawalLimit withdrawalLimit) {
-    this.committedTransactions = Transactions.none();
-    this.iban = Iban.newlyGenerated();
-    this.type = type;
-    this.status = Status.OPEN;
-    this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
-  }
-
-  BankAccount(DataSource dataSource, long id) {
-    var rec = DSL.using(dataSource, POSTGRES)
+  public BankAccount(DSLContext dsl, long id) {
+    var jooqAccount = dsl
         .selectFrom(BANK_ACCOUNT)
         .where(BANK_ACCOUNT.ID.equal(id))
         .fetchAny();
 
-    this.pk = Optional.of(id);
-    this.committedTransactions = new Transactions(dataSource, id);
-    this.iban = new Iban(rec.getIban());
-    this.status = Status.valueOf(rec.getStatus());
-    this.type = Type.valueOf(rec.getType());
-    this.withdrawalLimit = new WithdrawalLimit($(rec.getDailyLimit()));
+    this.committedTransactions = new Transactions(
+        dsl
+            .selectFrom(BANK_ACCOUNT_TX)
+            .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
+            .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
+            .fetchStream()
+            .map(Tx::new)
+            .collect(toList())
+    );
+
+    this.type = Type.valueOf(jooqAccount.getType());
+    this.iban = new Iban(jooqAccount.getIban());
+    this.id = Optional.of(jooqAccount.getId());
+    this.status = Status.valueOf(jooqAccount.getStatus());
+    this.withdrawalLimit = new WithdrawalLimit($(jooqAccount.getDailyLimit()));
   }
 
-  public Transaction withdraw($ amount) {
+  public BankAccount(Type type, Iban iban, WithdrawalLimit withdrawalLimit) {
+    this.iban = iban;
+    this.type = type;
+    this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
+  }
+
+  public Optional<Long> id() {
+    return id;
+  }
+
+  public Tx withdraw($ amount) {
     new EnforceOpen();
 
-    var tx = Transaction.withdrawalOf(amount);
+    var tx = Tx.withdrawalOf(amount);
     var uncommittedTransactions = committedTransactions.with(tx);
 
     new EnforcePositiveBalance(uncommittedTransactions);
@@ -74,10 +88,10 @@ public class BankAccount {
     return tx;
   }
 
-  public Transaction deposit($ amount) {
+  public Tx deposit($ amount) {
     new EnforceOpen();
 
-    var tx = Transaction.depositOf(amount);
+    var tx = Tx.depositOf(amount);
 
     var uncommittedTransactions = committedTransactions.with(tx);
 
@@ -99,40 +113,15 @@ public class BankAccount {
     status = Status.CLOSED;
   }
 
-  public void save(DataSource dataSource) {
-    var pk = this.pk.orElseThrow();
-    BankAccountRecord rec = new BankAccountRecord(
-        pk,
-        iban + "",
-        status.name(),
-        type.name(),
-        withdrawalLimit.dailyLimit().big());
-
-    DSL.using(dataSource, POSTGRES)
-        .executeUpdate(rec);
-
-    committedTransactions.save(dataSource, pk);
+  public void saveNew(DSLContext dsl) {
+    new InsertBankAccount(dsl);
+    new InsertTransactions(dsl);
   }
 
-  long saveNew(DataSource dataSource) {
-    var bankAccountId = DSL.using(dataSource, POSTGRES)
-        .insertInto(BANK_ACCOUNT,
-            BANK_ACCOUNT.IBAN,
-            BANK_ACCOUNT.STATUS,
-            BANK_ACCOUNT.TYPE,
-            BANK_ACCOUNT.DAILY_LIMIT)
-        .values(
-            iban + "",
-            status.name(),
-            type.name(),
-            withdrawalLimit.dailyLimit().big())
-        .returning(BANK_ACCOUNT.ID)
-        .fetchOne()
-        .getId();
-
-    committedTransactions.save(dataSource, bankAccountId);
-
-    return bankAccountId;
+  public void save(DSLContext dsl) {
+    new UpdateBankAccount(dsl);
+    new DeleteTransactions(dsl);
+    new InsertTransactions(dsl);
   }
 
   private class EnforceOpen {
@@ -172,10 +161,63 @@ public class BankAccount {
 
     private $ withdrawn(LocalDate someDay) {
       return transactions
-          .thatAre(Transaction.bookedOn(someDay))
-          .thatAre(Transaction.isWithdrawal())
+          .thatAre(Tx.bookedOn(someDay))
+          .thatAre(Tx.isWithdrawal())
           .balance()
           .abs();
+    }
+  }
+
+  private class InsertTransactions {
+    InsertTransactions(DSLContext dsl) {
+      committedTransactions.stream()
+          .map(recordOfAccount(id.orElseThrow()))
+          .forEach(rec -> dsl
+              .insertInto(BANK_ACCOUNT_TX)
+              .set(rec)
+              .execute());
+    }
+  }
+
+  private class DeleteTransactions {
+    DeleteTransactions(DSLContext dsl) {
+      dsl
+          .deleteFrom(BANK_ACCOUNT_TX)
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(id.orElseThrow()))
+          .execute();
+    }
+  }
+
+  private class UpdateBankAccount {
+    UpdateBankAccount(DSLContext dsl) {
+      dsl.update(BANK_ACCOUNT)
+          .set(as(new Record()))
+          .where(BANK_ACCOUNT.ID.equal(id.orElseThrow()))
+          .execute();
+    }
+  }
+
+  private class InsertBankAccount {
+    InsertBankAccount(DSLContext dsl) {
+      id = Optional.of(
+          dsl
+              .insertInto(BANK_ACCOUNT)
+              .set(as(new Record()))
+              .returning(BANK_ACCOUNT.ID)
+              .fetchOne()
+              .getId()
+      );
+    }
+  }
+
+  private static class Record implements Function<BankAccount, BankAccountRecord> {
+    @Override
+    public BankAccountRecord apply(BankAccount it) {
+      return new BankAccountRecord()
+          .setIban(it.iban + "")
+          .setStatus(it.status.name())
+          .setType(it.type.name())
+          .setDailyLimit(it.withdrawalLimit.dailyLimit().big());
     }
   }
 

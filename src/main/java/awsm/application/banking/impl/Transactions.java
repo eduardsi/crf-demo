@@ -1,38 +1,31 @@
 package awsm.application.banking.impl;
 
-import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
+import static awsm.application.trading.impl.$.$;
+import static awsm.application.trading.impl.$.ZERO;
+import static awsm.infrastructure.time.TimeMachine.clock;
 
 import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.DomainEntity;
 import com.google.common.collect.ImmutableList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import javax.sql.DataSource;
+import jooq.tables.records.BankAccountTxRecord;
 import one.util.streamex.StreamEx;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
+import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
-  private final ImmutableList<Transaction> transactions;
+  private final ImmutableList<Tx> transactions;
 
-  private Transactions(List<Transaction> transactions) {
+  Transactions(List<Tx> transactions) {
     this.transactions = ImmutableList.copyOf(transactions);
   }
 
-  Transactions(DataSource dataSource, long id) {
-    this(DSL.using(dataSource, SQLDialect.POSTGRES)
-        .selectFrom(BANK_ACCOUNT_TX)
-        .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
-        .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
-        .fetchStream()
-        .map(Transaction::new)
-        .collect(Collectors.toList()));
-
-  }
-
-  Transactions thatAre(Predicate<Transaction> condition) {
+  Transactions thatAre(Predicate<Tx> condition) {
     return new Transactions(stream().filter(condition).toList());
   }
 
@@ -40,7 +33,7 @@ class Transactions {
     return balance($.ZERO, (balance, tx) -> {});
   }
 
-  $ balance($ seed, BiConsumer<$, Transaction> consumer) {
+  $ balance($ seed, BiConsumer<$, Tx> consumer) {
     return stream().foldLeft(seed, (balance, transaction) -> {
       var newBalance = transaction.apply(balance);
       consumer.accept(newBalance, transaction);
@@ -48,40 +41,123 @@ class Transactions {
     });
   }
 
-  Transactions with(Transaction tx) {
-    return new Transactions(ImmutableList.<Transaction>builder()
+  Transactions with(Tx tx) {
+    return new Transactions(ImmutableList.<Tx>builder()
         .addAll(transactions)
         .add(tx)
         .build());
   }
 
-  private StreamEx<Transaction> stream() {
+
+  StreamEx<Tx> stream() {
     return StreamEx.of(transactions);
-  }
-
-  void save(DataSource dataSource, long bankAccountId) {
-    var dsl = DSL.using(dataSource, SQLDialect.POSTGRES);
-    dsl
-        .deleteFrom(BANK_ACCOUNT_TX)
-        .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(bankAccountId))
-        .execute();
-
-    for (int i = 0; i < transactions.size(); i++) {
-      var tx = transactions.get(i);
-      dsl
-          .insertInto(BANK_ACCOUNT_TX,
-              BANK_ACCOUNT_TX.BANK_ACCOUNT_ID,
-              BANK_ACCOUNT_TX.INDEX,
-              BANK_ACCOUNT_TX.AMOUNT,
-              BANK_ACCOUNT_TX.BOOKING_TIME,
-              BANK_ACCOUNT_TX.TYPE)
-          .values(bankAccountId, i, tx.amount().big(), tx.bookingTime(), tx.type().name())
-          .execute();
-    }
   }
 
   static Transactions none() {
     return new Transactions(ImmutableList.of());
   }
 
+  static class Tx implements DomainEntity<Tx> {
+
+    public enum Type {
+      DEPOSIT {
+        @Override
+        $ apply($ amount, $ balance) {
+          return balance.add(amount);
+        }
+      },
+
+      WITHDRAWAL {
+        @Override
+        $ apply($ amount, $ balance) {
+          return balance.subtract(amount);
+        }
+      };
+
+      abstract $ apply($ amount, $ balance);
+
+      @Override
+      public String toString() {
+        return name().toLowerCase();
+      }
+    }
+
+    private final $ amount;
+
+    private final LocalDateTime bookingTime;
+
+    private final Type type;
+
+    Tx(BankAccountTxRecord jooqTx) {
+      this(
+          Type.valueOf(jooqTx.getType()),
+          $(jooqTx.getAmount()),
+          jooqTx.getBookingTime()
+      );
+    }
+
+    Tx(Type type, $ amount, LocalDateTime bookingTime) {
+      this.type = type;
+      this.amount = amount;
+      this.bookingTime = bookingTime;
+    }
+
+    LocalDateTime bookingTime() {
+      return bookingTime;
+    }
+
+    private LocalDate bookingDate() {
+      return bookingTime.toLocalDate();
+    }
+
+    $ apply($ balance) {
+      return type.apply(amount, balance);
+    }
+
+    $ withdrawn() {
+      return testIf(isWithdrawal()) ? amount : ZERO;
+    }
+
+    $ deposited() {
+      return testIf(isDeposit()) ? amount : ZERO;
+    }
+
+    static Predicate<Tx> isWithdrawal() {
+      return tx -> tx.type == Type.WITHDRAWAL;
+    }
+
+    private static Predicate<Tx> isDeposit() {
+      return tx -> tx.type == Type.DEPOSIT;
+    }
+
+    static Predicate<Tx> bookedOn(LocalDate date) {
+      return tx -> tx.bookingDate().isEqual(date);
+    }
+
+    static Predicate<Tx> bookedBefore(LocalDate date) {
+      return tx -> LocalDateRange.ofUnboundedStart(date).contains(tx.bookingDate());
+    }
+
+    static Predicate<Tx> bookedDuring(LocalDate from, LocalDate to) {
+      return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate());
+    }
+
+    static Tx withdrawalOf($ amount) {
+      return new Tx(Tx.Type.WITHDRAWAL, amount, LocalDateTime.now(clock()));
+    }
+
+    static Tx depositOf($ amount) {
+      return new Tx(Tx.Type.DEPOSIT, amount, LocalDateTime.now(clock()));
+    }
+
+    static Function<Tx, BankAccountTxRecord> recordOfAccount(long accountId) {
+      return it -> new BankAccountTxRecord()
+          .setBankAccountId(accountId)
+          .setAmount(it.amount.big())
+          .setBookingTime(it.bookingTime)
+          .setType(it.type.name());
+    }
+
+
+  }
 }

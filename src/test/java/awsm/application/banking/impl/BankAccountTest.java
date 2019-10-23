@@ -19,7 +19,7 @@ import org.threeten.extra.MutableClock;
 @DisplayName("bank account")
 class BankAccountTest {
 
-  private BankAccount account = new BankAccount(SAVINGS, new WithdrawalLimit($("100.00")));
+  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit($("100.00")));
 
   private MutableClock clock = MutableClock.epochUTC();
 

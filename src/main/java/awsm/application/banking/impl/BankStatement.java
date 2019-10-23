@@ -21,16 +21,16 @@ class BankStatement {
   private final Balance startingBalance;
 
   BankStatement(LocalDate from, LocalDate to, Transactions transactions) {
-    var startingBalance = transactions.thatAre(Transaction.bookedBefore(from)).balance();
+    var startingBalance = transactions.thatAre(Transactions.Tx.bookedBefore(from)).balance();
     var closingBalance = transactions
-        .thatAre(Transaction.bookedDuring(from, to))
+        .thatAre(Transactions.Tx.bookedDuring(from, to))
         .balance(startingBalance, (balance, tx) -> enter(tx, balance));
 
     this.startingBalance = new Balance(from, startingBalance);
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void enter(Transaction tx, $ balance) {
+  private void enter(Transactions.Tx tx, $ balance) {
     transactions.add(new Entry(
         tx.bookingTime(),
         tx.withdrawn(),

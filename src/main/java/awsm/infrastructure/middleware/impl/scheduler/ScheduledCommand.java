@@ -1,12 +1,11 @@
 package awsm.infrastructure.middleware.impl.scheduler;
 
-import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 import static com.google.common.base.Preconditions.checkState;
 import static com.machinezoo.noexception.Exceptions.sneak;
 import static java.time.ZoneOffset.UTC;
+import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 
 import awsm.infrastructure.middleware.Command;
-import jooq.tables.records.ScheduledCommandRecord;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,11 +13,10 @@ import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
-import javax.sql.DataSource;
+import jooq.tables.records.ScheduledCommandRecord;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
+import org.jooq.DSLContext;
 
 class ScheduledCommand {
 
@@ -26,8 +24,12 @@ class ScheduledCommand {
     PENDING, DONE
   }
 
-  @Nullable
-  private Long id;
+  private static final ObjectMapper mapper = new ObjectMapper();
+
+  static {
+    mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+    mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+  }
 
   private int ranTimes;
 
@@ -46,23 +48,23 @@ class ScheduledCommand {
     this.command = command;
   }
 
-  ScheduledCommand(ScheduledCommandRecord record) {
-    this.ranTimes = record.getRanTimes();
-    this.lastRunTime = record.getLastRunTime();
-    this.creationDate = record.getCreationDate();
-    this.status = Status.valueOf(record.getStatus());
-    this.command = new CommandConverter().convertToEntityAttribute(record.getCommand());
+  ScheduledCommand(ScheduledCommandRecord rec) {
+    this.ranTimes = rec.getRanTimes();
+    this.lastRunTime = rec.getLastRunTime();
+    this.creationDate = rec.getCreationDate();
+    this.status = Status.valueOf(rec.getStatus());
+    this.command = sneak().get(() -> mapper.readValue(rec.getCommand(), Command.class));
   }
 
-  void saveNew(DataSource dataSource) {
-    DSL.using(dataSource, SQLDialect.POSTGRES)
+  void saveNew(DSLContext dsl) {
+    dsl
       .insertInto(SCHEDULED_COMMAND,
           SCHEDULED_COMMAND.RAN_TIMES,
           SCHEDULED_COMMAND.LAST_RUN_TIME,
           SCHEDULED_COMMAND.CREATION_DATE,
           SCHEDULED_COMMAND.STATUS,
           SCHEDULED_COMMAND.COMMAND)
-      .values(ranTimes, lastRunTime, creationDate, status.name(), new CommandConverter().convertToDatabaseColumn(command))
+      .values(ranTimes, lastRunTime, creationDate, status.name(), sneak().get(() -> mapper.writeValueAsString(command)))
       .execute();
   }
 
@@ -78,24 +80,6 @@ class ScheduledCommand {
   @Override
   public String toString() {
     return ReflectionToStringBuilder.toString(this, ToStringStyle.SIMPLE_STYLE);
-  }
-
-  private static class CommandConverter {
-
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    static {
-      mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-      mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-    }
-
-    String convertToDatabaseColumn(Command attribute) {
-      return sneak().get(() -> mapper.writeValueAsString(attribute));
-    }
-
-    Command convertToEntityAttribute(String command) {
-      return sneak().get(() -> mapper.readValue(command, Command.class));
-    }
   }
 
 }
