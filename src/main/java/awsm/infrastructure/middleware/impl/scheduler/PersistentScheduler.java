@@ -2,7 +2,6 @@ package awsm.infrastructure.middleware.impl.scheduler;
 
 import awsm.infrastructure.middleware.Command;
 import awsm.infrastructure.middleware.Scheduler;
-import org.jooq.DSLContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
@@ -10,15 +9,16 @@ import org.springframework.stereotype.Component;
 @Component
 class PersistentScheduler implements Scheduler {
 
-  private final DSLContext dsl;
+  private final ScheduledCommand.Repository repository;
 
-  public PersistentScheduler(DSLContext dsl) {
-    this.dsl = dsl;
+  public PersistentScheduler(ScheduledCommand.Repository repository) {
+    this.repository = repository;
   }
 
   @Override
   public void schedule(Command command) {
-    new ScheduledCommand(command).saveNew(dsl);
+    var scheduledCommand = new ScheduledCommand(command);
+    repository.insert(scheduledCommand);
   }
 
   @Configuration

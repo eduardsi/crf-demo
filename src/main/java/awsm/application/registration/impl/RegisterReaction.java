@@ -11,6 +11,7 @@ import awsm.infrastructure.middleware.ReturnsNothing;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import awsm.infrastructure.middleware.impl.react.validation.Validator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 

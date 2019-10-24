@@ -100,6 +100,8 @@ class RegisterTest {
     register()
         .andExpect(status().isOk())
         .andExpect(content().string(hasLength(10)));
+
+    Thread.sleep(9999999);
   }
 
   @Test

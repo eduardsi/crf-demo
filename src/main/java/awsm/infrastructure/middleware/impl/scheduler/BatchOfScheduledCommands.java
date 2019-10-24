@@ -1,8 +1,6 @@
 package awsm.infrastructure.middleware.impl.scheduler;
 
-import static awsm.infrastructure.middleware.impl.scheduler.ScheduledCommand.Status.PENDING;
 import static java.util.concurrent.CompletableFuture.allOf;
-import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -21,9 +19,11 @@ class BatchOfScheduledCommands {
 
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
+  private final ScheduledCommand.Repository repository;
   private final DSLContext dsl;
 
-  public BatchOfScheduledCommands(DSLContext dsl) {
+  public BatchOfScheduledCommands(DSLContext dsl, ScheduledCommand.Repository repository) {
+    this.repository = repository;
     this.dsl = dsl;
   }
 
@@ -36,13 +36,10 @@ class BatchOfScheduledCommands {
   }
 
   private Stream<CompletableFuture> execute() {
-    return dsl
-        .selectFrom(SCHEDULED_COMMAND)
-        .where(SCHEDULED_COMMAND.RAN_TIMES.lessThan(3), SCHEDULED_COMMAND.STATUS.eq(PENDING.name()))
-        .limit(BATCH_SIZE)
-        .forUpdate()
-        .fetchStream()
-        .map(ScheduledCommand::new)
-        .map(c -> c.executeIn(THREAD_POOL));
+    return repository
+        .batchOfPending(BATCH_SIZE)
+        .map(command -> command
+            .executeIn(THREAD_POOL)
+            .thenAccept(repository::update));
   }
 }
