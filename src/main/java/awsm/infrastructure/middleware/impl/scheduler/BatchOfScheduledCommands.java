@@ -4,7 +4,6 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -23,27 +22,37 @@ class BatchOfScheduledCommands {
 
   private final ScheduledCommand.Repository repository;
 
-  private final TransactionTemplate separateTx;
+  private final PlatformTransactionManager transactionManager;
 
   public BatchOfScheduledCommands(ScheduledCommand.Repository repository, PlatformTransactionManager transactionManager) {
     this.repository = repository;
-    this.separateTx = new TransactionTemplate(transactionManager);
-    separateTx.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
+    this.transactionManager = transactionManager;
   }
 
-  @Transactional(noRollbackFor = CompletionException.class)
+  @Transactional(readOnly = true)
   @Scheduled(initialDelay = 5000, fixedDelay = 5000)
-  public void executeAndWait() {
+  public void runAndWaitForAll() {
     allOf(
-        execute().toArray(CompletableFuture[]::new)
+        run().toArray(CompletableFuture[]::new)
     ).join();
   }
 
-  private Stream<CompletableFuture> execute() {
+  private Stream<CompletableFuture> run() {
     return repository
-        .batchOfPending(BATCH_SIZE)
-        .map(command -> command
-            .executeIn(THREAD_POOL, repository, separateTx)
-        );
+        .list(BATCH_SIZE)
+        .map(this::wrapInATx)
+        .map(this::runInPool);
   }
+
+  private Runnable wrapInATx(Runnable runnable) {
+    var newTx = new TransactionTemplate(transactionManager);
+    newTx.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
+    return () -> newTx.executeWithoutResult(txStatus -> runnable.run());
+  }
+
+  private CompletableFuture<Void> runInPool(Runnable runnable) {
+    return CompletableFuture.runAsync(runnable, THREAD_POOL);
+  }
+
+
 }
