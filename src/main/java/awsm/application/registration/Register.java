@@ -1,7 +1,7 @@
 package awsm.application.registration;
 
 import awsm.infrastructure.jackson.JacksonConstructor;
-import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.MiddlewareCommand;
 import awsm.infrastructure.middleware.impl.resilience.RateLimit;
 import awsm.infrastructure.modeling.DomainEvent;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-public class Register implements Command<CharSequence> {
+public class Register implements MiddlewareCommand<CharSequence> {
 
   public final String email;
 

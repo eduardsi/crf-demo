@@ -4,7 +4,7 @@ import static awsm.application.trading.impl.$.$;
 
 import awsm.application.trading.impl.Offers;
 import awsm.infrastructure.hashing.UnhashId;
-import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.MiddlewareCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-class RaiseOfferPrice implements Command<BigDecimal> {
+class RaiseOfferPrice implements MiddlewareCommand<BigDecimal> {
 
   private final String offerId;
   private final BigDecimal ratio;

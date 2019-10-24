@@ -1,10 +1,8 @@
 package awsm.infrastructure.middleware.impl.resilience;
 
 import awsm.infrastructure.middleware.Command;
-import awsm.infrastructure.middleware.impl.react.Reaction;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
-import org.springframework.stereotype.Component;
 
 public class Try<R, C extends Command<R>> implements Command<R> {
 
@@ -14,13 +12,10 @@ public class Try<R, C extends Command<R>> implements Command<R> {
     this.origin = origin;
   }
 
-  @Component
-  static class Re<R, C extends Command<R>> implements Reaction<Try<R, C>, R> {
-    @Override
-    public R react(Try<R, C> cmd) {
-      var retry = new RetryPolicy<>().withMaxAttempts(3);
-      return Failsafe.with(retry).get(cmd.origin::execute);
-    }
+  @Override
+  public R execute() {
+    var retry = new RetryPolicy<>().withMaxAttempts(3);
+    return Failsafe.with(retry).get(origin::execute);
   }
 
 }

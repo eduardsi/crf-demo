@@ -6,12 +6,11 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 
 import awsm.application.registration.Register;
 import awsm.infrastructure.hashing.HashId;
-import awsm.infrastructure.middleware.Command;
 import awsm.infrastructure.middleware.ReturnsNothing;
+import awsm.infrastructure.middleware.ScheduledCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import awsm.infrastructure.middleware.impl.react.validation.Validator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +54,7 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
     return new HashId(customerId);
   }
 
-  static class Welcome implements Command<ReturnsNothing> {
+  static class Welcome implements ScheduledCommand {
 
     private final long customerId;
 

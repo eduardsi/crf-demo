@@ -1,11 +1,11 @@
 package awsm.application.banking;
 
 import awsm.application.registration.FindACustomer;
-import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.MiddlewareCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import org.springframework.stereotype.Component;
 
-class ApplyForBankAccount implements Command<ApplyForBankAccount.ApplicationStatus> {
+class ApplyForBankAccount implements MiddlewareCommand<ApplyForBankAccount.ApplicationStatus> {
 
   private final String type;
 

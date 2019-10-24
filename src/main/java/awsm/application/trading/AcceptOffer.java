@@ -6,7 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import awsm.application.trading.impl.Offers;
 import awsm.infrastructure.hashing.UnhashId;
-import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.MiddlewareCommand;
 import awsm.infrastructure.middleware.ReturnsNothing;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import java.math.BigDecimal;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-class AcceptOffer implements Command<ReturnsNothing> {
+class AcceptOffer implements MiddlewareCommand<ReturnsNothing> {
 
   private final String offerId;
   private final BigDecimal limit;

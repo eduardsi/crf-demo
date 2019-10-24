@@ -5,7 +5,7 @@ import static awsm.application.trading.impl.$.$;
 import awsm.application.trading.impl.Offer;
 import awsm.application.trading.impl.Offers;
 import awsm.infrastructure.hashing.HashId;
-import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.MiddlewareCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-class PlaceOffer implements Command<CharSequence> {
+class PlaceOffer implements MiddlewareCommand<CharSequence> {
 
   private final BigDecimal price;
 

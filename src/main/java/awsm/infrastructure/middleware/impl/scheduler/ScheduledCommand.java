@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 class ScheduledCommand {
 
@@ -45,10 +47,12 @@ class ScheduledCommand {
 
   private final Command command;
 
-  private int ranTimes;
+  private Optional<Long> id = Optional.empty();
+
+  private int attempts;
 
   @Nullable
-  private LocalDateTime lastRunTime;
+  private LocalDateTime attemptTime;
 
   private Status status = Status.PENDING;
 
@@ -61,19 +65,22 @@ class ScheduledCommand {
     this.command = command;
   }
 
-  CompletableFuture<ScheduledCommand> executeIn(Executor executor) {
+  void saveNew(Repository repository) {
+    repository.insert(this);
+  }
+
+  CompletableFuture<Void> executeIn(Executor executor, Repository repository, TransactionTemplate tx) {
     checkState(status == Status.PENDING, "Cannot execute work that is not %s", status);
-    this.ranTimes++;
-    this.lastRunTime = LocalDateTime.now(UTC);
+    this.attempts++;
+    this.attemptTime = LocalDateTime.now(UTC);
     return CompletableFuture
-        .supplyAsync(() -> {
-          this.command.execute();
-          return this;
-        }, executor)
-        .thenApply(it -> {
-          this.status = Status.DONE;
-          return this;
-        });
+        .runAsync(() -> {
+          tx.executeWithoutResult(whateverStatus -> {
+            this.command.execute();
+            this.status = Status.DONE;
+            repository.update(this);
+          });
+        }, executor);
   }
 
   @Override
@@ -93,7 +100,7 @@ class ScheduledCommand {
     Stream<ScheduledCommand> batchOfPending(long limit) {
       return dsl
           .selectFrom(SCHEDULED_COMMAND)
-          .where(SCHEDULED_COMMAND.RAN_TIMES.lessThan(3), SCHEDULED_COMMAND.STATUS.eq(PENDING.name()))
+          .where(SCHEDULED_COMMAND.ATTEMPTS.lessThan(3), SCHEDULED_COMMAND.STATUS.eq(PENDING.name()))
           .limit(limit)
           .forUpdate()
           .fetchStream()
@@ -104,30 +111,35 @@ class ScheduledCommand {
       return jooq -> {
         var cmd = sneak().get(() -> mapper.readValue(jooq.getCommand(), Command.class));
         var self = new ScheduledCommand(jooq.getCreationDate(), cmd);
-        self.ranTimes = jooq.getRanTimes();
-        self.lastRunTime = jooq.getLastRunTime();
+        self.attempts = jooq.getAttempts();
+        self.attemptTime = jooq.getAttemptTime();
         self.status = Status.valueOf(jooq.getStatus());
+        self.id = Optional.of(jooq.getId());
         return self;
       };
     }
 
-    void insert(ScheduledCommand self) {
-      dsl
+    private void insert(ScheduledCommand self) {
+      long id = dsl
           .insertInto(SCHEDULED_COMMAND)
-            .set(SCHEDULED_COMMAND.RAN_TIMES, self.ranTimes)
-            .set(SCHEDULED_COMMAND.LAST_RUN_TIME, self.lastRunTime)
+            .set(SCHEDULED_COMMAND.ATTEMPTS, self.attempts)
+            .set(SCHEDULED_COMMAND.ATTEMPT_TIME, self.attemptTime)
             .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
             .set(SCHEDULED_COMMAND.STATUS, self.status.name())
             .set(SCHEDULED_COMMAND.COMMAND, sneak().get(() -> mapper.writeValueAsString(self.command)))
-            .execute();
+            .returning(SCHEDULED_COMMAND.ID)
+            .fetchOne()
+            .getId();
+      self.id = Optional.of(id);
     }
 
-    void update(ScheduledCommand self) {
+    private void update(ScheduledCommand self) {
       dsl
           .update(SCHEDULED_COMMAND)
-          .set(SCHEDULED_COMMAND.RAN_TIMES, self.ranTimes)
-          .set(SCHEDULED_COMMAND.LAST_RUN_TIME, self.lastRunTime)
+          .set(SCHEDULED_COMMAND.ATTEMPTS, self.attempts)
+          .set(SCHEDULED_COMMAND.ATTEMPT_TIME, self.attemptTime)
           .set(SCHEDULED_COMMAND.STATUS, self.status.name())
+          .where(SCHEDULED_COMMAND.ID.equal(self.id.orElseThrow()))
           .execute();
     }
   }

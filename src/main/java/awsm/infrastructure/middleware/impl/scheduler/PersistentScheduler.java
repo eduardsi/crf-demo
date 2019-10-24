@@ -18,7 +18,7 @@ class PersistentScheduler implements Scheduler {
   @Override
   public void schedule(Command command) {
     var scheduledCommand = new ScheduledCommand(command);
-    repository.insert(scheduledCommand);
+    scheduledCommand.saveNew(repository);
   }
 
   @Configuration
