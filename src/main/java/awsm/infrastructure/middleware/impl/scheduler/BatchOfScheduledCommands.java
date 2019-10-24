@@ -7,7 +7,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-import org.jooq.DSLContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +19,9 @@ class BatchOfScheduledCommands {
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
   private final ScheduledCommand.Repository repository;
-  private final DSLContext dsl;
 
-  public BatchOfScheduledCommands(DSLContext dsl, ScheduledCommand.Repository repository) {
+  public BatchOfScheduledCommands(ScheduledCommand.Repository repository) {
     this.repository = repository;
-    this.dsl = dsl;
   }
 
   @Transactional(noRollbackFor = CompletionException.class)
