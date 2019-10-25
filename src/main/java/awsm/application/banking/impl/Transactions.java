@@ -23,18 +23,22 @@ import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
+  private final BankAccount bankAccount;
+
   private final ImmutableList<Transaction> transactions;
 
-  Transactions() {
-    this(emptyList());
+  Transactions(BankAccount bankAccount) {
+    this(bankAccount, emptyList());
   }
 
-  private Transactions(List<Transaction> transactions) {
+  private Transactions(BankAccount bankAccount, List<Transaction> transactions) {
+    this.bankAccount = bankAccount;
     this.transactions = ImmutableList.copyOf(transactions);
   }
 
   Transactions thatAre(Predicate<Transaction> condition) {
     return new Transactions(
+        bankAccount,
         transactions
             .stream()
             .filter(condition)
@@ -59,10 +63,20 @@ class Transactions {
   }
 
   Transactions with(Transaction tx) {
-    return new Transactions(ImmutableList.<Transaction>builder()
-        .addAll(transactions)
-        .add(tx)
-        .build());
+    return new Transactions(
+        bankAccount,
+        ImmutableList.<Transaction>builder()
+          .addAll(transactions)
+          .add(tx)
+          .build());
+  }
+
+  void saveNew(Repository repository) {
+    repository.insert(this);
+  }
+
+  void delete(Repository repository) {
+    repository.delete(this);
   }
 
   static class Transaction {
@@ -146,27 +160,29 @@ class Transactions {
       this.dsl = dsl;
     }
 
-    void insert(BankAccount bankAccount, Transactions self) {
+    private void insert(Transactions self) {
       self
           .transactions
           .forEach(tx -> dsl
               .insertInto(BANK_ACCOUNT_TX)
-              .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, bankAccount.id())
+              .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, self.bankAccount.id())
               .set(BANK_ACCOUNT_TX.AMOUNT, tx.amount.toBigDecimal())
               .set(BANK_ACCOUNT_TX.BOOKING_TIME, tx.bookingTime)
               .set(BANK_ACCOUNT_TX.TYPE, tx.type.name())
               .execute());
     }
 
-    void delete(BankAccount bankAccount) {
+    private void delete(Transactions self) {
       dsl
           .deleteFrom(BANK_ACCOUNT_TX)
-          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(bankAccount.id()))
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(self.bankAccount.id()))
           .execute();
     }
 
-    Transactions list(BankAccount bankAccount) {
-      return new Transactions(dsl
+    Transactions listBy(BankAccount bankAccount) {
+      return new Transactions(
+          bankAccount,
+          dsl
           .selectFrom(BANK_ACCOUNT_TX)
           .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(bankAccount.id()))
           .orderBy(BANK_ACCOUNT_TX.INDEX.asc())

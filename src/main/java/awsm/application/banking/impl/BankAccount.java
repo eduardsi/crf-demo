@@ -33,7 +33,7 @@ public class BankAccount {
 
   private final Iban iban;
 
-  private Transactions committedTransactions = new Transactions();
+  private Transactions committedTransactions = new Transactions(this);
 
   private Optional<Long> id = Optional.empty();
 
@@ -154,8 +154,8 @@ public class BankAccount {
           .set(toJooq(self))
           .where(BANK_ACCOUNT.ID.equal(self.id.orElseThrow()))
           .execute();
-      transactionsRepository.delete(self);
-      transactionsRepository.insert(self, self.committedTransactions);
+      self.committedTransactions.delete(transactionsRepository);
+      self.committedTransactions.saveNew(transactionsRepository);
     }
 
     private void insert(BankAccount self) {
@@ -166,7 +166,7 @@ public class BankAccount {
               .fetchOne()
               .getId();
       self.id = Optional.of(id);
-      transactionsRepository.insert(self, self.committedTransactions);
+      self.committedTransactions.saveNew(transactionsRepository);
     }
 
     BankAccount singleBy(long id) {
@@ -186,7 +186,7 @@ public class BankAccount {
             new WithdrawalLimit(Amount.of(jooq.getDailyLimit())));
         self.id = Optional.of(jooq.getId());
         self.status = Status.valueOf(jooq.getStatus());
-        self.committedTransactions = transactionsRepository.list(self);
+        self.committedTransactions = transactionsRepository.listBy(self);
         return self;
       };
     }
