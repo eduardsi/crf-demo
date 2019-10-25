@@ -4,6 +4,7 @@ import static awsm.application.banking.impl.Transactions.Transaction.Type.DEPOSI
 import static awsm.application.banking.impl.Transactions.Transaction.Type.WITHDRAWAL;
 import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.clock;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
@@ -25,12 +26,21 @@ class Transactions {
 
   private final ImmutableList<Transaction> transactions;
 
+  Transactions() {
+    this(emptyList());
+  }
+
   private Transactions(List<Transaction> transactions) {
     this.transactions = ImmutableList.copyOf(transactions);
   }
 
   Transactions thatAre(Predicate<Transaction> condition) {
-    return new Transactions(stream().filter(condition).toList());
+    return new Transactions(
+        transactions
+            .stream()
+            .filter(condition)
+            .collect(toList())
+    );
   }
 
   Amount balance() {
@@ -38,7 +48,7 @@ class Transactions {
   }
 
   Amount balance(Amount seed, BiConsumer<Amount, Transaction> consumer) {
-    return stream().foldLeft(seed, (balance, tx) -> {
+    return StreamEx.of(transactions).foldLeft(seed, (balance, tx) -> {
       var newBalance = tx.apply(balance);
       consumer.accept(newBalance, tx);
       return newBalance;
@@ -50,14 +60,6 @@ class Transactions {
         .addAll(transactions)
         .add(tx)
         .build());
-  }
-
-  private StreamEx<Transaction> stream() {
-    return StreamEx.of(transactions);
-  }
-
-  static Transactions none() {
-    return new Transactions(ImmutableList.of());
   }
 
   static class Transaction {
@@ -74,7 +76,7 @@ class Transactions {
 
     private final Type type;
 
-    Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
+    private Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
       this.type = type;
       this.amount = amount;
       this.bookingTime = bookingTime;
@@ -142,7 +144,8 @@ class Transactions {
     }
 
     void insert(BankAccount bankAccount, Transactions self) {
-      self.stream()
+      self
+          .transactions
           .forEach(tx -> dsl
               .insertInto(BANK_ACCOUNT_TX)
               .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, bankAccount.id())
