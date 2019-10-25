@@ -25,7 +25,7 @@ class BankStatement {
     var startingBalance = transactions.thatAre(tx -> tx.bookedBefore(from)).balance();
     var closingBalance = transactions
         .thatAre(tx -> tx.bookedDuring(from, to))
-        .balance(startingBalance, (balance, tx) -> newEntry(tx, balance));
+        .balance(startingBalance, (tx, balance) -> newEntry(tx, balance));
 
     this.startingBalance = new Balance(from, startingBalance);
     this.closingBalance = new Balance(to, closingBalance);

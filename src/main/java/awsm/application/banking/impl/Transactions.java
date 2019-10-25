@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import jooq.tables.records.BankAccountTxRecord;
@@ -47,12 +46,16 @@ class Transactions {
     return balance(Amount.ZERO, (balance, tx) -> {});
   }
 
-  Amount balance(Amount seed, BiConsumer<Amount, Transaction> consumer) {
-    return StreamEx.of(transactions).foldLeft(seed, (balance, tx) -> {
-      var newBalance = tx.apply(balance);
-      consumer.accept(newBalance, tx);
+  Amount balance(Amount seed, Interims interims) {
+    return StreamEx.of(transactions).foldLeft(seed, ($, tx) -> {
+      var newBalance = tx.apply($);
+      interims.interim(tx, newBalance);
       return newBalance;
     });
+  }
+
+  interface Interims {
+    void interim(Transaction tx, Amount balance);
   }
 
   Transactions with(Transaction tx) {
