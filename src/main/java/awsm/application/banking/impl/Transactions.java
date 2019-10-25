@@ -48,9 +48,9 @@ class Transactions {
 
   Amount balance(Amount seed, Interims interims) {
     return StreamEx.of(transactions).foldLeft(seed, ($, tx) -> {
-      var newBalance = tx.apply($);
-      interims.interim(tx, newBalance);
-      return newBalance;
+      var balance = tx.apply($);
+      interims.interim(tx, balance);
+      return balance;
     });
   }
 
