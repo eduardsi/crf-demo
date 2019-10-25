@@ -1,12 +1,13 @@
 package awsm.application.banking.impl;
 
+import static awsm.application.banking.impl.Transactions.Transaction.Type.DEPOSIT;
+import static awsm.application.banking.impl.Transactions.Transaction.Type.WITHDRAWAL;
 import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.clock;
 import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
 import awsm.infrastructure.modeling.Amount;
-import awsm.infrastructure.modeling.DomainEntity;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,13 +23,13 @@ import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
-  private final ImmutableList<Tx> transactions;
+  private final ImmutableList<Transaction> transactions;
 
-  private Transactions(List<Tx> transactions) {
+  private Transactions(List<Transaction> transactions) {
     this.transactions = ImmutableList.copyOf(transactions);
   }
 
-  Transactions thatAre(Predicate<Tx> condition) {
+  Transactions thatAre(Predicate<Transaction> condition) {
     return new Transactions(stream().filter(condition).toList());
   }
 
@@ -36,7 +37,7 @@ class Transactions {
     return balance(Amount.ZERO, (balance, tx) -> {});
   }
 
-  Amount balance(Amount seed, BiConsumer<Amount, Tx> consumer) {
+  Amount balance(Amount seed, BiConsumer<Amount, Transaction> consumer) {
     return stream().foldLeft(seed, (balance, transaction) -> {
       var newBalance = transaction.apply(balance);
       consumer.accept(newBalance, transaction);
@@ -44,15 +45,15 @@ class Transactions {
     });
   }
 
-  Transactions with(Tx tx) {
-    return new Transactions(ImmutableList.<Tx>builder()
+  Transactions with(Transaction tx) {
+    return new Transactions(ImmutableList.<Transaction>builder()
         .addAll(transactions)
         .add(tx)
         .build());
   }
 
 
-  private StreamEx<Tx> stream() {
+  private StreamEx<Transaction> stream() {
     return StreamEx.of(transactions);
   }
 
@@ -60,7 +61,7 @@ class Transactions {
     return new Transactions(ImmutableList.of());
   }
 
-  static class Tx implements DomainEntity<Tx> {
+  static class Transaction {
 
     public enum Type {
       DEPOSIT {
@@ -93,7 +94,7 @@ class Transactions {
 
     private final Type type;
 
-    Tx(Type type, Amount amount, LocalDateTime bookingTime) {
+    Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
       this.type = type;
       this.amount = amount;
       this.bookingTime = bookingTime;
@@ -109,39 +110,39 @@ class Transactions {
     }
 
     Amount withdrawn() {
-      return testIf(isWithdrawal()) ? amount : ZERO;
+      return isWithdrawal() ? amount : ZERO;
     }
 
     Amount deposited() {
-      return testIf(isDeposit()) ? amount : ZERO;
+      return isDeposit() ? amount : ZERO;
     }
 
-    static Predicate<Tx> isWithdrawal() {
-      return tx -> tx.type == Type.WITHDRAWAL;
+    boolean isDeposit() {
+      return type == DEPOSIT;
     }
 
-    private static Predicate<Tx> isDeposit() {
-      return tx -> tx.type == Type.DEPOSIT;
+    boolean isWithdrawal() {
+      return type == WITHDRAWAL;
     }
 
-    static Predicate<Tx> bookedOn(LocalDate date) {
-      return tx -> tx.bookingDate.isEqual(date);
+    boolean bookedOn(LocalDate date) {
+      return bookingDate.isEqual(date);
     }
 
-    static Predicate<Tx> bookedBefore(LocalDate date) {
-      return tx -> LocalDateRange.ofUnboundedStart(date).contains(tx.bookingDate);
+    boolean bookedBefore(LocalDate date) {
+      return LocalDateRange.ofUnboundedStart(date).contains(bookingDate);
     }
 
-    static Predicate<Tx> bookedDuring(LocalDate from, LocalDate to) {
-      return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate);
+    boolean bookedDuring(LocalDate from, LocalDate to) {
+      return LocalDateRange.ofClosed(from, to).contains(bookingDate);
     }
 
-    static Tx withdrawalOf(Amount amount) {
-      return new Tx(Tx.Type.WITHDRAWAL, amount, LocalDateTime.now(clock()));
+    static Transaction withdrawalOf(Amount amount) {
+      return new Transaction(WITHDRAWAL, amount, LocalDateTime.now(clock()));
     }
 
-    static Tx depositOf(Amount amount) {
-      return new Tx(Tx.Type.DEPOSIT, amount, LocalDateTime.now(clock()));
+    static Transaction depositOf(Amount amount) {
+      return new Transaction(DEPOSIT, amount, LocalDateTime.now(clock()));
     }
 
   }
@@ -183,9 +184,9 @@ class Transactions {
           .collect(toList()));
     }
 
-    private Function<BankAccountTxRecord, Tx> fromJooq() {
-      return jooq -> new Tx(
-          Tx.Type.valueOf(jooq.getType()),
+    private Function<BankAccountTxRecord, Transaction> fromJooq() {
+      return jooq -> new Transaction(
+          Transaction.Type.valueOf(jooq.getType()),
           Amount.of(jooq.getAmount()),
           jooq.getBookingTime()
       );

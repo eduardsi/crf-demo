@@ -6,6 +6,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
+import awsm.application.banking.impl.Transactions.Transaction;
 import awsm.infrastructure.modeling.Amount;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,24 +15,24 @@ import java.util.Collection;
 
 class BankStatement {
 
-  private final Collection<Entry> transactions = new ArrayList<>();
+  private final Collection<Entry> entries = new ArrayList<>();
 
   private final Balance closingBalance;
 
   private final Balance startingBalance;
 
   BankStatement(LocalDate from, LocalDate to, Transactions transactions) {
-    var startingBalance = transactions.thatAre(Transactions.Tx.bookedBefore(from)).balance();
+    var startingBalance = transactions.thatAre(tx -> tx.bookedBefore(from)).balance();
     var closingBalance = transactions
-        .thatAre(Transactions.Tx.bookedDuring(from, to))
-        .balance(startingBalance, (balance, tx) -> enter(tx, balance));
+        .thatAre(tx -> tx.bookedDuring(from, to))
+        .balance(startingBalance, (balance, tx) -> newEntry(tx, balance));
 
     this.startingBalance = new Balance(from, startingBalance);
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void enter(Transactions.Tx tx, Amount balance) {
-    transactions.add(new Entry(
+  private void newEntry(Transaction tx, Amount balance) {
+    entries.add(new Entry(
         tx.bookingTime(),
         tx.withdrawn(),
         tx.deposited(),
@@ -50,11 +51,11 @@ class BankStatement {
         .add("date", closingBalance.date.format(ISO_DATE)));
 
     var items = createArrayBuilder();
-    transactions.forEach(tx -> items.add(createObjectBuilder()
-        .add("time", tx.time.format(ISO_LOCAL_DATE_TIME))
-        .add("withdrawal", tx.withdrawal + "")
-        .add("deposit", tx.deposit + "")
-        .add("balance", tx.balance + "")));
+    entries.forEach(it -> items.add(createObjectBuilder()
+        .add("time", it.time.format(ISO_LOCAL_DATE_TIME))
+        .add("withdrawal", it.withdrawal + "")
+        .add("deposit", it.deposit + "")
+        .add("balance", it.balance + "")));
 
     root.add("transactions", items);
 

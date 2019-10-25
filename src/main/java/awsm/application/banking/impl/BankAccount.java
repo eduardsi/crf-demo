@@ -6,9 +6,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
 
-import awsm.application.banking.impl.Transactions.Tx;
+import awsm.application.banking.impl.Transactions.Transaction;
 import awsm.infrastructure.modeling.Amount;
-import awsm.infrastructure.modeling.DomainEntity;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,7 +15,7 @@ import jooq.tables.records.BankAccountRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
-public class BankAccount implements DomainEntity<BankAccount> {
+public class BankAccount {
 
   enum Status {
     OPEN, CLOSED
@@ -48,10 +47,10 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return id.orElseThrow();
   }
 
-  public Tx withdraw(Amount amount) {
+  public Transaction withdraw(Amount amount) {
     new EnforceOpen();
 
-    var tx = Tx.withdrawalOf(amount);
+    var tx = Transaction.withdrawalOf(amount);
     var uncommittedTransactions = committedTransactions.with(tx);
 
     new EnforcePositiveBalance(uncommittedTransactions);
@@ -62,10 +61,10 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return tx;
   }
 
-  public Tx deposit(Amount amount) {
+  public Transaction deposit(Amount amount) {
     new EnforceOpen();
 
-    var tx = Tx.depositOf(amount);
+    var tx = Transaction.depositOf(amount);
 
     var uncommittedTransactions = committedTransactions.with(tx);
 
@@ -132,8 +131,8 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
     private Amount withdrawn(LocalDate someDay) {
       return transactions
-          .thatAre(Tx.bookedOn(someDay))
-          .thatAre(Tx.isWithdrawal())
+          .thatAre(tx -> tx.bookedOn(someDay))
+          .thatAre(tx -> tx.isWithdrawal())
           .balance()
           .abs();
     }
@@ -152,7 +151,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
     private void update(BankAccount self) {
       dsl.update(BANK_ACCOUNT)
-          .set(self.as(jooq()))
+          .set(toJooq(self))
           .where(BANK_ACCOUNT.ID.equal(self.id.orElseThrow()))
           .execute();
       transactionsRepository.delete(self);
@@ -162,7 +161,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
     private void insert(BankAccount self) {
       var id = dsl
               .insertInto(BANK_ACCOUNT)
-              .set(self.as(jooq()))
+              .set(toJooq(self))
               .returning(BANK_ACCOUNT.ID)
               .fetchOne()
               .getId();
@@ -192,8 +191,8 @@ public class BankAccount implements DomainEntity<BankAccount> {
       };
     }
 
-    private Function<BankAccount, BankAccountRecord> jooq() {
-      return self -> new BankAccountRecord()
+    private BankAccountRecord toJooq(BankAccount self) {
+      return new BankAccountRecord()
           .setIban(self.iban + "")
           .setStatus(self.status.name())
           .setType(self.type.name())
