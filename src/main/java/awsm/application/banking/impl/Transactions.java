@@ -2,6 +2,8 @@ package awsm.application.banking.impl;
 
 import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.clock;
+import static java.util.stream.Collectors.toList;
+import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
 import awsm.infrastructure.modeling.Amount;
 import awsm.infrastructure.modeling.DomainEntity;
@@ -14,13 +16,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import jooq.tables.records.BankAccountTxRecord;
 import one.util.streamex.StreamEx;
+import org.jooq.DSLContext;
+import org.springframework.stereotype.Component;
 import org.threeten.extra.LocalDateRange;
 
 class Transactions {
 
   private final ImmutableList<Tx> transactions;
 
-  Transactions(List<Tx> transactions) {
+  private Transactions(List<Tx> transactions) {
     this.transactions = ImmutableList.copyOf(transactions);
   }
 
@@ -48,7 +52,7 @@ class Transactions {
   }
 
 
-  StreamEx<Tx> stream() {
+  private StreamEx<Tx> stream() {
     return StreamEx.of(transactions);
   }
 
@@ -86,14 +90,6 @@ class Transactions {
     private final LocalDateTime bookingTime;
 
     private final Type type;
-
-    Tx(BankAccountTxRecord jooqTx) {
-      this(
-          Type.valueOf(jooqTx.getType()),
-          Amount.of(jooqTx.getAmount()),
-          jooqTx.getBookingTime()
-      );
-    }
 
     Tx(Type type, Amount amount, LocalDateTime bookingTime) {
       this.type = type;
@@ -149,14 +145,52 @@ class Transactions {
       return new Tx(Tx.Type.DEPOSIT, amount, LocalDateTime.now(clock()));
     }
 
-    static Function<Tx, BankAccountTxRecord> recordOfAccount(long accountId) {
-      return it -> new BankAccountTxRecord()
-          .setBankAccountId(accountId)
-          .setAmount(it.amount.toBigDecimal())
-          .setBookingTime(it.bookingTime)
-          .setType(it.type.name());
+  }
+
+  @Component
+  static class Repository {
+
+    private final DSLContext dsl;
+
+    Repository(DSLContext dsl) {
+      this.dsl = dsl;
     }
 
+    void insert(BankAccount bankAccount, Transactions self) {
+      self.stream()
+          .forEach(tx -> dsl
+              .insertInto(BANK_ACCOUNT_TX)
+              .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, bankAccount.id())
+              .set(BANK_ACCOUNT_TX.AMOUNT, tx.amount.toBigDecimal())
+              .set(BANK_ACCOUNT_TX.BOOKING_TIME, tx.bookingTime)
+              .set(BANK_ACCOUNT_TX.TYPE, tx.type.name())
+              .execute());
+    }
+
+    void delete(BankAccount bankAccount) {
+      dsl
+          .deleteFrom(BANK_ACCOUNT_TX)
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(bankAccount.id()))
+          .execute();
+    }
+
+    Transactions list(BankAccount bankAccount) {
+      return new Transactions(dsl
+          .selectFrom(BANK_ACCOUNT_TX)
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(bankAccount.id()))
+          .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
+          .fetchStream()
+          .map(fromJooq())
+          .collect(toList()));
+    }
+
+    private Function<BankAccountTxRecord, Tx> fromJooq() {
+      return jooq -> new Tx(
+          Tx.Type.valueOf(jooq.getType()),
+          Amount.of(jooq.getAmount()),
+          jooq.getBookingTime()
+      );
+    }
 
   }
 }

@@ -34,7 +34,7 @@ class BankAccountReadWriteTest {
 
     tx.executeWithoutResult(whateverStatus -> account.saveNew(repository));
 
-    var id = account.id().orElseThrow();
+    var id = account.id();
 
     tx.executeWithoutResult(whateverStatus -> {
       var it = repository.singleBy(id);

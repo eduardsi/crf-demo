@@ -1,14 +1,10 @@
 package awsm.application.banking.impl;
 
-import static awsm.application.banking.impl.Transactions.Tx.recordOfAccount;
-import static awsm.infrastructure.modeling.Amount.of;
 import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
-import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
 import awsm.application.banking.impl.Transactions.Tx;
 import awsm.infrastructure.modeling.Amount;
@@ -16,9 +12,7 @@ import awsm.infrastructure.modeling.DomainEntity;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
 import jooq.tables.records.BankAccountRecord;
-import jooq.tables.records.BankAccountTxRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
@@ -50,8 +44,8 @@ public class BankAccount implements DomainEntity<BankAccount> {
     this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
   }
 
-  public Optional<Long> id() {
-    return id;
+  public long id() {
+    return id.orElseThrow();
   }
 
   public Tx withdraw(Amount amount) {
@@ -95,13 +89,10 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
   public void saveNew(Repository repository) {
     repository.insert(this);
-    repository.insertTransactions(this);
   }
 
   public void save(Repository repository) {
     repository.update(this);
-    repository.deleteTransactions(this);
-    repository.insertTransactions(this);
   }
 
   private class EnforceOpen {
@@ -152,9 +143,11 @@ public class BankAccount implements DomainEntity<BankAccount> {
   static class Repository {
 
     private final DSLContext dsl;
+    private final Transactions.Repository transactionsRepository;
 
-    Repository(DSLContext dsl) {
+    Repository(DSLContext dsl, Transactions.Repository transactionsRepository) {
       this.dsl = dsl;
+      this.transactionsRepository = transactionsRepository;
     }
 
     private void update(BankAccount self) {
@@ -162,6 +155,8 @@ public class BankAccount implements DomainEntity<BankAccount> {
           .set(self.as(jooq()))
           .where(BANK_ACCOUNT.ID.equal(self.id.orElseThrow()))
           .execute();
+      transactionsRepository.delete(self);
+      transactionsRepository.insert(self, self.committedTransactions);
     }
 
     private void insert(BankAccount self) {
@@ -172,42 +167,19 @@ public class BankAccount implements DomainEntity<BankAccount> {
               .fetchOne()
               .getId();
       self.id = Optional.of(id);
-    }
-
-    private void insertTransactions(BankAccount self) {
-      self.committedTransactions.stream()
-          .map(recordOfAccount(self.id.orElseThrow()))
-          .forEach(rec -> dsl
-              .insertInto(BANK_ACCOUNT_TX)
-              .set(rec)
-              .execute());
-    }
-
-    private void deleteTransactions(BankAccount self) {
-      dsl
-          .deleteFrom(BANK_ACCOUNT_TX)
-          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(self.id.orElseThrow()))
-          .execute();
+      transactionsRepository.insert(self, self.committedTransactions);
     }
 
     BankAccount singleBy(long id) {
-      var jooqTransactions = dsl
-              .selectFrom(BANK_ACCOUNT_TX)
-              .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
-              .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
-              .fetchStream();
-
       return dsl
           .selectFrom(BANK_ACCOUNT)
           .where(BANK_ACCOUNT.ID.equal(id))
           .fetchOptional()
-          .map(fromJooq(jooqTransactions))
+          .map(fromJooq())
           .orElseThrow();
-
-
     }
 
-    private Function<BankAccountRecord, BankAccount> fromJooq(Stream<BankAccountTxRecord> jooqTransactions) {
+    private Function<BankAccountRecord, BankAccount> fromJooq() {
       return jooq -> {
         var self = new BankAccount(
             Type.valueOf(jooq.getType()),
@@ -215,7 +187,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
             new WithdrawalLimit(Amount.of(jooq.getDailyLimit())));
         self.id = Optional.of(jooq.getId());
         self.status = Status.valueOf(jooq.getStatus());
-        self.committedTransactions = new Transactions(jooqTransactions.map(Tx::new).collect(toList()));
+        self.committedTransactions = transactionsRepository.list(self);
         return self;
       };
     }

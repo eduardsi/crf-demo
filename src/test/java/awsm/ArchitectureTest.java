@@ -49,6 +49,6 @@ class ArchitectureTest {
   static ArchRule jooq_only_in_repositories =
       noClasses()
           .that().doNotHaveSimpleName("Repository").and().areNotAnnotatedWith(Configuration.class)
-          .should().dependOnClassesThat().resideInAnyPackage("org.jooq");
+          .should().dependOnClassesThat().resideInAnyPackage("..jooq..");
 
 }
