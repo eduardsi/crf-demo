@@ -18,14 +18,14 @@ import org.springframework.stereotype.Component;
 @Scope(SCOPE_PROTOTYPE)
 class RegisterReaction implements Reaction<Register, CharSequence> {
 
-  private final Customers customers;
+  private final Customer.Repository repository;
 
   private final Email.Blacklist blacklist;
 
   private final Email.Uniqueness uniqueness;
 
-  RegisterReaction(Customers customers, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
-    this.customers = customers;
+  RegisterReaction(Customer.Repository repository, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
+    this.repository = repository;
     this.uniqueness = memoized(uniqueness::guaranteed)::apply;
     this.blacklist = memoized(blacklist::allows)::apply;
   }
@@ -46,12 +46,12 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
     var email = new Email(cmd.email, uniqueness, blacklist);
 
     var customer = new Customer(name, email);
-    var customerId = customers.add(customer);
+    customer.register(repository);
 
-    var welcome = new Welcome(customerId);
+    var welcome = new Welcome(customer.id());
     welcome.schedule();
 
-    return new HashId(customerId);
+    return new HashId(customer.id());
   }
 
   static class Welcome implements ScheduledCommand {
@@ -65,15 +65,15 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
     @Component
     static class Re implements Reaction<Welcome, ReturnsNothing> {
 
-      private final Customers customers;
+      private final Customer.Repository customers;
 
-      private Re(Customers customers) {
+      private Re(Customer.Repository customers) {
         this.customers = customers;
       }
 
       @Override
       public ReturnsNothing react(Welcome cmd) {
-        var customer = customers.singleById(cmd.customerId);
+        var customer = customers.singleBy(cmd.customerId);
         System.out.printf("Sending email to %s: Welcome to the Matrix, %s", customer.email(), customer.name());
         return NOTHING;
       }

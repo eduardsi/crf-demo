@@ -84,15 +84,15 @@ class Email implements Serializable {
     @Component
     class AcrossCustomers implements Uniqueness {
 
-      private final Customers customers;
+      private final Customer.Repository customers;
 
-      private AcrossCustomers(Customers customers) {
+      private AcrossCustomers(Customer.Repository customers) {
         this.customers = customers;
       }
 
       @Override
       public boolean guaranteed(String email) {
-        return customers.singleByEmail(email).isEmpty();
+        return customers.singleBy(email).isEmpty();
       }
 
     }

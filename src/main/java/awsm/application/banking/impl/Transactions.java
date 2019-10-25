@@ -1,10 +1,9 @@
 package awsm.application.banking.impl;
 
-import static awsm.application.trading.impl.$.$;
-import static awsm.application.trading.impl.$.ZERO;
+import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.clock;
 
-import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.Amount;
 import awsm.infrastructure.modeling.DomainEntity;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
@@ -29,11 +28,11 @@ class Transactions {
     return new Transactions(stream().filter(condition).toList());
   }
 
-  $ balance() {
-    return balance($.ZERO, (balance, tx) -> {});
+  Amount balance() {
+    return balance(Amount.ZERO, (balance, tx) -> {});
   }
 
-  $ balance($ seed, BiConsumer<$, Tx> consumer) {
+  Amount balance(Amount seed, BiConsumer<Amount, Tx> consumer) {
     return stream().foldLeft(seed, (balance, transaction) -> {
       var newBalance = transaction.apply(balance);
       consumer.accept(newBalance, transaction);
@@ -62,19 +61,19 @@ class Transactions {
     public enum Type {
       DEPOSIT {
         @Override
-        $ apply($ amount, $ balance) {
+        Amount apply(Amount amount, Amount balance) {
           return balance.add(amount);
         }
       },
 
       WITHDRAWAL {
         @Override
-        $ apply($ amount, $ balance) {
+        Amount apply(Amount amount, Amount balance) {
           return balance.subtract(amount);
         }
       };
 
-      abstract $ apply($ amount, $ balance);
+      abstract Amount apply(Amount amount, Amount balance);
 
       @Override
       public String toString() {
@@ -82,7 +81,7 @@ class Transactions {
       }
     }
 
-    private final $ amount;
+    private final Amount amount;
 
     private final LocalDateTime bookingTime;
 
@@ -91,12 +90,12 @@ class Transactions {
     Tx(BankAccountTxRecord jooqTx) {
       this(
           Type.valueOf(jooqTx.getType()),
-          $(jooqTx.getAmount()),
+          Amount.of(jooqTx.getAmount()),
           jooqTx.getBookingTime()
       );
     }
 
-    Tx(Type type, $ amount, LocalDateTime bookingTime) {
+    Tx(Type type, Amount amount, LocalDateTime bookingTime) {
       this.type = type;
       this.amount = amount;
       this.bookingTime = bookingTime;
@@ -110,15 +109,15 @@ class Transactions {
       return bookingTime.toLocalDate();
     }
 
-    $ apply($ balance) {
+    Amount apply(Amount balance) {
       return type.apply(amount, balance);
     }
 
-    $ withdrawn() {
+    Amount withdrawn() {
       return testIf(isWithdrawal()) ? amount : ZERO;
     }
 
-    $ deposited() {
+    Amount deposited() {
       return testIf(isDeposit()) ? amount : ZERO;
     }
 
@@ -142,18 +141,18 @@ class Transactions {
       return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate());
     }
 
-    static Tx withdrawalOf($ amount) {
+    static Tx withdrawalOf(Amount amount) {
       return new Tx(Tx.Type.WITHDRAWAL, amount, LocalDateTime.now(clock()));
     }
 
-    static Tx depositOf($ amount) {
+    static Tx depositOf(Amount amount) {
       return new Tx(Tx.Type.DEPOSIT, amount, LocalDateTime.now(clock()));
     }
 
     static Function<Tx, BankAccountTxRecord> recordOfAccount(long accountId) {
       return it -> new BankAccountTxRecord()
           .setBankAccountId(accountId)
-          .setAmount(it.amount.big())
+          .setAmount(it.amount.toBigDecimal())
           .setBookingTime(it.bookingTime)
           .setType(it.type.name());
     }

@@ -9,6 +9,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 
 @AnalyzeClasses(packages = "awsm")
 class ArchitectureTest {
@@ -43,5 +44,11 @@ class ArchitectureTest {
           noClasses().that().implement(Command.class)
                   .should().dependOnClassesThat().resideInAnyPackage(DOMAIN)
                   .andShould().dependOnClassesThat().resideInAnyPackage(INFRASTRUCTURE);
+
+  @ArchTest
+  static ArchRule jooq_only_in_repositories =
+      noClasses()
+          .that().doNotHaveSimpleName("Repository").and().areNotAnnotatedWith(Configuration.class)
+          .should().dependOnClassesThat().resideInAnyPackage("org.jooq");
 
 }

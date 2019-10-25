@@ -1,16 +1,16 @@
 package awsm.application.banking.impl;
 
-import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.Amount;
 
 public class WithdrawalLimit {
 
-  private $ dailyLimit;
+  private Amount dailyLimit;
 
-  public WithdrawalLimit($ dailyLimit) {
+  public WithdrawalLimit(Amount dailyLimit) {
     this.dailyLimit = dailyLimit;
   }
 
-  $ dailyLimit() {
+  Amount dailyLimit() {
     return dailyLimit;
   }
 

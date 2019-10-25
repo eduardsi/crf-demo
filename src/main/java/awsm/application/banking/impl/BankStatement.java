@@ -6,7 +6,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
-import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.Amount;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ class BankStatement {
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void enter(Transactions.Tx tx, $ balance) {
+  private void enter(Transactions.Tx tx, Amount balance) {
     transactions.add(new Entry(
         tx.bookingTime(),
         tx.withdrawn(),
@@ -65,13 +65,13 @@ class BankStatement {
 
     private final LocalDateTime time;
 
-    private final $ withdrawal;
+    private final Amount withdrawal;
 
-    private final $ deposit;
+    private final Amount deposit;
 
-    private final $ balance;
+    private final Amount balance;
 
-    private Entry(LocalDateTime time, $ withdrawal, $ deposit, $ balance) {
+    private Entry(LocalDateTime time, Amount withdrawal, Amount deposit, Amount balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;
@@ -82,10 +82,10 @@ class BankStatement {
 
   private static class Balance {
 
-    private final $ amount;
+    private final Amount amount;
     private final LocalDate date;
 
-    private Balance(LocalDate date, $ amount) {
+    private Balance(LocalDate date, Amount amount) {
       this.amount = amount;
       this.date = date;
     }

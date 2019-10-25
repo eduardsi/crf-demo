@@ -93,7 +93,7 @@ class ScheduledCommand {
     }
 
     private void insert(ScheduledCommand self) {
-      long id = dsl
+      var id = dsl
           .insertInto(SCHEDULED_COMMAND)
             .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
             .set(SCHEDULED_COMMAND.COMMAND, sneak().get(() -> mapper.writeValueAsString(self.command)))

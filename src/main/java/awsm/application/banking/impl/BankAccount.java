@@ -1,8 +1,8 @@
 package awsm.application.banking.impl;
 
 import static awsm.application.banking.impl.Transactions.Tx.recordOfAccount;
-import static awsm.application.trading.impl.$.$;
-import static awsm.application.trading.impl.$.ZERO;
+import static awsm.infrastructure.modeling.Amount.of;
+import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
@@ -11,13 +11,16 @@ import static jooq.tables.BankAccount.BANK_ACCOUNT;
 import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
 import awsm.application.banking.impl.Transactions.Tx;
-import awsm.application.trading.impl.$;
+import awsm.infrastructure.modeling.Amount;
 import awsm.infrastructure.modeling.DomainEntity;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import jooq.tables.records.BankAccountRecord;
+import jooq.tables.records.BankAccountTxRecord;
 import org.jooq.DSLContext;
+import org.springframework.stereotype.Component;
 
 public class BankAccount implements DomainEntity<BankAccount> {
 
@@ -41,29 +44,6 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
   private Optional<Long> id = Optional.empty();
 
-  public BankAccount(DSLContext dsl, long id) {
-    var jooqAccount = dsl
-        .selectFrom(BANK_ACCOUNT)
-        .where(BANK_ACCOUNT.ID.equal(id))
-        .fetchAny();
-
-    this.committedTransactions = new Transactions(
-        dsl
-            .selectFrom(BANK_ACCOUNT_TX)
-            .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
-            .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
-            .fetchStream()
-            .map(Tx::new)
-            .collect(toList())
-    );
-
-    this.type = Type.valueOf(jooqAccount.getType());
-    this.iban = new Iban(jooqAccount.getIban());
-    this.id = Optional.of(jooqAccount.getId());
-    this.status = Status.valueOf(jooqAccount.getStatus());
-    this.withdrawalLimit = new WithdrawalLimit($(jooqAccount.getDailyLimit()));
-  }
-
   public BankAccount(Type type, Iban iban, WithdrawalLimit withdrawalLimit) {
     this.iban = iban;
     this.type = type;
@@ -74,7 +54,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return id;
   }
 
-  public Tx withdraw($ amount) {
+  public Tx withdraw(Amount amount) {
     new EnforceOpen();
 
     var tx = Tx.withdrawalOf(amount);
@@ -88,7 +68,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return tx;
   }
 
-  public Tx deposit($ amount) {
+  public Tx deposit(Amount amount) {
     new EnforceOpen();
 
     var tx = Tx.depositOf(amount);
@@ -100,7 +80,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return tx;
   }
 
-  public $ balance() {
+  public Amount balance() {
     return committedTransactions.balance();
   }
 
@@ -113,15 +93,15 @@ public class BankAccount implements DomainEntity<BankAccount> {
     status = Status.CLOSED;
   }
 
-  public void saveNew(DSLContext dsl) {
-    new InsertBankAccount(dsl);
-    new InsertTransactions(dsl);
+  public void saveNew(Repository repository) {
+    repository.insert(this);
+    repository.insertTransactions(this);
   }
 
-  public void save(DSLContext dsl) {
-    new UpdateBankAccount(dsl);
-    new DeleteTransactions(dsl);
-    new InsertTransactions(dsl);
+  public void save(Repository repository) {
+    repository.update(this);
+    repository.deleteTransactions(this);
+    repository.insertTransactions(this);
   }
 
   private class EnforceOpen {
@@ -159,7 +139,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
       checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
-    private $ withdrawn(LocalDate someDay) {
+    private Amount withdrawn(LocalDate someDay) {
       return transactions
           .thatAre(Tx.bookedOn(someDay))
           .thatAre(Tx.isWithdrawal())
@@ -168,57 +148,86 @@ public class BankAccount implements DomainEntity<BankAccount> {
     }
   }
 
-  private class InsertTransactions {
-    InsertTransactions(DSLContext dsl) {
-      committedTransactions.stream()
-          .map(recordOfAccount(id.orElseThrow()))
+  @Component
+  static class Repository {
+
+    private final DSLContext dsl;
+
+    Repository(DSLContext dsl) {
+      this.dsl = dsl;
+    }
+
+    private void update(BankAccount self) {
+      dsl.update(BANK_ACCOUNT)
+          .set(self.as(jooq()))
+          .where(BANK_ACCOUNT.ID.equal(self.id.orElseThrow()))
+          .execute();
+    }
+
+    private void insert(BankAccount self) {
+      var id = dsl
+              .insertInto(BANK_ACCOUNT)
+              .set(self.as(jooq()))
+              .returning(BANK_ACCOUNT.ID)
+              .fetchOne()
+              .getId();
+      self.id = Optional.of(id);
+    }
+
+    private void insertTransactions(BankAccount self) {
+      self.committedTransactions.stream()
+          .map(recordOfAccount(self.id.orElseThrow()))
           .forEach(rec -> dsl
               .insertInto(BANK_ACCOUNT_TX)
               .set(rec)
               .execute());
     }
-  }
 
-  private class DeleteTransactions {
-    DeleteTransactions(DSLContext dsl) {
+    private void deleteTransactions(BankAccount self) {
       dsl
           .deleteFrom(BANK_ACCOUNT_TX)
-          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(id.orElseThrow()))
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(self.id.orElseThrow()))
           .execute();
     }
-  }
 
-  private class UpdateBankAccount {
-    UpdateBankAccount(DSLContext dsl) {
-      dsl.update(BANK_ACCOUNT)
-          .set(as(new Record()))
-          .where(BANK_ACCOUNT.ID.equal(id.orElseThrow()))
-          .execute();
-    }
-  }
+    BankAccount singleBy(long id) {
+      var jooqTransactions = dsl
+              .selectFrom(BANK_ACCOUNT_TX)
+              .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(id))
+              .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
+              .fetchStream();
 
-  private class InsertBankAccount {
-    InsertBankAccount(DSLContext dsl) {
-      id = Optional.of(
-          dsl
-              .insertInto(BANK_ACCOUNT)
-              .set(as(new Record()))
-              .returning(BANK_ACCOUNT.ID)
-              .fetchOne()
-              .getId()
-      );
-    }
-  }
+      return dsl
+          .selectFrom(BANK_ACCOUNT)
+          .where(BANK_ACCOUNT.ID.equal(id))
+          .fetchOptional()
+          .map(fromJooq(jooqTransactions))
+          .orElseThrow();
 
-  private static class Record implements Function<BankAccount, BankAccountRecord> {
-    @Override
-    public BankAccountRecord apply(BankAccount it) {
-      return new BankAccountRecord()
-          .setIban(it.iban + "")
-          .setStatus(it.status.name())
-          .setType(it.type.name())
-          .setDailyLimit(it.withdrawalLimit.dailyLimit().big());
+
     }
+
+    private Function<BankAccountRecord, BankAccount> fromJooq(Stream<BankAccountTxRecord> jooqTransactions) {
+      return jooq -> {
+        var self = new BankAccount(
+            Type.valueOf(jooq.getType()),
+            new Iban(jooq.getIban()),
+            new WithdrawalLimit(Amount.of(jooq.getDailyLimit())));
+        self.id = Optional.of(jooq.getId());
+        self.status = Status.valueOf(jooq.getStatus());
+        self.committedTransactions = new Transactions(jooqTransactions.map(Tx::new).collect(toList()));
+        return self;
+      };
+    }
+
+    private Function<BankAccount, BankAccountRecord> jooq() {
+      return self -> new BankAccountRecord()
+          .setIban(self.iban + "")
+          .setStatus(self.status.name())
+          .setType(self.type.name())
+          .setDailyLimit(self.withdrawalLimit.dailyLimit().toBigDecimal());
+    }
+
   }
 
 }

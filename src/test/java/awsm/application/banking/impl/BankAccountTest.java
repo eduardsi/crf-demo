@@ -1,7 +1,7 @@
 package awsm.application.banking.impl;
 
 import static awsm.application.banking.impl.BankAccount.Type.SAVINGS;
-import static awsm.application.trading.impl.$.$;
+import static awsm.infrastructure.modeling.Amount.of;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static awsm.infrastructure.time.TimeMachine.with;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +19,7 @@ import org.threeten.extra.MutableClock;
 @DisplayName("bank account")
 class BankAccountTest {
 
-  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit($("100.00")));
+  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit(of("100.00")));
 
   private MutableClock clock = MutableClock.epochUTC();
 
@@ -31,18 +31,18 @@ class BankAccountTest {
   @Test
   void provides_a_statement_for_a_given_time_interval() throws JSONException {
     clock.add(Days.ONE);
-    account.deposit($("100.00"));
+    account.deposit(of("100.00"));
 
     clock.add(Days.ONE);
     var from = today();
-    account.deposit($("99.00"));
+    account.deposit(of("99.00"));
 
     clock.add(Days.ONE);
     var to = today();
-    account.withdraw($("98.00"));
+    account.withdraw(of("98.00"));
 
     clock.add(Days.ONE);
-    account.withdraw($("2.00"));
+    account.withdraw(of("2.00"));
 
     var actual = account.statement(from, to).json();
     var expected = """
@@ -77,22 +77,22 @@ class BankAccountTest {
 
   @Test
   void supports_money_deposits_and_withdrawals() {
-    var depositTx = account.deposit($("100.00"));
+    var depositTx = account.deposit(of("100.00"));
     assertThat(depositTx).isNotNull();
 
-    var withdrawalTx = account.withdraw($("50.00"));
+    var withdrawalTx = account.withdraw(of("50.00"));
     assertThat(withdrawalTx).isNotNull();
 
-    assertThat(account.balance()).isEqualTo($("50.00"));
+    assertThat(account.balance()).isEqualTo(of("50.00"));
   }
 
   @Test
   void cannot_withdraw_from_a_closed_account() {
-    account.deposit($("100.00"));
+    account.deposit(of("100.00"));
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw($("1.00")));
+        account.withdraw(of("1.00")));
     assertThat(e).hasMessage("Account is closed.");
   }
 
@@ -101,7 +101,7 @@ class BankAccountTest {
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.deposit($("100.00"))
+        account.deposit(of("100.00"))
     );
     assertThat(e).hasMessage("Account is closed.");
   }
@@ -109,16 +109,16 @@ class BankAccountTest {
   @Test
   void cannot_withdraw_more_funds_than_available() {
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw($("1.00")));
+        account.withdraw(of("1.00")));
 
     assertThat(e).hasMessage("Not enough funds available on your account.");
   }
 
   @Test
   void cannot_withdraw_more_than_allowed_by_the_daily_limit() {
-    account.deposit($("1000.00"));
+    account.deposit(of("1000.00"));
 
-    var e = assertThrows(IllegalStateException.class, () -> account.withdraw($("101.00")));
+    var e = assertThrows(IllegalStateException.class, () -> account.withdraw(of("101.00")));
 
     assertThat(e).hasMessage("Daily withdrawal limit (100.00) reached.");
   }
