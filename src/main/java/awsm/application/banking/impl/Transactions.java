@@ -89,20 +89,19 @@ class Transactions {
 
     private final LocalDateTime bookingTime;
 
+    private final LocalDate bookingDate;
+
     private final Type type;
 
     Tx(Type type, Amount amount, LocalDateTime bookingTime) {
       this.type = type;
       this.amount = amount;
       this.bookingTime = bookingTime;
+      this.bookingDate = bookingTime.toLocalDate();
     }
 
     LocalDateTime bookingTime() {
       return bookingTime;
-    }
-
-    private LocalDate bookingDate() {
-      return bookingTime.toLocalDate();
     }
 
     Amount apply(Amount balance) {
@@ -126,15 +125,15 @@ class Transactions {
     }
 
     static Predicate<Tx> bookedOn(LocalDate date) {
-      return tx -> tx.bookingDate().isEqual(date);
+      return tx -> tx.bookingDate.isEqual(date);
     }
 
     static Predicate<Tx> bookedBefore(LocalDate date) {
-      return tx -> LocalDateRange.ofUnboundedStart(date).contains(tx.bookingDate());
+      return tx -> LocalDateRange.ofUnboundedStart(date).contains(tx.bookingDate);
     }
 
     static Predicate<Tx> bookedDuring(LocalDate from, LocalDate to) {
-      return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate());
+      return tx -> LocalDateRange.ofClosed(from, to).contains(tx.bookingDate);
     }
 
     static Tx withdrawalOf(Amount amount) {
