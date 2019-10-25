@@ -8,6 +8,7 @@ import static jooq.tables.BankAccount.BANK_ACCOUNT;
 
 import awsm.application.banking.impl.Transactions.Transaction;
 import awsm.infrastructure.modeling.Amount;
+import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;

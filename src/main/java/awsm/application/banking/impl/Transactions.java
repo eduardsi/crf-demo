@@ -38,9 +38,9 @@ class Transactions {
   }
 
   Amount balance(Amount seed, BiConsumer<Amount, Transaction> consumer) {
-    return stream().foldLeft(seed, (balance, transaction) -> {
-      var newBalance = transaction.apply(balance);
-      consumer.accept(newBalance, transaction);
+    return stream().foldLeft(seed, (balance, tx) -> {
+      var newBalance = tx.apply(balance);
+      consumer.accept(newBalance, tx);
       return newBalance;
     });
   }
@@ -51,7 +51,6 @@ class Transactions {
         .add(tx)
         .build());
   }
-
 
   private StreamEx<Transaction> stream() {
     return StreamEx.of(transactions);
@@ -64,26 +63,7 @@ class Transactions {
   static class Transaction {
 
     public enum Type {
-      DEPOSIT {
-        @Override
-        Amount apply(Amount amount, Amount balance) {
-          return balance.add(amount);
-        }
-      },
-
-      WITHDRAWAL {
-        @Override
-        Amount apply(Amount amount, Amount balance) {
-          return balance.subtract(amount);
-        }
-      };
-
-      abstract Amount apply(Amount amount, Amount balance);
-
-      @Override
-      public String toString() {
-        return name().toLowerCase();
-      }
+      DEPOSIT, WITHDRAWAL
     }
 
     private final Amount amount;
@@ -106,11 +86,20 @@ class Transactions {
     }
 
     Amount apply(Amount balance) {
-      return type.apply(amount, balance);
+      return switch(type) {
+        case DEPOSIT:
+          yield balance.add(amount);
+        case WITHDRAWAL:
+          yield balance.subtract(amount);
+      };
     }
 
     Amount withdrawn() {
       return isWithdrawal() ? amount : ZERO;
+    }
+
+    boolean isWithdrawal() {
+      return type == WITHDRAWAL;
     }
 
     Amount deposited() {
@@ -119,10 +108,6 @@ class Transactions {
 
     boolean isDeposit() {
       return type == DEPOSIT;
-    }
-
-    boolean isWithdrawal() {
-      return type == WITHDRAWAL;
     }
 
     boolean bookedOn(LocalDate date) {
