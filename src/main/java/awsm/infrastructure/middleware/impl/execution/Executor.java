@@ -5,6 +5,9 @@ import com.google.common.reflect.TypeToken;
 
 public interface Executor<C extends Command<R>, R> {
 
+  default void validate(C cmd) {
+  }
+
   R execute(C cmd);
 
   default boolean matches(C cmd) {
@@ -12,5 +15,4 @@ public interface Executor<C extends Command<R>, R> {
     };
     return commandTypeInAGeneric.isSubtypeOf(cmd.getClass());
   }
-
 }

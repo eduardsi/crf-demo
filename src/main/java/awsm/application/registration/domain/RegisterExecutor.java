@@ -6,7 +6,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 import awsm.application.registration.Register;
 import awsm.infrastructure.hashing.HashId;
 import awsm.infrastructure.middleware.impl.execution.Executor;
-import awsm.infrastructure.middleware.impl.validation.Validator;
+import awsm.infrastructure.validation.Validator;
 import awsm.infrastructure.middleware.impl.resilience.RateLimit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -31,15 +31,6 @@ class RegisterExecutor implements Executor<Register, CharSequence> {
   @Override
   public CharSequence execute(Register cmd) {
 
-    new Validator<Register>()
-        .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
-        .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
-        .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
-            nested
-                .with(() -> cmd.email, uniqueness::guaranteed, "email is taken")
-                .with(() -> cmd.email, blacklist::allows,      "email %s is blacklisted")
-        ).check(cmd);
-
     var name = new FullName(cmd.firstName, cmd.lastName);
     var email = new Email(cmd.email, uniqueness, blacklist);
 
@@ -50,6 +41,18 @@ class RegisterExecutor implements Executor<Register, CharSequence> {
     welcome.schedule();
 
     return new HashId(customer.id());
+  }
+
+  @Override
+  public void validate(Register cmd) {
+    new Validator<Register>()
+        .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
+        .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
+        .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
+            nested
+                .with(() -> cmd.email, uniqueness::guaranteed, "email is taken")
+                .with(() -> cmd.email, blacklist::allows,      "email %s is blacklisted")
+        ).check(cmd);
   }
 
   @Component

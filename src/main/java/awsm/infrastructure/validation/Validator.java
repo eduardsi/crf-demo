@@ -1,4 +1,4 @@
-package awsm.infrastructure.middleware.impl.validation;
+package awsm.infrastructure.validation;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
