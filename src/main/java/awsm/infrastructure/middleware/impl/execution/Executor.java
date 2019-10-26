@@ -1,11 +1,11 @@
-package awsm.infrastructure.middleware.impl.react;
+package awsm.infrastructure.middleware.impl.execution;
 
 import awsm.infrastructure.middleware.Command;
 import com.google.common.reflect.TypeToken;
 
-public interface Reaction<C extends Command<R>, R> {
+public interface Executor<C extends Command<R>, R> {
 
-  R react(C cmd);
+  R execute(C cmd);
 
   default boolean matches(C cmd) {
     TypeToken<C> commandTypeInAGeneric = new TypeToken<>(getClass()) {

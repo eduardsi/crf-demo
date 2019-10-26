@@ -5,8 +5,8 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 
 import awsm.application.registration.Register;
 import awsm.infrastructure.hashing.HashId;
-import awsm.infrastructure.middleware.impl.react.Reaction;
-import awsm.infrastructure.middleware.impl.react.validation.Validator;
+import awsm.infrastructure.middleware.impl.execution.Executor;
+import awsm.infrastructure.middleware.impl.validation.Validator;
 import awsm.infrastructure.middleware.impl.resilience.RateLimit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-class RegisterReaction implements Reaction<Register, CharSequence> {
+class RegisterExecutor implements Executor<Register, CharSequence> {
 
   private final Customer.Repository repository;
 
@@ -22,14 +22,14 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
 
   private final EmailUniqueness uniqueness;
 
-  RegisterReaction(Customer.Repository repository, EmailBlacklist blacklist, EmailUniqueness uniqueness) {
+  RegisterExecutor(Customer.Repository repository, EmailBlacklist blacklist, EmailUniqueness uniqueness) {
     this.repository = repository;
     this.uniqueness = memoized(uniqueness::guaranteed)::apply;
     this.blacklist = memoized(blacklist::allows)::apply;
   }
 
   @Override
-  public CharSequence react(Register cmd) {
+  public CharSequence execute(Register cmd) {
 
     new Validator<Register>()
         .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")

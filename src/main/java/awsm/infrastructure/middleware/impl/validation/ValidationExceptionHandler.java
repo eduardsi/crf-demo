@@ -1,4 +1,4 @@
-package awsm.infrastructure.middleware.impl.react.validation;
+package awsm.infrastructure.middleware.impl.validation;
 
 import java.util.List;
 import org.springframework.http.HttpStatus;

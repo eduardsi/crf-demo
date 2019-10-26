@@ -4,7 +4,7 @@ import static awsm.infrastructure.middleware.ReturnsNothing.NOTHING;
 
 import awsm.infrastructure.middleware.Command;
 import awsm.infrastructure.middleware.ReturnsNothing;
-import awsm.infrastructure.middleware.impl.react.Reaction;
+import awsm.infrastructure.middleware.impl.execution.Executor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ class Welcome implements Command<ReturnsNothing> {
   }
 
   @Component
-  static class Re implements Reaction<Welcome, ReturnsNothing> {
+  static class Re implements Executor<Welcome, ReturnsNothing> {
 
     private final Customer.Repository customers;
 
@@ -26,7 +26,7 @@ class Welcome implements Command<ReturnsNothing> {
     }
 
     @Override
-    public ReturnsNothing react(Welcome cmd) {
+    public ReturnsNothing execute(Welcome cmd) {
       var customer = customers.singleBy(cmd.customerId);
       System.out.printf("Sending email to %s: Welcome to the Matrix, %s", customer.email(), customer.name());
       return NOTHING;
