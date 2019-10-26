@@ -6,7 +6,7 @@ class Email {
 
   private final String email;
 
-  public Email(String email, EmailUniqueness uniqueness, EmailBlacklist blacklist) {
+  Email(String email, EmailUniqueness uniqueness, EmailBlacklist blacklist) {
     var isNotBlank = email != null && !email.isBlank();
     checkArgument(isNotBlank, "Email %s must not be blank", email);
     checkArgument(uniqueness.guaranteed(email), "Email %s is not unique", email);

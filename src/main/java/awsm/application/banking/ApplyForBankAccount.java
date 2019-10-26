@@ -1,8 +1,8 @@
 package awsm.application.banking;
 
-import awsm.infrastructure.middleware.MiddlewareCommand;
+import awsm.infrastructure.middleware.Command;
 
-class ApplyForBankAccount implements MiddlewareCommand<ApplyForBankAccount.ApplicationStatus> {
+class ApplyForBankAccount implements Command<ApplyForBankAccount.ApplicationStatus> {
 
   static class ApplicationStatus {
 

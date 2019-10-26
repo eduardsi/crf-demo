@@ -47,7 +47,7 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
     customer.register(repository);
 
     var welcome = new Welcome(customer.id());
-    welcome.later();
+    welcome.schedule();
 
     return new HashId(customer.id());
   }

@@ -2,13 +2,13 @@ package awsm.application.registration.domain;
 
 import static awsm.infrastructure.middleware.ReturnsNothing.NOTHING;
 
+import awsm.infrastructure.middleware.Command;
 import awsm.infrastructure.middleware.ReturnsNothing;
-import awsm.infrastructure.middleware.ScheduledCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 
-class Welcome implements ScheduledCommand {
+class Welcome implements Command<ReturnsNothing> {
 
   private final long customerId;
 

@@ -52,13 +52,6 @@ class ScheduledCommand {
     repository.insert(this);
   }
 
-  private Runnable runnable(Repository repository) {
-    return () -> {
-      this.command.now();
-      repository.delete(this);
-    };
-  }
-
   @Override
   public String toString() {
     return ReflectionToStringBuilder.toString(this, ToStringStyle.SIMPLE_STYLE);
@@ -80,7 +73,14 @@ class ScheduledCommand {
           .forUpdate()
           .fetchStream()
           .map(fromJooq())
-          .map(command -> command.runnable(this));
+          .map(this::runnable);
+    }
+
+    private Runnable runnable(ScheduledCommand self) {
+      return () -> {
+        self.command.execute();
+        delete(self);
+      };
     }
 
     private Function<ScheduledCommandRecord, ScheduledCommand> fromJooq() {

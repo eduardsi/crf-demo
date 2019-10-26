@@ -40,6 +40,7 @@ public class Validator<R> {
   }
 
   public interface Nesting<R> {
+
     class Absent<T> implements Nesting<T> {
       @Override
       public void applyTo(Validator<T> nested) {

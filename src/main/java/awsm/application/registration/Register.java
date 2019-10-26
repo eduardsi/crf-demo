@@ -1,11 +1,11 @@
 package awsm.application.registration;
 
-import awsm.infrastructure.middleware.MiddlewareCommand;
+import awsm.infrastructure.middleware.Command;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-public class Register implements MiddlewareCommand<CharSequence> {
+public class Register implements Command<CharSequence> {
 
   public final String email;
 
@@ -23,7 +23,7 @@ public class Register implements MiddlewareCommand<CharSequence> {
   static class OverHttp {
     @PostMapping("/customers")
     CharSequence post(@RequestBody Register register) {
-      return register.now();
+      return register.execute();
     }
   }
 
