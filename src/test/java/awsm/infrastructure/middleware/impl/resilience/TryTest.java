@@ -31,38 +31,38 @@ class TryTest {
 
   @Test
   void executes_wrapped_command_only_once_if_it_doesnt_fail() {
-    when(cmd.execute())
+    when(cmd.now())
         .thenReturn("OK");
 
-    var results = new Try<>(cmd).execute();
+    var results = new Try<>(cmd).now();
 
-    verify(cmd, times(1)).execute();
+    verify(cmd, times(1)).now();
     assertThat(results).isEqualTo("OK");
   }
 
   @Test
   void returns_if_wrapped_command_fails_less_than_three_times() {
-    when(cmd.execute())
+    when(cmd.now())
         .thenThrow(new RuntimeException("Boom"))
         .thenThrow(new RuntimeException("Boom"))
         .thenReturn("OK");
 
-    var results = new Try<>(cmd).execute();
+    var results = new Try<>(cmd).now();
 
-    verify(cmd, times(3)).execute();
+    verify(cmd, times(3)).now();
     assertThat(results).isEqualTo("OK");
   }
 
   @Test
   void throws_if_the_wrapped_command_keeps_failing_on_the_third_invocation() {
-    when(cmd.execute())
+    when(cmd.now())
         .thenThrow(new RuntimeException("Boom"))
         .thenThrow(new RuntimeException("Boom"))
         .thenThrow(new RuntimeException("Boom"));
 
-    var e = assertThrows(RuntimeException.class, () -> new Try<>(cmd).execute());
+    var e = assertThrows(RuntimeException.class, () -> new Try<>(cmd).now());
     assertThat(e).hasMessage("Boom");
-    verify(cmd, times(3)).execute();
+    verify(cmd, times(3)).now();
   }
 
 }

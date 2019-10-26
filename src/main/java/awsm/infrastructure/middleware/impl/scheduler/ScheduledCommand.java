@@ -54,7 +54,7 @@ class ScheduledCommand {
 
   private Runnable runnable(Repository repository) {
     return () -> {
-      this.command.execute();
+      this.command.now();
       repository.delete(this);
     };
   }

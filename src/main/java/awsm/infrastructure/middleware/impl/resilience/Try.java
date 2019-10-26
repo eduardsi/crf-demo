@@ -13,9 +13,9 @@ public class Try<R, C extends Command<R>> implements Command<R> {
   }
 
   @Override
-  public R execute() {
+  public R now() {
     var retry = new RetryPolicy<>().withMaxAttempts(3);
-    return Failsafe.with(retry).get(origin::execute);
+    return Failsafe.with(retry).get(origin::now);
   }
 
 }

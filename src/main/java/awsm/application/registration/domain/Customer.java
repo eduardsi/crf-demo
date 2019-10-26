@@ -1,9 +1,8 @@
-package awsm.application.registration.impl;
+package awsm.application.registration.domain;
 
 import static java.util.Objects.requireNonNull;
 import static jooq.tables.Customer.CUSTOMER;
 
-import awsm.application.registration.Register;
 import java.util.Optional;
 import java.util.function.Function;
 import jooq.tables.records.CustomerRecord;
@@ -21,7 +20,6 @@ class Customer {
   Customer(FullName name, Email email) {
     this.name = requireNonNull(name, "Name cannot be null");
     this.email = requireNonNull(email, "Email cannot be null");
-    new Register.RegistrationCompleted(name + "", email + "").schedule();
   }
 
   public FullName name() {
@@ -34,6 +32,7 @@ class Customer {
 
   void register(Repository repository) {
     repository.insert(this);
+    new RegistrationCompleted(name + "", email + "").schedule();
   }
 
   long id() {
@@ -49,7 +48,7 @@ class Customer {
       this.dsl = dsl;
     }
 
-    void insert(Customer self) {
+    private void insert(Customer self) {
       var id = dsl
           .insertInto(CUSTOMER)
           .set(CUSTOMER.EMAIL, self.email + "")
@@ -70,12 +69,12 @@ class Customer {
           .orElseThrow();
     }
 
-    Optional<Customer> singleBy(String email) {
+    boolean contains(String email) {
       return dsl
-          .selectFrom(CUSTOMER)
+          .selectCount()
+          .from(CUSTOMER)
           .where(CUSTOMER.EMAIL.equal(email))
-          .fetchOptional()
-          .map(fromJooq());
+          .fetchOne(0, int.class) > 0;
     }
 
     private Function<CustomerRecord, Customer> fromJooq() {

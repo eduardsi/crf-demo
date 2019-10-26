@@ -21,7 +21,7 @@ class ThrottlingTest {
     private AtomicLong executions = new AtomicLong();
 
     @Override
-    public String execute() {
+    public String now() {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
@@ -55,7 +55,7 @@ class ThrottlingTest {
     var hello = new Hello();
     var threads = new Threads(overflow);
     for (int i = 0; i < overflow; i++) {
-      threads.spinOff(() -> throttling.invoke(hello, hello::execute));
+      threads.spinOff(() -> throttling.invoke(hello, hello::now));
     }
 
     var e = assertThrows(CompletionException.class, () -> threads.waitForAll());

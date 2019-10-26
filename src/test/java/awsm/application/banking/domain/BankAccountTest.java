@@ -1,7 +1,7 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
-import static awsm.application.banking.impl.BankAccount.Type.SAVINGS;
-import static awsm.infrastructure.modeling.Amount.of;
+import static awsm.application.banking.domain.BankAccount.Type.SAVINGS;
+import static awsm.application.commons.money.Monetary.amount;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static awsm.infrastructure.time.TimeMachine.with;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +25,7 @@ import org.threeten.extra.MutableClock;
 @DisplayName("bank account")
 class BankAccountTest {
 
-  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit(of("100.00")));
+  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit(amount("100.00")));
 
   private MutableClock clock = MutableClock.epochUTC();
 
@@ -37,18 +37,18 @@ class BankAccountTest {
   @Test
   void provides_a_statement_for_a_given_time_interval() throws JSONException {
     clock.add(Days.ONE);
-    account.deposit(of("100.00"));
+    account.deposit(amount("100.00"));
 
     clock.add(Days.ONE);
     var from = today();
-    account.deposit(of("99.00"));
+    account.deposit(amount("99.00"));
 
     clock.add(Days.ONE);
     var to = today();
-    account.withdraw(of("98.00"));
+    account.withdraw(amount("98.00"));
 
     clock.add(Days.ONE);
-    account.withdraw(of("2.00"));
+    account.withdraw(amount("2.00"));
 
     var actual = account.statement(from, to).json();
     var expected = """
@@ -83,22 +83,22 @@ class BankAccountTest {
 
   @Test
   void supports_money_deposits_and_withdrawals() {
-    var depositTx = account.deposit(of("100.00"));
+    var depositTx = account.deposit(amount("100.00"));
     assertThat(depositTx).isNotNull();
 
-    var withdrawalTx = account.withdraw(of("50.00"));
+    var withdrawalTx = account.withdraw(amount("50.00"));
     assertThat(withdrawalTx).isNotNull();
 
-    assertThat(account.balance()).isEqualTo(of("50.00"));
+    assertThat(account.balance()).isEqualTo(amount("50.00"));
   }
 
   @Test
   void cannot_withdraw_from_a_closed_account() {
-    account.deposit(of("100.00"));
+    account.deposit(amount("100.00"));
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw(of("1.00")));
+        account.withdraw(amount("1.00")));
     assertThat(e).hasMessage("Account is closed.");
   }
 
@@ -107,7 +107,7 @@ class BankAccountTest {
     account.close(UnsatisfiedObligations.NONE);
 
     var e = assertThrows(IllegalStateException.class, () ->
-        account.deposit(of("100.00"))
+        account.deposit(amount("100.00"))
     );
     assertThat(e).hasMessage("Account is closed.");
   }
@@ -115,16 +115,16 @@ class BankAccountTest {
   @Test
   void cannot_withdraw_more_funds_than_available() {
     var e = assertThrows(IllegalStateException.class, () ->
-        account.withdraw(of("1.00")));
+        account.withdraw(amount("1.00")));
 
     assertThat(e).hasMessage("Not enough funds available on your account.");
   }
 
   @Test
   void cannot_withdraw_more_than_allowed_by_the_daily_limit() {
-    account.deposit(of("1000.00"));
+    account.deposit(amount("1000.00"));
 
-    var e = assertThrows(IllegalStateException.class, () -> account.withdraw(of("101.00")));
+    var e = assertThrows(IllegalStateException.class, () -> account.withdraw(amount("101.00")));
 
     assertThat(e).hasMessage("Daily withdrawal limit (100.00) reached.");
   }
@@ -157,11 +157,11 @@ class BankAccountTest {
     @Test
     void supports_saving_and_reading() {
       var tx = new TransactionTemplate(txManager);
-      var limit = new WithdrawalLimit(of("100.00"));
+      var limit = new WithdrawalLimit(amount("100.00"));
       var account = new BankAccount(SAVINGS, Iban.newlyGenerated(), limit);
 
-      account.deposit(of("50.00"));
-      account.withdraw(of("20.00"));
+      account.deposit(amount("50.00"));
+      account.withdraw(amount("20.00"));
 
       tx.executeWithoutResult(whateverStatus -> account.saveNew(repository));
 
@@ -169,14 +169,14 @@ class BankAccountTest {
 
       tx.executeWithoutResult(whateverStatus -> {
         var it = repository.singleBy(id);
-        assertThat(it.balance()).isEqualTo(of("30.00"));
-        it.deposit(of("70.00"));
+        assertThat(it.balance()).isEqualTo(amount("30.00"));
+        it.deposit(amount("70.00"));
         it.save(repository);
       });
 
       tx.executeWithoutResult(whateverStatus -> {
         var it = repository.singleBy(id);
-        assertThat(it.balance()).isEqualTo(of("100.00"));
+        assertThat(it.balance()).isEqualTo(amount("100.00"));
       });
 
     }

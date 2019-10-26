@@ -26,6 +26,7 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
+//    id 'net.ltgt.apt-idea' version '0.21'
 //    id 'checkstyle'
     id 'org.springframework.boot' version "$springVersion"
     id 'net.ltgt.errorprone' version '0.8.1'
@@ -61,6 +62,7 @@ tasks {
 
 compileJava {
     options.compilerArgs += ["--enable-preview"]
+    options.annotationProcessorPath = configurations.annotationProcessor
 }
 test {
     jvmArgs '--enable-preview'
@@ -80,11 +82,7 @@ tasks.withType(JavaCompile).each {
         e.disableWarningsInGeneratedCode.set(true)
         e.disable "TypeParameterUnusedInFormals"
         e.option "NullAway:AnnotatedPackages", "awsm"
-        e.option """
-                  NullAway:ExcludedFieldAnnotations",
-                  org.mockito.Mock,
-                  org.springframework.beans.factory.annotation.Autowired
-                  """
+        e.option """NullAway:ExcludedFieldAnnotations,org.mockito.Mock,org.springframework.beans.factory.annotation.Autowired"""
         e.option "NullAway:ExternalInitAnnotations"
     }
 }
@@ -125,6 +123,12 @@ task generateJooq {
                                 .withIncludes(".*")
                                 .withExcludes("")
                                 .withInputSchema("public")
+                                .withForcedTypes(new ForcedType()
+                                        .withUserType("javax.money.MonetaryAmount")
+                                        .withConverter("awsm.infrastructure.jooq.MoneyConverter")
+                                        .withIncludeExpression(".*")
+                                        .withIncludeTypes("NUMERIC\\(13,\\s*2\\)")
+                                )
                         )
                         .withTarget(new Target()
                                 .withClean(true)
@@ -157,6 +161,12 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.3.3")
     errorprone("com.uber.nullaway:nullaway:0.7.5")
 
+    annotationProcessor "org.immutables:value:2.8.1"
+    compileOnly("org.immutables:value-annotations:2.8.1")
+
+    annotationProcessor("com.google.auto.factory:auto-factory:1.0-beta7")
+    compileOnly("com.google.auto.factory:auto-factory:1.0-beta7")
+
     implementation("org.postgresql:postgresql:42.2.8")
     implementation("org.jooq:jooq:3.12.1")
     implementation("org.apache.commons:commons-lang3:3.9")
@@ -175,6 +185,8 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("one.util:streamex:0.7.0")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
+
+
 
 
     testImplementation "org.testcontainers:postgresql:1.12.2"

@@ -1,4 +1,4 @@
-package awsm.application.registration.impl;
+package awsm.application.registration.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

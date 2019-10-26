@@ -1,4 +1,4 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -6,12 +6,12 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
-import awsm.application.banking.impl.Transactions.Transaction;
-import awsm.infrastructure.modeling.Amount;
+import awsm.application.banking.domain.Transactions.Transaction;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.money.MonetaryAmount;
 
 class BankStatement {
 
@@ -31,7 +31,7 @@ class BankStatement {
     this.closingBalance = new Balance(to, closingBalance);
   }
 
-  private void newEntry(Transaction tx, Amount balance) {
+  private void newEntry(Transaction tx, MonetaryAmount balance) {
     entries.add(new Entry(
         tx.bookingTime(),
         tx.withdrawn(),
@@ -43,19 +43,19 @@ class BankStatement {
     var root = createObjectBuilder();
 
     root.add("startingBalance", createObjectBuilder()
-        .add("amount", startingBalance.amount + "")
+        .add("amount", startingBalance.amount.getNumber() + "")
         .add("date", startingBalance.date.format(ISO_DATE)));
 
     root.add("closingBalance", createObjectBuilder()
-        .add("amount", closingBalance.amount + "")
+        .add("amount", closingBalance.amount.getNumber() + "")
         .add("date", closingBalance.date.format(ISO_DATE)));
 
     var items = createArrayBuilder();
     entries.forEach(it -> items.add(createObjectBuilder()
         .add("time", it.time.format(ISO_LOCAL_DATE_TIME))
-        .add("withdrawal", it.withdrawal + "")
-        .add("deposit", it.deposit + "")
-        .add("balance", it.balance + "")));
+        .add("withdrawal", it.withdrawal.getNumber() + "")
+        .add("deposit", it.deposit.getNumber() + "")
+        .add("balance", it.balance.getNumber() + "")));
 
     root.add("transactions", items);
 
@@ -66,13 +66,13 @@ class BankStatement {
 
     private final LocalDateTime time;
 
-    private final Amount withdrawal;
+    private final MonetaryAmount withdrawal;
 
-    private final Amount deposit;
+    private final MonetaryAmount deposit;
 
-    private final Amount balance;
+    private final MonetaryAmount balance;
 
-    private Entry(LocalDateTime time, Amount withdrawal, Amount deposit, Amount balance) {
+    private Entry(LocalDateTime time, MonetaryAmount withdrawal, MonetaryAmount deposit, MonetaryAmount balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
       this.deposit = deposit;
@@ -83,10 +83,10 @@ class BankStatement {
 
   private static class Balance {
 
-    private final Amount amount;
+    private final MonetaryAmount amount;
     private final LocalDate date;
 
-    private Balance(LocalDate date, Amount amount) {
+    private Balance(LocalDate date, MonetaryAmount amount) {
       this.amount = amount;
       this.date = date;
     }

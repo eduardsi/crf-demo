@@ -1,4 +1,4 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
 class Iban {
 
@@ -13,6 +13,7 @@ class Iban {
     return new Iban(org.iban4j.Iban.random().toString());
   }
 
+  @Override
   public String toString() {
     return iban;
   }

@@ -1,16 +1,14 @@
-package awsm.application.registration.impl;
+package awsm.application.registration.domain;
 
 import static awsm.infrastructure.memoization.Memoizers.memoized;
-import static awsm.infrastructure.middleware.ReturnsNothing.NOTHING;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import awsm.application.registration.Register;
 import awsm.infrastructure.hashing.HashId;
-import awsm.infrastructure.middleware.ReturnsNothing;
-import awsm.infrastructure.middleware.ScheduledCommand;
 import awsm.infrastructure.middleware.impl.react.Reaction;
 import awsm.infrastructure.middleware.impl.react.validation.Validator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import awsm.infrastructure.middleware.impl.resilience.RateLimit;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +18,11 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
 
   private final Customer.Repository repository;
 
-  private final Email.Blacklist blacklist;
+  private final EmailBlacklist blacklist;
 
-  private final Email.Uniqueness uniqueness;
+  private final EmailUniqueness uniqueness;
 
-  RegisterReaction(Customer.Repository repository, Email.Blacklist blacklist, Email.Uniqueness uniqueness) {
+  RegisterReaction(Customer.Repository repository, EmailBlacklist blacklist, EmailUniqueness uniqueness) {
     this.repository = repository;
     this.uniqueness = memoized(uniqueness::guaranteed)::apply;
     this.blacklist = memoized(blacklist::allows)::apply;
@@ -49,34 +47,25 @@ class RegisterReaction implements Reaction<Register, CharSequence> {
     customer.register(repository);
 
     var welcome = new Welcome(customer.id());
-    welcome.schedule();
+    welcome.later();
 
     return new HashId(customer.id());
   }
 
-  static class Welcome implements ScheduledCommand {
+  @Component
+  static class Resilience implements RateLimit<Register> {
 
-    private final long customerId;
+    private final int rateLimit;
 
-    Welcome(@JsonProperty("customerId") long customerId) {
-      this.customerId = customerId;
+    public Resilience(@Value("${registration.rateLimit}") int rateLimit) {
+      this.rateLimit = rateLimit;
     }
 
-    @Component
-    static class Re implements Reaction<Welcome, ReturnsNothing> {
-
-      private final Customer.Repository customers;
-
-      private Re(Customer.Repository customers) {
-        this.customers = customers;
-      }
-
-      @Override
-      public ReturnsNothing react(Welcome cmd) {
-        var customer = customers.singleBy(cmd.customerId);
-        System.out.printf("Sending email to %s: Welcome to the Matrix, %s", customer.email(), customer.name());
-        return NOTHING;
-      }
+    @Override
+    public int rateLimit() {
+      return rateLimit;
     }
   }
+
+
 }

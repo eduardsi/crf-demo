@@ -1,16 +1,15 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
-import static awsm.infrastructure.modeling.Amount.ZERO;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
 
-import awsm.application.banking.impl.Transactions.Transaction;
-import awsm.infrastructure.modeling.Amount;
+import awsm.application.banking.domain.Transactions.Transaction;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
+import javax.money.MonetaryAmount;
 import jooq.tables.records.BankAccountRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
@@ -47,7 +46,7 @@ public class BankAccount {
     return id.orElseThrow();
   }
 
-  public Transaction withdraw(Amount amount) {
+  public Transaction withdraw(MonetaryAmount amount) {
     new EnforceOpen();
 
     var tx = Transaction.withdrawalOf(amount);
@@ -61,7 +60,7 @@ public class BankAccount {
     return tx;
   }
 
-  public Transaction deposit(Amount amount) {
+  public Transaction deposit(MonetaryAmount amount) {
     new EnforceOpen();
 
     var tx = Transaction.depositOf(amount);
@@ -73,7 +72,7 @@ public class BankAccount {
     return tx;
   }
 
-  public Amount balance() {
+  public MonetaryAmount balance() {
     return committedTransactions.balance();
   }
 
@@ -114,7 +113,7 @@ public class BankAccount {
     }
 
     private boolean isPositiveBalance() {
-      return transactions.balance().isAtLeast(ZERO);
+      return transactions.balance().isPositiveOrZero();
     }
   }
 
@@ -125,11 +124,11 @@ public class BankAccount {
     private EnforceWithdrawalLimits(Transactions transactions) {
       this.transactions = transactions;
       var dailyLimit = withdrawalLimit.dailyLimit();
-      var notExceeded = withdrawn(today()).isAtMost(dailyLimit);
-      checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit);
+      var notExceeded = withdrawn(today()).isLessThanOrEqualTo(dailyLimit);
+      checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit.getNumber());
     }
 
-    private Amount withdrawn(LocalDate someDay) {
+    private MonetaryAmount withdrawn(LocalDate someDay) {
       return transactions
           .thatAre(tx -> tx.bookedOn(someDay))
           .thatAre(tx -> tx.isWithdrawal())
@@ -183,7 +182,7 @@ public class BankAccount {
         var self = new BankAccount(
             Type.valueOf(jooq.getType()),
             new Iban(jooq.getIban()),
-            new WithdrawalLimit(Amount.of(jooq.getDailyLimit())));
+            new WithdrawalLimit(jooq.getDailyLimit()));
         self.id = Optional.of(jooq.getId());
         self.status = Status.valueOf(jooq.getStatus());
         self.committedTransactions = transactionsRepository.listBy(self);
@@ -196,7 +195,7 @@ public class BankAccount {
           .setIban(self.iban + "")
           .setStatus(self.status.name())
           .setType(self.type.name())
-          .setDailyLimit(self.withdrawalLimit.dailyLimit().toBigDecimal());
+          .setDailyLimit(self.withdrawalLimit.dailyLimit());
     }
 
   }

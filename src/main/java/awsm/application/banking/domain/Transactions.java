@@ -1,20 +1,20 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
-import static awsm.application.banking.impl.Transactions.Transaction.Type.DEPOSIT;
-import static awsm.application.banking.impl.Transactions.Transaction.Type.WITHDRAWAL;
-import static awsm.infrastructure.modeling.Amount.ZERO;
+import static awsm.application.banking.domain.Transactions.Transaction.Type.DEPOSIT;
+import static awsm.application.banking.domain.Transactions.Transaction.Type.WITHDRAWAL;
+import static awsm.application.commons.money.Monetary.amount;
 import static awsm.infrastructure.time.TimeMachine.clock;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
-import awsm.infrastructure.modeling.Amount;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import javax.money.MonetaryAmount;
 import jooq.tables.records.BankAccountTxRecord;
 import one.util.streamex.StreamEx;
 import org.jooq.DSLContext;
@@ -46,11 +46,11 @@ class Transactions {
     );
   }
 
-  Amount balance() {
-    return balance(Amount.ZERO, (balance, tx) -> {});
+  MonetaryAmount balance() {
+    return balance(amount("0.00"), (balance, tx) -> {});
   }
 
-  Amount balance(Amount seed, Interims interims) {
+  MonetaryAmount balance(MonetaryAmount seed, Interims interims) {
     return StreamEx.of(transactions).foldLeft(seed, ($, tx) -> {
       var balance = tx.apply($);
       interims.interim(tx, balance);
@@ -59,7 +59,7 @@ class Transactions {
   }
 
   interface Interims {
-    void interim(Transaction tx, Amount balance);
+    void interim(Transaction tx, MonetaryAmount balance);
   }
 
   Transactions with(Transaction tx) {
@@ -85,7 +85,7 @@ class Transactions {
       DEPOSIT, WITHDRAWAL
     }
 
-    private final Amount amount;
+    private final MonetaryAmount amount;
 
     private final LocalDateTime bookingTime;
 
@@ -93,7 +93,7 @@ class Transactions {
 
     private final Type type;
 
-    private Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
+    private Transaction(Type type, MonetaryAmount amount, LocalDateTime bookingTime) {
       this.type = type;
       this.amount = amount;
       this.bookingTime = bookingTime;
@@ -104,7 +104,7 @@ class Transactions {
       return bookingTime;
     }
 
-    Amount apply(Amount balance) {
+    MonetaryAmount apply(MonetaryAmount balance) {
       return switch(type) {
         case DEPOSIT:
           yield balance.add(amount);
@@ -113,16 +113,16 @@ class Transactions {
       };
     }
 
-    Amount withdrawn() {
-      return isWithdrawal() ? amount : ZERO;
+    MonetaryAmount withdrawn() {
+      return isWithdrawal() ? amount : amount("0.00");
     }
 
     boolean isWithdrawal() {
       return type == WITHDRAWAL;
     }
 
-    Amount deposited() {
-      return isDeposit() ? amount : ZERO;
+    MonetaryAmount deposited() {
+      return isDeposit() ? amount : amount("0.00");
     }
 
     boolean isDeposit() {
@@ -141,11 +141,11 @@ class Transactions {
       return LocalDateRange.ofClosed(from, to).contains(bookingDate);
     }
 
-    static Transaction withdrawalOf(Amount amount) {
+    static Transaction withdrawalOf(MonetaryAmount amount) {
       return new Transaction(WITHDRAWAL, amount, LocalDateTime.now(clock()));
     }
 
-    static Transaction depositOf(Amount amount) {
+    static Transaction depositOf(MonetaryAmount amount) {
       return new Transaction(DEPOSIT, amount, LocalDateTime.now(clock()));
     }
 
@@ -166,7 +166,7 @@ class Transactions {
           .forEach(tx -> dsl
               .insertInto(BANK_ACCOUNT_TX)
               .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, self.bankAccount.id())
-              .set(BANK_ACCOUNT_TX.AMOUNT, tx.amount.toBigDecimal())
+              .set(BANK_ACCOUNT_TX.AMOUNT, tx.amount)
               .set(BANK_ACCOUNT_TX.BOOKING_TIME, tx.bookingTime)
               .set(BANK_ACCOUNT_TX.TYPE, tx.type.name())
               .execute());
@@ -194,7 +194,7 @@ class Transactions {
     private Function<BankAccountTxRecord, Transaction> fromJooq() {
       return jooq -> new Transaction(
           Transaction.Type.valueOf(jooq.getType()),
-          Amount.of(jooq.getAmount()),
+          jooq.getAmount(),
           jooq.getBookingTime()
       );
     }

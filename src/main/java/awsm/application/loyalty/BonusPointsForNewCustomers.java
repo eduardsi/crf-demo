@@ -2,7 +2,7 @@ package awsm.application.loyalty;
 
 import static java.lang.String.format;
 
-import awsm.application.registration.Register;
+import awsm.application.registration.domain.RegistrationCompleted;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -11,7 +11,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 class BonusPointsForNewCustomers {
 
   @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-  void whenever(Register.RegistrationCompleted it) {
+  void whenever(RegistrationCompleted it) {
 
     var qualifiesForBonus = it.email.matches("/vip.com/");
     if (qualifiesForBonus) {

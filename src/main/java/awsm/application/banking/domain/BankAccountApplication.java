@@ -1,4 +1,4 @@
-package awsm.application.banking.impl;
+package awsm.application.banking.domain;
 
 import static java.time.ZoneOffset.UTC;
 
