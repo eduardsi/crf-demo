@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.text.CharSequenceLength.hasLength;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -99,7 +98,7 @@ class RegisterTest {
   void returns_a_hashed_customer_id_upon_completion() throws Exception {
     register()
         .andExpect(status().isOk())
-        .andExpect(content().string(hasLength(10)));
+        .andExpect(jsonPath("$.customerHashId", hasLength(10)));
     Thread.sleep(9999999);
   }
 

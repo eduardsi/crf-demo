@@ -10,24 +10,25 @@ import org.springframework.stereotype.Component;
 
 class Welcome implements Command<ReturnsNothing> {
 
-  private final CustomerId customerId;
+  private final long customerId;
 
-  Welcome(@JsonProperty("customerId") CustomerId customerId) {
+  Welcome(@JsonProperty("customerId") long customerId) {
     this.customerId = customerId;
   }
 
   @Component
-  static class Re implements Executor<Welcome, ReturnsNothing> {
+  static class Exe implements Executor<Welcome, ReturnsNothing> {
 
     private final Customer.Repository customers;
 
-    private Re(Customer.Repository customers) {
+    private Exe(Customer.Repository customers) {
       this.customers = customers;
     }
 
     @Override
     public ReturnsNothing execute(Welcome cmd) {
-      var customer = customers.singleBy(cmd.customerId);
+      var customerId = new CustomerId(cmd.customerId);
+      var customer = customers.singleBy(customerId);
       System.out.printf("Sending email to %s: Welcome to the Matrix, %s", customer.email(), customer.name());
       return NOTHING;
     }

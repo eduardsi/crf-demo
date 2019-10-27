@@ -2,7 +2,7 @@ package awsm.infrastructure.middleware.impl.scheduler;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.PropertyAccessor.FIELD;
-import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL;
+import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.EVERYTHING;
 import static com.machinezoo.noexception.Exceptions.sneak;
 import static java.time.ZoneOffset.UTC;
 import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
@@ -28,7 +28,7 @@ class ScheduledCommand {
       .activateDefaultTyping(BasicPolymorphicTypeValidator
           .builder()
           .allowIfBaseType(Command.class)
-          .build(), NON_FINAL)
+          .build(), EVERYTHING)
       .visibility(FIELD, ANY)
       .build();
 

@@ -4,7 +4,7 @@ import static awsm.infrastructure.memoization.Memoizers.memoized;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import awsm.application.registration.Register;
-import awsm.infrastructure.hashing.Hash;
+import awsm.application.registration.Register.Response;
 import awsm.infrastructure.middleware.impl.execution.Executor;
 import awsm.infrastructure.middleware.impl.resilience.RateLimit;
 import awsm.infrastructure.validation.Validator;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-class RegisterExecutor implements Executor<Register, Hash<CustomerId>> {
+class RegisterExecutor implements Executor<Register, Response> {
 
   private final Customer.Repository repository;
 
@@ -29,7 +29,7 @@ class RegisterExecutor implements Executor<Register, Hash<CustomerId>> {
   }
 
   @Override
-  public Hash<CustomerId> execute(Register cmd) {
+  public Response execute(Register cmd) {
 
     var name = new FullName(cmd.firstName, cmd.lastName);
     var email = new Email(cmd.email, uniqueness, blacklist);
@@ -37,10 +37,14 @@ class RegisterExecutor implements Executor<Register, Hash<CustomerId>> {
     var customer = new Customer(name, email);
     customer.register(repository);
 
-    var welcome = new Welcome(customer.id());
+    var customerId = customer.id();
+
+    var welcome = new Welcome(customerId.asLong());
     welcome.schedule();
 
-    return customer.id().hash();
+    return new Response(
+        customerId.hashIdString()
+    );
   }
 
   @Override

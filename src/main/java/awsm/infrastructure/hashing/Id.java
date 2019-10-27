@@ -7,8 +7,8 @@ public abstract class Id<T> {
 
   private final Optional<Long> id;
 
-  public Id(Hash<T> id) {
-    var decode = HashidsHolder.get().decode(id.toString());
+  public Id(HashId<T> hashId) {
+    var decode = HashidsHolder.get().decode(hashId.toString());
     this.id = Optional.of(decode[0]);
   }
 
@@ -20,13 +20,17 @@ public abstract class Id<T> {
     this.id = Optional.empty();
   }
 
-  public Hash<T> hash() {
-    var hashids = HashidsHolder.get();
-    var hash = hashids.encode(id.orElseThrow());
-    return hashOf(hash);
+  public String hashIdString() {
+    return hashId().toString();
   }
 
-  protected abstract Hash<T> hashOf(String hash);
+  private HashId<T> hashId() {
+    return hashId(
+        HashidsHolder.get().encode(id.orElseThrow())
+    );
+  }
+
+  protected abstract HashId<T> hashId(String hashId);
 
   @JsonValue
   public long asLong() {

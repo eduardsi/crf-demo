@@ -2,11 +2,11 @@ package awsm.infrastructure.hashing;
 
 import javax.annotation.Nonnull;
 
-public abstract class Hash<T> implements CharSequence {
+public abstract class HashId<T> implements CharSequence {
 
   private final String hash;
 
-  protected Hash(String hash) {
+  protected HashId(String hash) {
     this.hash = hash;
   }
 

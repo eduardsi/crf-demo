@@ -1,18 +1,11 @@
 package awsm.application.registration.domain;
 
-import awsm.infrastructure.hashing.Hash;
+import awsm.infrastructure.hashing.HashId;
 import awsm.infrastructure.hashing.Id;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 
-public final class CustomerId extends Id<CustomerId> {
+public class CustomerId extends Id<CustomerId> {
 
-//  @JsonCreator
-  public CustomerId(long id) {
-    super(id);
-  }
-
-  public CustomerId(@JsonProperty("id") int id) {
+  CustomerId(long id) {
     super(id);
   }
 
@@ -20,19 +13,13 @@ public final class CustomerId extends Id<CustomerId> {
     super();
   }
 
-  private CustomerId(Hash<CustomerId> id) {
-    super(id);
+  private CustomerId(HashId<CustomerId> hashId) {
+    super(hashId);
   }
 
   @Override
-  @JsonValue
-  public long asLong() {
-    return super.asLong();
-  }
-
-  @Override
-  protected Hash<CustomerId> hashOf(String hash) {
-    return new Hash<>(hash) {
+  protected HashId<CustomerId> hashId(String hashId) {
+    return new HashId<>(hashId) {
       @Override
       public CustomerId unhash() {
         return new CustomerId(this);
