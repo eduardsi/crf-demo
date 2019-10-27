@@ -14,7 +14,7 @@ import jooq.tables.records.BankAccountRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
-public class BankAccount {
+class BankAccount {
 
   enum Status {
     OPEN, CLOSED

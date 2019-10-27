@@ -5,7 +5,7 @@ import static java.time.ZoneOffset.UTC;
 import java.time.LocalDateTime;
 import javax.annotation.Nullable;
 
-public class BankAccountApplication {
+class BankAccountApplication {
 
   public enum Status {
     NEW, APPROVED, REFUSED

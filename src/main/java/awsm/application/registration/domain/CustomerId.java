@@ -1,9 +1,8 @@
 package awsm.application.registration.domain;
 
-import awsm.infrastructure.hashing.HashId;
 import awsm.infrastructure.hashing.Id;
 
-public class CustomerId extends Id<CustomerId> {
+public class CustomerId extends Id<CustomerId, CustomerHashId> {
 
   CustomerId(long id) {
     super(id);
@@ -13,18 +12,9 @@ public class CustomerId extends Id<CustomerId> {
     super();
   }
 
-  private CustomerId(HashId<CustomerId> hashId) {
-    super(hashId);
-  }
-
   @Override
-  protected HashId<CustomerId> hashId(String hashId) {
-    return new HashId<>(hashId) {
-      @Override
-      public CustomerId unhash() {
-        return new CustomerId(this);
-      }
-    };
+  protected CustomerHashId hash(String hashId) {
+    return new CustomerHashId(hashId);
   }
 
 }

@@ -3,14 +3,9 @@ package awsm.infrastructure.hashing;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Optional;
 
-public abstract class Id<T> {
+public abstract class Id<T extends Id, H extends HashId<T>> {
 
   private final Optional<Long> id;
-
-  public Id(HashId<T> hashId) {
-    var decode = HashidsHolder.get().decode(hashId.toString());
-    this.id = Optional.of(decode[0]);
-  }
 
   public Id(long id) {
     this.id = Optional.of(id);
@@ -24,13 +19,13 @@ public abstract class Id<T> {
     return hashId().toString();
   }
 
-  private HashId<T> hashId() {
-    return hashId(
+  private H hashId() {
+    return hash(
         HashidsHolder.get().encode(id.orElseThrow())
     );
   }
 
-  protected abstract HashId<T> hashId(String hashId);
+  protected abstract H hash(String hashId);
 
   @JsonValue
   public long asLong() {

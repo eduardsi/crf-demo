@@ -2,7 +2,7 @@ package awsm.application.banking.domain;
 
 import javax.money.MonetaryAmount;
 
-public class WithdrawalLimit {
+class WithdrawalLimit {
 
   private MonetaryAmount dailyLimit;
 

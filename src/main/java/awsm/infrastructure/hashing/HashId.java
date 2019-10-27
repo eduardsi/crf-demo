@@ -2,34 +2,24 @@ package awsm.infrastructure.hashing;
 
 import javax.annotation.Nonnull;
 
-public abstract class HashId<T> implements CharSequence {
+public abstract class HashId<I extends Id>  {
 
-  private final String hash;
+  private final String hashId;
 
-  protected HashId(String hash) {
-    this.hash = hash;
+  protected HashId(String hashId) {
+    this.hashId = hashId;
   }
 
-  public abstract T unhash();
+  protected abstract I newInstance(long id);
 
-  @Override
-  public int length() {
-    return hash.length();
-  }
-
-  @Override
-  public char charAt(int index) {
-    return hash.charAt(index);
-  }
-
-  @Override
-  public CharSequence subSequence(int start, int end) {
-    return hash.subSequence(start, end);
+  public I unhash() {
+    var decode = HashidsHolder.get().decode(hashId);
+    return newInstance(decode[0]);
   }
 
   @Override
   @Nonnull
   public String toString() {
-    return this.hash;
+    return this.hashId;
   }
 }
