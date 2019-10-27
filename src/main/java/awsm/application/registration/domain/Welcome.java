@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 
 class Welcome implements Command<ReturnsNothing> {
 
-  private final long customerId;
+  private final CustomerId customerId;
 
-  Welcome(@JsonProperty("customerId") long customerId) {
+  Welcome(@JsonProperty("customerId") CustomerId customerId) {
     this.customerId = customerId;
   }
 

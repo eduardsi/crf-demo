@@ -3,7 +3,6 @@ package awsm.application.registration.domain;
 import static java.util.Objects.requireNonNull;
 import static jooq.tables.Customer.CUSTOMER;
 
-import java.util.Optional;
 import java.util.function.Function;
 import jooq.tables.records.CustomerRecord;
 import org.jooq.DSLContext;
@@ -15,7 +14,7 @@ class Customer {
 
   private final FullName name;
 
-  private Optional<Long> id = Optional.empty();
+  private CustomerId id = new CustomerId();
 
   Customer(FullName name, Email email) {
     this.name = requireNonNull(name, "Name cannot be null");
@@ -35,8 +34,8 @@ class Customer {
     new RegistrationCompleted(name + "", email + "").schedule();
   }
 
-  long id() {
-    return id.orElseThrow();
+  CustomerId id() {
+    return id;
   }
 
   @Component
@@ -57,13 +56,13 @@ class Customer {
           .returning(CUSTOMER.ID)
           .fetchOne()
           .getId();
-      self.id = Optional.of(id);
+      self.id = new CustomerId(id);
     }
 
-    Customer singleBy(long id) {
+    Customer singleBy(CustomerId id) {
       return dsl
           .selectFrom(CUSTOMER)
-          .where(CUSTOMER.ID.equal(id))
+          .where(CUSTOMER.ID.equal(id.asLong()))
           .fetchOptional()
           .map(fromJooq())
           .orElseThrow();

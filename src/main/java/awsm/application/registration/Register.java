@@ -1,11 +1,13 @@
 package awsm.application.registration;
 
+import awsm.application.registration.domain.CustomerId;
+import awsm.infrastructure.hashing.Hash;
 import awsm.infrastructure.middleware.Command;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-public class Register implements Command<CharSequence> {
+public class Register implements Command<Hash<CustomerId>> {
 
   public final String email;
 
@@ -22,7 +24,7 @@ public class Register implements Command<CharSequence> {
   @RestController
   static class OverHttp {
     @PostMapping("/customers")
-    CharSequence post(@RequestBody Register register) {
+    Hash<CustomerId> post(@RequestBody Register register) {
       return register.execute();
     }
   }
