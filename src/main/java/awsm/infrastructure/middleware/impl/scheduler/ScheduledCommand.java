@@ -8,6 +8,7 @@ import static java.time.ZoneOffset.UTC;
 import static jooq.tables.ScheduledCommand.SCHEDULED_COMMAND;
 
 import awsm.infrastructure.middleware.Command;
+import awsm.infrastructure.middleware.CommandMeta;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -37,6 +38,8 @@ class ScheduledCommand {
 
   private final Command command;
 
+  private final String commandId;
+
   private Optional<Long> id = Optional.empty();
 
   ScheduledCommand(Command command) {
@@ -46,6 +49,7 @@ class ScheduledCommand {
   private ScheduledCommand(LocalDateTime creationDate, Command command) {
     this.creationDate = creationDate;
     this.command = command;
+    this.commandId = command.id();
   }
 
   void saveNew(Repository repository) {
@@ -61,9 +65,11 @@ class ScheduledCommand {
   static class Repository {
 
     private final DSLContext dsl;
+    private final CommandMeta commandMeta;
 
-    Repository(DSLContext dsl) {
+    Repository(DSLContext dsl, CommandMeta commandMeta) {
       this.dsl = dsl;
+      this.commandMeta = commandMeta;
     }
 
     Stream<Runnable> list(long limit) {
@@ -85,7 +91,8 @@ class ScheduledCommand {
 
     private Function<ScheduledCommandRecord, ScheduledCommand> fromJooq() {
       return jooq -> {
-        var cmd = sneak().get(() -> mapper.readValue(jooq.getCommand(), Command.class));
+        var commandId = jooq.getCommandId();
+        var cmd = sneak().get(() -> mapper.readValue(jooq.getCommand(), commandMeta.typeOf(commandId)));
         var self = new ScheduledCommand(jooq.getCreationDate(), cmd);
         self.id = Optional.of(jooq.getId());
         return self;
@@ -96,6 +103,7 @@ class ScheduledCommand {
       var id = dsl
           .insertInto(SCHEDULED_COMMAND)
             .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
+            .set(SCHEDULED_COMMAND.COMMAND_ID, self.commandId)
             .set(SCHEDULED_COMMAND.COMMAND, sneak().get(() -> mapper.writeValueAsString(self.command)))
             .returning(SCHEDULED_COMMAND.ID)
             .fetchOne()
