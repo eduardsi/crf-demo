@@ -36,6 +36,9 @@ repositories {
     jcenter()
     mavenCentral()
     mavenLocal()
+    maven() {
+        url "https://artifactory.cronapp.io/public-release/"
+    }
 }
 
 group = "net.sizovs"
@@ -176,6 +179,8 @@ dependencies {
     implementation("org.iban4j:iban4j:3.2.1")
     implementation("org.javamoney.moneta:moneta-core:1.3")
     implementation("org.flywaydb:flyway-core:6.0.7")
+    implementation("com.google.code.gson:gson-extras:2.8.5")
+//    implementation group: 'com.google.code.gson', name: 'gson-extras', version: '2.8.5'
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.glassfish:javax.json:1.1.4")

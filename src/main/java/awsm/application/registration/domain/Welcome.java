@@ -5,7 +5,6 @@ import static awsm.application.registration.domain.Welcome.ID;
 import awsm.infrastructure.middleware.Command;
 import awsm.infrastructure.middleware.CommandId;
 import awsm.infrastructure.middleware.ReturnsNothing;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @CommandId(ID)
 class Welcome implements Command<ReturnsNothing> {
@@ -14,7 +13,7 @@ class Welcome implements Command<ReturnsNothing> {
 
   final long customerId;
 
-  Welcome(@JsonProperty("customerId") long customerId) {
+  Welcome(long customerId) {
     this.customerId = customerId;
   }
 
