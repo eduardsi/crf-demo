@@ -20,12 +20,12 @@ public abstract class Id<T extends Id, H extends HashId<T>> {
   }
 
   private H hashId() {
-    return hash(
+    return hashIdInstance(
         HashidsHolder.get().encode(id.orElseThrow())
     );
   }
 
-  protected abstract H hash(String hashId);
+  protected abstract H hashIdInstance(String hashId);
 
   @JsonValue
   public long asLong() {

@@ -11,7 +11,7 @@ class ApplyForBankAccountExecutor implements Executor<ApplyForBankAccount, Respo
 
   @Override
   public Response execute(ApplyForBankAccount cmd) {
-    var customerId = new CustomerHashId(cmd.customerHashId).unhash();
+    var customerId = new CustomerHashId(cmd.customerHashId).idInstance();
     System.out.println(customerId + " has applied for account with currency " + cmd.currency);
     return null;
   }

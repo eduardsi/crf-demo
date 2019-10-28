@@ -13,7 +13,7 @@ public class CustomerId extends Id<CustomerId, CustomerHashId> {
   }
 
   @Override
-  protected CustomerHashId hash(String hashId) {
+  protected CustomerHashId hashIdInstance(String hashId) {
     return new CustomerHashId(hashId);
   }
 

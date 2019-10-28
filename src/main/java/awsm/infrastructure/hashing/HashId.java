@@ -10,11 +10,11 @@ public abstract class HashId<I extends Id>  {
     this.hashId = hashId;
   }
 
-  protected abstract I newInstance(long id);
+  protected abstract I idInstance(long id);
 
-  public I unhash() {
+  public I idInstance() {
     var decode = HashidsHolder.get().decode(hashId);
-    return newInstance(decode[0]);
+    return idInstance(decode[0]);
   }
 
   @Override

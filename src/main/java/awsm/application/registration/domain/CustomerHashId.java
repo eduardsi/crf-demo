@@ -9,7 +9,7 @@ public class CustomerHashId extends HashId<CustomerId> {
   }
 
   @Override
-  protected CustomerId newInstance(long id) {
+  protected CustomerId idInstance(long id) {
     return new CustomerId(id);
   }
 }
