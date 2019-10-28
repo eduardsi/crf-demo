@@ -11,5 +11,3 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     platform: postgres
     url: jdbc:tc:postgresql:11.5://any:any/any?TC_TMPFS=/testtmpfs:rw
-#    username: postgres
-#    password: root

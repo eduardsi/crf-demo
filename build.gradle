@@ -180,16 +180,13 @@ dependencies {
     implementation("org.javamoney.moneta:moneta-core:1.3")
     implementation("org.flywaydb:flyway-core:6.0.7")
     implementation("com.google.code.gson:gson-extras:2.8.5")
-//    implementation group: 'com.google.code.gson', name: 'gson-extras', version: '2.8.5'
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
     implementation("org.glassfish:javax.json:1.1.4")
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("com.machinezoo.noexception:noexception:1.3.4")
-    implementation("org.msgpack:jackson-dataformat-msgpack:0.8.17")
     implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
     implementation("one.util:streamex:0.7.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
 
 
 

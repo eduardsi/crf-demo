@@ -99,7 +99,6 @@ class RegisterTest {
     register()
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerHashId", hasLength(10)));
-    Thread.sleep(9999999);
   }
 
   @Test

@@ -1,6 +1,5 @@
 package awsm.infrastructure.hashing;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Optional;
 
 public abstract class Id<T extends Id, H extends HashId<T>> {
@@ -27,7 +26,6 @@ public abstract class Id<T extends Id, H extends HashId<T>> {
 
   protected abstract H hashIdInstance(String hashId);
 
-  @JsonValue
   public long asLong() {
     return id.orElseThrow();
   }
