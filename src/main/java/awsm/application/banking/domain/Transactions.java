@@ -165,7 +165,7 @@ class Transactions {
           .transactions
           .forEach(tx -> dsl
               .insertInto(BANK_ACCOUNT_TX)
-              .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, self.bankAccount.id())
+              .set(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID, self.bankAccount.id().asLong())
               .set(BANK_ACCOUNT_TX.AMOUNT, tx.amount)
               .set(BANK_ACCOUNT_TX.BOOKING_TIME, tx.bookingTime)
               .set(BANK_ACCOUNT_TX.TYPE, tx.type.name())
@@ -175,7 +175,7 @@ class Transactions {
     private void delete(Transactions self) {
       dsl
           .deleteFrom(BANK_ACCOUNT_TX)
-          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(self.bankAccount.id()))
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.eq(self.bankAccount.id().asLong()))
           .execute();
     }
 
@@ -184,7 +184,7 @@ class Transactions {
           bankAccount,
           dsl
           .selectFrom(BANK_ACCOUNT_TX)
-          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(bankAccount.id()))
+          .where(BANK_ACCOUNT_TX.BANK_ACCOUNT_ID.equal(bankAccount.id().asLong()))
           .orderBy(BANK_ACCOUNT_TX.INDEX.asc())
           .fetchStream()
           .map(fromJooq())

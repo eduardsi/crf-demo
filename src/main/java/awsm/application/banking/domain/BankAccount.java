@@ -7,7 +7,6 @@ import static jooq.tables.BankAccount.BANK_ACCOUNT;
 
 import awsm.application.banking.domain.Transactions.Transaction;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.function.Function;
 import javax.money.MonetaryAmount;
 import jooq.tables.records.BankAccountRecord;
@@ -34,7 +33,7 @@ class BankAccount {
 
   private Transactions committedTransactions = new Transactions(this);
 
-  private Optional<Long> id = Optional.empty();
+  private BankAccountId id = new BankAccountId();
 
   public BankAccount(Type type, Iban iban, WithdrawalLimit withdrawalLimit) {
     this.iban = iban;
@@ -42,8 +41,8 @@ class BankAccount {
     this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
   }
 
-  public long id() {
-    return id.orElseThrow();
+  public BankAccountId id() {
+    return id;
   }
 
   public Transaction withdraw(MonetaryAmount amount) {
@@ -151,7 +150,7 @@ class BankAccount {
     private void update(BankAccount self) {
       dsl.update(BANK_ACCOUNT)
           .set(toJooq(self))
-          .where(BANK_ACCOUNT.ID.equal(self.id.orElseThrow()))
+          .where(BANK_ACCOUNT.ID.equal(self.id.asLong()))
           .execute();
       self.committedTransactions.delete(transactionsRepository);
       self.committedTransactions.saveNew(transactionsRepository);
@@ -164,14 +163,14 @@ class BankAccount {
               .returning(BANK_ACCOUNT.ID)
               .fetchOne()
               .getId();
-      self.id = Optional.of(id);
+      self.id = new BankAccountId(id);
       self.committedTransactions.saveNew(transactionsRepository);
     }
 
-    BankAccount singleBy(long id) {
+    BankAccount singleBy(BankAccountId id) {
       return dsl
           .selectFrom(BANK_ACCOUNT)
-          .where(BANK_ACCOUNT.ID.equal(id))
+          .where(BANK_ACCOUNT.ID.equal(id.asLong()))
           .fetchOptional()
           .map(fromJooq())
           .orElseThrow();
@@ -183,7 +182,7 @@ class BankAccount {
             Type.valueOf(jooq.getType()),
             new Iban(jooq.getIban()),
             new WithdrawalLimit(jooq.getDailyLimit()));
-        self.id = Optional.of(jooq.getId());
+        self.id =new BankAccountId(jooq.getId());
         self.status = Status.valueOf(jooq.getStatus());
         self.committedTransactions = transactionsRepository.listBy(self);
         return self;
