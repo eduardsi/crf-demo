@@ -2,11 +2,11 @@ package awsm.application.banking.domain;
 
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
 
 import awsm.application.banking.domain.Transactions.Transaction;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.function.Function;
 import javax.money.MonetaryAmount;
 import jooq.tables.records.BankAccountRecord;
@@ -19,15 +19,9 @@ class BankAccount {
     OPEN, CLOSED
   }
 
-  public enum Type {
-    CHECKING, SAVINGS
-  }
-
   private Status status = Status.OPEN;
 
-  private final Type type;
-
-  private final WithdrawalLimit withdrawalLimit;
+  private final WithdrawalLimits withdrawalLimits;
 
   private final Iban iban;
 
@@ -35,10 +29,13 @@ class BankAccount {
 
   private BankAccountId id = new BankAccountId();
 
-  public BankAccount(Type type, Iban iban, WithdrawalLimit withdrawalLimit) {
+  BankAccount(WithdrawalLimits withdrawalLimits) {
+    this(new Iban(), withdrawalLimits);
+  }
+
+  private BankAccount(Iban iban, WithdrawalLimits withdrawalLimits) {
     this.iban = iban;
-    this.type = type;
-    this.withdrawalLimit = requireNonNull(withdrawalLimit, "Withdrawal limit is mandatory");
+    this.withdrawalLimits = withdrawalLimits;
   }
 
   public BankAccountId id() {
@@ -52,7 +49,8 @@ class BankAccount {
     var uncommittedTransactions = committedTransactions.with(tx);
 
     new EnforcePositiveBalance(uncommittedTransactions);
-    new EnforceWithdrawalLimits(uncommittedTransactions);
+    new EnforceMonthlyWithdrawalLimit(uncommittedTransactions);
+    new EnforceDailyWithdrawalLimit(uncommittedTransactions);
 
     committedTransactions = uncommittedTransactions;
 
@@ -116,20 +114,41 @@ class BankAccount {
     }
   }
 
-  private class EnforceWithdrawalLimits {
+  private class EnforceDailyWithdrawalLimit {
 
     private final Transactions transactions;
 
-    private EnforceWithdrawalLimits(Transactions transactions) {
+    private EnforceDailyWithdrawalLimit(Transactions transactions) {
       this.transactions = transactions;
-      var dailyLimit = withdrawalLimit.dailyLimit();
+      var dailyLimit = withdrawalLimits.dailyLimit();
       var notExceeded = withdrawn(today()).isLessThanOrEqualTo(dailyLimit);
       checkState(notExceeded, "Daily withdrawal limit (%s) reached.", dailyLimit.getNumber());
     }
 
     private MonetaryAmount withdrawn(LocalDate someDay) {
       return transactions
-          .thatAre(tx -> tx.bookedOn(someDay))
+          .thatAre(tx -> tx.bookedIn(someDay))
+          .thatAre(tx -> tx.isWithdrawal())
+          .balance()
+          .abs();
+    }
+  }
+
+  private class EnforceMonthlyWithdrawalLimit {
+
+    private final Transactions transactions;
+
+    private EnforceMonthlyWithdrawalLimit(Transactions transactions) {
+      this.transactions = transactions;
+      var monthlyLimit = withdrawalLimits.monthlyLimit();
+      var thisMonth = today().getMonth();
+      var notExceeded = withdrawn(thisMonth).isLessThanOrEqualTo(monthlyLimit);
+      checkState(notExceeded, "Monthly withdrawal limit (%s) reached.", monthlyLimit.getNumber());
+    }
+
+    private MonetaryAmount withdrawn(Month month) {
+      return transactions
+          .thatAre(tx -> tx.bookedIn(month))
           .thatAre(tx -> tx.isWithdrawal())
           .balance()
           .abs();
@@ -179,10 +198,10 @@ class BankAccount {
     private Function<BankAccountRecord, BankAccount> fromJooq() {
       return jooq -> {
         var self = new BankAccount(
-            Type.valueOf(jooq.getType()),
             new Iban(jooq.getIban()),
-            new WithdrawalLimit(jooq.getDailyLimit()));
-        self.id =new BankAccountId(jooq.getId());
+            new WithdrawalLimits(jooq.getDailyLimit(), jooq.getMonthlyLimit())
+        );
+        self.id = new BankAccountId(jooq.getId());
         self.status = Status.valueOf(jooq.getStatus());
         self.committedTransactions = transactionsRepository.listBy(self);
         return self;
@@ -193,8 +212,8 @@ class BankAccount {
       return new BankAccountRecord()
           .setIban(self.iban + "")
           .setStatus(self.status.name())
-          .setType(self.type.name())
-          .setDailyLimit(self.withdrawalLimit.dailyLimit());
+          .setMonthlyLimit(self.withdrawalLimits.monthlyLimit())
+          .setDailyLimit(self.withdrawalLimits.dailyLimit());
     }
 
   }

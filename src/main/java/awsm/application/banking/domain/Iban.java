@@ -1,20 +1,23 @@
 package awsm.application.banking.domain;
 
+import com.github.javafaker.Faker;
+
 class Iban {
 
-  private String iban;
+  private final String iban;
 
+  Iban() {
+    this(new Faker().finance().iban());
+  }
 
   Iban(String iban) {
     this.iban = iban;
-  }
-
-  static Iban newlyGenerated() {
-    return new Iban(org.iban4j.Iban.random().toString());
   }
 
   @Override
   public String toString() {
     return iban;
   }
+
+
 }

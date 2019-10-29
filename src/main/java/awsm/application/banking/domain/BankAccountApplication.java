@@ -18,11 +18,11 @@ class BankAccountApplication {
   private Status status = Status.NEW;
 
   @SuppressWarnings("unused")
-  private BankAccount.Type accountType;
+  private BankAccountType accountType;
 
   private LocalDateTime date;
 
-  public BankAccountApplication(BankAccount.Type accountType) {
+  public BankAccountApplication(BankAccountType accountType) {
     this.accountType = accountType;
     this.date = LocalDateTime.now(UTC);
   }

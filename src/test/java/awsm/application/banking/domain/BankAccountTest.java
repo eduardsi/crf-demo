@@ -1,6 +1,5 @@
 package awsm.application.banking.domain;
 
-import static awsm.application.banking.domain.BankAccount.Type.SAVINGS;
 import static awsm.application.commons.money.Monetary.amount;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static awsm.infrastructure.time.TimeMachine.with;
@@ -25,9 +24,11 @@ import org.threeten.extra.MutableClock;
 @DisplayName("bank account")
 class BankAccountTest {
 
-  private BankAccount account = new BankAccount(SAVINGS, Iban.newlyGenerated(), new WithdrawalLimit(amount("100.00")));
-
   private MutableClock clock = MutableClock.epochUTC();
+
+  private WithdrawalLimits limits = new WithdrawalLimits(amount("100.00"), amount("1000.00"));
+
+  private BankAccount account = new BankAccount(limits);
 
   @BeforeEach
   void beforeEach() {
@@ -130,6 +131,15 @@ class BankAccountTest {
   }
 
   @Test
+  void cannot_withdraw_more_than_allowed_by_the_monthly_limit() {
+    account.deposit(amount("2000.00"));
+
+    var e = assertThrows(IllegalStateException.class, () -> account.withdraw(amount("1001.00")));
+
+    assertThat(e).hasMessage("Monthly withdrawal limit (1000.00) reached.");
+  }
+
+  @Test
   void cannot_be_closed_if_some_unsatisfied_obligations_exist() {
     var e = assertThrows(IllegalStateException.class, () -> account.close(new SomeUnsatisfiedObligations()));
     assertThat(e).hasMessage("Bank account cannot be closed because a holder has unsatified obligations");
@@ -157,8 +167,6 @@ class BankAccountTest {
     @Test
     void supports_saving_and_reading() {
       var tx = new TransactionTemplate(txManager);
-      var limit = new WithdrawalLimit(amount("100.00"));
-      var account = new BankAccount(SAVINGS, Iban.newlyGenerated(), limit);
 
       account.deposit(amount("50.00"));
       account.withdraw(amount("20.00"));
@@ -180,6 +188,7 @@ class BankAccountTest {
       });
 
     }
-
   }
+
+
 }

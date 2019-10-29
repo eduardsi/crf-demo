@@ -11,6 +11,7 @@ import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -129,8 +130,12 @@ class Transactions {
       return type == DEPOSIT;
     }
 
-    boolean bookedOn(LocalDate date) {
+    boolean bookedIn(LocalDate date) {
       return bookingDate.isEqual(date);
+    }
+
+    boolean bookedIn(Month month) {
+      return bookingDate.getMonth().equals(month);
     }
 
     boolean bookedBefore(LocalDate date) {
