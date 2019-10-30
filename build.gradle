@@ -1,11 +1,4 @@
-import org.flywaydb.core.Flyway
-import org.jooq.codegen.GenerationTool
-import org.jooq.meta.postgres.PostgresDatabase
-import org.postgresql.Driver
-import org.testcontainers.containers.PostgreSQLContainer
-import org.jooq.meta.jaxb.*
-
-import java.time.Duration;
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 buildscript {
     repositories {
@@ -14,197 +7,158 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.testcontainers:postgresql:1.12.2")
-        classpath("org.flywaydb:flyway-core:6.0.7")
-        classpath("org.postgresql:postgresql:42.2.8")
-        classpath("org.jooq:jooq:3.12.1")
-        classpath("org.jooq:jooq-meta:3.12.1")
-        classpath("org.jooq:jooq-codegen:3.12.1")
+        classpath errorprone
+        classpath springDepManager
+        classpath springBoot
     }
 }
 
-plugins {
-    id 'java'
-    id 'jacoco'
-//    id 'net.ltgt.apt-idea' version '0.21'
-//    id 'checkstyle'
-    id 'org.springframework.boot' version "$springVersion"
-    id 'net.ltgt.errorprone' version '0.8.1'
-}
+allprojects {
+    group = "awsm"
+    version = "UNSPECIFIED"
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'groovy'
+    apply plugin: 'jacoco'
+    apply plugin: 'checkstyle'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'net.ltgt.errorprone'
 
-repositories {
-    jcenter()
-    mavenCentral()
-    mavenLocal()
-    maven() {
-        url "https://artifactory.cronapp.io/public-release/"
-    }
-}
-
-group = "net.sizovs"
-version = "UNSPECIFIED"
-
-def jooqOutput = "$buildDir/generated-src/jooq"
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_13
-    targetCompatibility = JavaVersion.VERSION_13
-}
-
-
-// doesn't work in Java 13 yet
-//checkstyle {
-//    toolVersion = "8.23"
-//}
-
-tasks {
-    "check" {
-        dependsOn(jacocoTestCoverageVerification)
-    }
-}
-
-compileJava {
-    options.compilerArgs += ["--enable-preview"]
-    options.annotationProcessorPath = configurations.annotationProcessor
-}
-test {
-    jvmArgs '--enable-preview'
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs += jooqOutput
+    repositories {
+        jcenter()
+        mavenCentral()
+        mavenLocal()
+        maven() {
+            url cronapp
         }
     }
-}
 
-tasks.withType(JavaCompile).each {
-    it.options.compilerArgs.add "--enable-preview"
-    it.options.errorprone { e ->
-        e.disableWarningsInGeneratedCode.set(true)
-        e.disable "TypeParameterUnusedInFormals"
-        e.option "NullAway:AnnotatedPackages", "awsm"
-        e.option """NullAway:ExcludedFieldAnnotations,org.mockito.Mock,org.springframework.beans.factory.annotation.Autowired"""
-        e.option "NullAway:ExternalInitAnnotations"
-    }
-}
-
-tasks.withType(Test) {
-    maxParallelForks = 4
-    timeout.set(Duration.ofMinutes(2))
-    useJUnitPlatform()
-}
-
-task generateJooq {
-    description = "Generates jOOQ sources."
-    doLast {
-        new PostgreSQLContainer("postgres:11.5").withCloseable { pg ->
-            pg.start()
-
-            def flyway = Flyway.configure()
-                .locations("filesystem:src/main/resources/db/migration")
-                .dataSource(pg.jdbcUrl, pg.username, pg.password)
-                .load()
-
-            flyway.migrate()
-
-            def configuration = new Configuration()
-                .withLogging(Logging.TRACE)
-                .withJdbc(new Jdbc()
-                        .withDriver(Driver.name)
-                        .withUrl(pg.jdbcUrl)
-                        .withUser(pg.username)
-                        .withPassword(pg.password))
-                .withGenerator(new Generator()
-                        .withGenerate(new Generate()
-                                .withJavaTimeTypes(true)
-                                .withFluentSetters(true)
-                        )
-                        .withDatabase(new Database()
-                                .withName(PostgresDatabase.name)
-                                .withIncludes(".*")
-                                .withExcludes("")
-                                .withInputSchema("public")
-                                .withForcedTypes(new ForcedType()
-                                        .withUserType("javax.money.MonetaryAmount")
-                                        .withConverter("awsm.infrastructure.jooq.MoneyConverter")
-                                        .withIncludeExpression(".*")
-                                        .withIncludeTypes("NUMERIC\\(13,\\s*2\\)")
-                                )
-                        )
-                        .withTarget(new Target()
-                                .withClean(true)
-                                .withDirectory(jooqOutput)
-                                .withPackageName("jooq")
-                        )
-                )
-
-            GenerationTool.generate(configuration)
+    dependencyManagement {
+        imports {
+            mavenBom springBootBom
         }
-
     }
-}
 
-tasks.jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.7
+    dependencies {
+        implementation commonsLang
+        implementation gsonExtras
+        implementation noException
+        implementation guava
+        implementation streamEx
+        implementation faker
+        implementation threeten
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_12
+        targetCompatibility = JavaVersion.VERSION_12
+    }
+
+    checkstyle {
+        toolVersion = "8.23"
+    }
+
+    tasks.withType(Test) {
+        maxParallelForks = 4
+        useJUnitPlatform()
+        mustRunAfter = [ jacocoTestCoverageVerification ]
+    }
+
+    tasks.withType(JavaCompile).each {
+        it.options.errorprone { e ->
+            e.disableWarningsInGeneratedCode = true
+            e.disable "TypeParameterUnusedInFormals"
+            e.option "NullAway:AnnotatedPackages", "awsm"
+            e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
+            e.option "NullAway:ExternalInitAnnotations"
+        }
+    }
+
+    tasks.withType(Checkstyle) {
+        exclude 'jooq'
+    }
+
+    tasks.jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                limit {
+                    minimum = 0.7
+                }
             }
         }
     }
-}
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web:$springVersion") {
-        exclude module: "spring-boot-starter-tomcat"
+    compileJava {
+        options.annotationProcessorPath = configurations.annotationProcessor
     }
 
-    errorprone("com.google.errorprone:error_prone_core:2.3.3")
-    errorprone("com.uber.nullaway:nullaway:0.7.5")
+    dependencies {
+        errorprone errorproneCore
+        errorprone nullaway
 
-    annotationProcessor "org.immutables:value:2.8.1"
-    compileOnly("org.immutables:value-annotations:2.8.1")
-
-    annotationProcessor("com.google.auto.factory:auto-factory:1.0-beta7")
-    compileOnly("com.google.auto.factory:auto-factory:1.0-beta7")
-
-    implementation("org.postgresql:postgresql:42.2.8")
-    implementation("org.jooq:jooq:3.12.1")
-    implementation("org.apache.commons:commons-lang3:3.9")
-    implementation("org.hashids:hashids:1.0.3")
-    implementation("net.jodah:failsafe:2.3.1")
-    implementation("org.threeten:threeten-extra:1.5.0")
-    implementation "com.github.javafaker:javafaker:1.0.0"
-    implementation("org.javamoney.moneta:moneta-core:1.3")
-    implementation("org.flywaydb:flyway-core:6.0.7")
-    implementation("com.google.code.gson:gson-extras:2.8.5")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-jetty:$springVersion")
-    implementation("org.glassfish:javax.json:1.1.4")
-    implementation("com.google.guava:guava:$guavaVersion")
-    implementation("com.machinezoo.noexception:noexception:1.3.4")
-    implementation("com.github.ben-manes.caffeine:caffeine:2.5.0")
-    implementation("one.util:streamex:0.7.0")
-
-
-
-
-    testImplementation "org.testcontainers:postgresql:1.12.2"
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.25.0"
-    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
-    testImplementation "org.assertj:assertj-core:3.9.1"
-    testImplementation "org.awaitility:awaitility:4.0.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.5.1"
-    testImplementation "org.testcontainers:junit-jupiter:1.12.2"
-
-    testImplementation "org.hamcrest:java-hamcrest:2.0.0.0"
-    testImplementation "com.google.guava:guava-testlib:$guavaVersion"
-    testImplementation "com.tngtech.archunit:archunit-junit5-engine:0.11.0"
-    testImplementation "com.pivovarit:parallel-collectors:1.1.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.1"
+        testImplementation testContainersPg
+        testImplementation wiremock
+        testImplementation springBootTest
+        testImplementation spockSpring
+    }
 }
 
+project(':application') {
+    apply plugin: 'org.springframework.boot'
+    dependencies {
+        implementation project(':domain')
+        implementation project(':infrastructure')
+        implementation(springBootWeb) {
+            exclude module: "spring-boot-starter-tomcat"
+            because 'we use Jetty instead of Tomcat'
+        }
+        implementation pipelinr
+        implementation springBootJetty
+        implementation springBootJdbc
+        testImplementation archUnit
+    }
+    task bootDevRun(type: BootRun) {
+        group = "Application"
+        description = "Runs this project as a Spring Boot application in dev mode."
+        doFirst() {
+            main = mainApp
+            classpath = sourceSets.test.runtimeClasspath
+            systemProperty 'spring.profiles.active', 'dev'
+        }
+    }
 
+}
+
+project(':domain') {
+    dependencies {
+        implementation project(":infrastructure")
+        implementation project(":database")
+    }
+    dependencies {
+        implementation javaxJson
+        implementation jooq
+        implementation failsafe
+        implementation springTx
+        implementation springContext
+    }
+}
+
+project(':infrastructure') {
+    dependencies {
+        implementation project(":database")
+        implementation failsafe
+        implementation jooq
+        implementation hashIds
+        implementation pipelinr
+        implementation springTx
+        implementation springWebMvc
+    }
+}
+
+project(':database') {
+    dependencies {
+        implementation flyway
+        implementation jooq
+        implementation postgres
+    }
+}

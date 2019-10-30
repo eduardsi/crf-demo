@@ -1,0 +1,6 @@
+rootProject.name = 'awsm'
+
+include 'application'
+include 'database'
+include 'domain'
+include 'infrastructure'

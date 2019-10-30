@@ -1,0 +1,82 @@
+import org.flywaydb.core.Flyway
+import org.jooq.codegen.GenerationTool
+import org.jooq.meta.jaxb.Database
+import org.jooq.meta.jaxb.Generate
+import org.jooq.meta.jaxb.Generator
+import org.jooq.meta.jaxb.Jdbc
+import org.jooq.meta.jaxb.Target
+import org.jooq.meta.postgres.PostgresDatabase
+import org.postgresql.Driver
+import org.testcontainers.containers.PostgreSQLContainer
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath("org.testcontainers:postgresql:1.12.2")
+        classpath("org.flywaydb:flyway-core:6.0.7")
+        classpath("org.postgresql:postgresql:42.2.8")
+        classpath("org.jooq:jooq:3.12.1")
+        classpath("org.jooq:jooq-meta:3.12.1")
+        classpath("org.jooq:jooq-codegen:3.12.1")
+    }
+}
+
+def jooqOutput = "$buildDir/generated-src/jooq"
+
+sourceSets {
+    main {
+        java {
+            srcDirs += jooqOutput
+        }
+    }
+}
+
+task generateJooq {
+    description = "Generates jOOQ sources."
+    doLast {
+        new PostgreSQLContainer("postgres:11.5").withCloseable { pg ->
+            pg.start()
+
+            def flyway = Flyway.configure()
+                    .locations("filesystem:$projectDir/src/main/resources/db/migration")
+                    .dataSource(pg.jdbcUrl, pg.username, pg.password)
+                    .load()
+
+            flyway.migrate()
+
+            def configuration = new org.jooq.meta.jaxb.Configuration()
+                    .withLogging(org.jooq.meta.jaxb.Logging.TRACE)
+                    .withJdbc(new Jdbc()
+                            .withDriver(Driver.name)
+                            .withUrl(pg.jdbcUrl)
+                            .withUser(pg.username)
+                            .withPassword(pg.password))
+                    .withGenerator(new Generator()
+                            .withGenerate(new Generate()
+                                    .withJavaTimeTypes(true)
+                                    .withFluentSetters(true)
+                            )
+                            .withDatabase(new Database()
+                                    .withName(PostgresDatabase.name)
+                                    .withIncludes(".*")
+                                    .withExcludes("")
+                                    .withInputSchema("public")
+                            )
+                            .withTarget(new Target()
+                                    .withClean(true)
+                                    .withDirectory(jooqOutput)
+                                    .withPackageName("jooq")
+                            )
+                    )
+
+            GenerationTool.generate(configuration)
+        }
+
+    }
+}
+
+compileJava.dependsOn generateJooq
