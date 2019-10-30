@@ -3,23 +3,20 @@ package awsm.application.loyalty;
 import static java.lang.String.format;
 
 import awsm.application.registration.domain.RegistrationCompleted;
+import awsm.infrastructure.middleware.SideEffect;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-class BonusPointsForNewCustomers {
+class BonusPointsForNewCustomers implements SideEffect<RegistrationCompleted> {
 
-  @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-  void whenever(RegistrationCompleted it) {
-
-    var qualifiesForBonus = it.email.matches("/vip.com/");
+  @Override
+  public void beforeCommit(RegistrationCompleted event) {
+    var qualifiesForBonus = event.email.matches("/vip.com/");
     if (qualifiesForBonus) {
-      System.out.println(format("A customer %s qualifies for bonus", it.fullName));
+      System.out.println(format("A customer %s qualifies for bonus", event.fullName));
     } else {
-      System.out.println(format("No bonus for %s", it.fullName));
+      System.out.println(format("No bonus for %s", event.fullName));
     }
 
   }
-
 }

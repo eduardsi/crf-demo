@@ -35,7 +35,6 @@ class Customer {
 
   void register(Repository repository) {
     repository.insert(this);
-    new RegistrationCompleted(name + "", email + "").schedule();
   }
 
   CustomerId id() {

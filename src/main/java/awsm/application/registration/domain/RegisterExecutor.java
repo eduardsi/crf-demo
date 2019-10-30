@@ -9,6 +9,7 @@ import awsm.infrastructure.middleware.impl.execution.Executor;
 import awsm.infrastructure.middleware.impl.resilience.RateLimit;
 import awsm.infrastructure.validation.Validator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,13 @@ class RegisterExecutor implements Executor<Register, Response> {
 
   private final EmailUniqueness uniqueness;
 
-  RegisterExecutor(Customer.Repository repository, EmailBlacklist blacklist, EmailUniqueness uniqueness) {
+  private final ApplicationEventPublisher publisher;
+
+  RegisterExecutor(Customer.Repository repository, EmailBlacklist blacklist, EmailUniqueness uniqueness, ApplicationEventPublisher publisher) {
     this.repository = repository;
     this.uniqueness = memoized(uniqueness::guaranteed)::apply;
     this.blacklist = memoized(blacklist::allows)::apply;
+    this.publisher = publisher;
   }
 
   @Override
@@ -41,6 +45,10 @@ class RegisterExecutor implements Executor<Register, Response> {
 
     var welcome = new Welcome(customerId.asLong());
     welcome.schedule();
+
+    publisher.publishEvent(
+        new RegistrationCompleted(customer.name() + "", customer.email() + "")
+    );
 
     return new Response(
         customerId.hashIdString()

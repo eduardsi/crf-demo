@@ -1,8 +1,6 @@
 package awsm.application.registration.domain;
 
-import awsm.infrastructure.modeling.DomainEvent;
-
-public class RegistrationCompleted implements DomainEvent {
+public class RegistrationCompleted {
 
   public final String fullName;
   public final String email;

@@ -17,6 +17,7 @@ public class Execute implements Middleware {
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
     var executor = router.route(command);
     executor.validate(command);
-    return executor.execute(command);
+    var response = executor.execute(command);
+    return response;
   }
 }

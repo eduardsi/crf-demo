@@ -9,7 +9,12 @@ This is a demo enterprise Java application, built using some the best practices 
 A customer must provide an email, first name and last name.
 
 ### Requirements
-- Java 13+.
+- Docker
+- Java 13+
+
+## Tech stack
+- jOOQ for persistence
+
 
 #### Running tests
 ```

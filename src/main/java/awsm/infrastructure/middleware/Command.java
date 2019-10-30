@@ -18,4 +18,5 @@ public interface Command<R>  {
     SchedulerHolder.get().schedule(this);
   }
 
+
 }
