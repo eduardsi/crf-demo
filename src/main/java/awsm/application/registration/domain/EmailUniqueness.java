@@ -4,8 +4,6 @@ import org.springframework.stereotype.Component;
 
 interface EmailUniqueness {
 
-  EmailUniqueness ALWAYS_GUARANTEED = email -> true;
-
   boolean guaranteed(String email);
 
   @Component

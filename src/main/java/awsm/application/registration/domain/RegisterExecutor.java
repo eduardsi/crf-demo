@@ -32,7 +32,7 @@ class RegisterExecutor implements Executor<Register, Response> {
   public Response execute(Register cmd) {
 
     var name = new FullName(cmd.firstName, cmd.lastName);
-    var email = new Email(cmd.email, uniqueness, blacklist);
+    var email = new RegistrationEmail(cmd.email, uniqueness, blacklist);
 
     var customer = new Customer(name, email);
     customer.register(repository);

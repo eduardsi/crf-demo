@@ -1,6 +1,5 @@
 package awsm.application.registration.domain;
 
-import static java.util.Objects.requireNonNull;
 import static jooq.tables.Customer.CUSTOMER;
 
 import java.util.function.Function;
@@ -16,9 +15,14 @@ class Customer {
 
   private CustomerId id = new CustomerId();
 
-  Customer(FullName name, Email email) {
-    this.name = requireNonNull(name, "Name cannot be null");
-    this.email = requireNonNull(email, "Email cannot be null");
+  Customer(FullName name, RegistrationEmail email) {
+    this.email = email;
+    this.name = name;
+  }
+
+  private Customer(FullName name, Email email) {
+    this.email = email;
+    this.name = name;
   }
 
   public FullName name() {
