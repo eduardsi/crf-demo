@@ -49,13 +49,14 @@ class RegisterExecutor implements Executor<Register, Response> {
 
   @Override
   public void validate(Register cmd) {
+    var email = memoized(() -> new Email(cmd.email));
     new Validator<Register>()
         .with(() -> cmd.firstName, v -> !v.isBlank(), "firstName is missing")
         .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
         .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
             nested
-                .with(() -> new Email(cmd.email), uniqueness::guaranteed, "email is taken")
-                .with(() -> new Email(cmd.email), blacklist::allows,      "email %s is blacklisted")
+                .with(email, uniqueness::guaranteed, "email is taken")
+                .with(email, blacklist::allows,      "email %s is blacklisted")
         ).check(cmd);
   }
 
