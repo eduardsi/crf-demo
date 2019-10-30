@@ -25,6 +25,7 @@ public class Validator<R> {
     return this;
   }
 
+
   public void check(R root) {
     var violations = validate(root);
     if (!violations.isEmpty()) {

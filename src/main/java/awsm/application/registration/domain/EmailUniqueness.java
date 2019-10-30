@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 interface EmailUniqueness {
 
-  boolean guaranteed(String email);
+  boolean guaranteed(Email email);
 
   @Component
   class AcrossCustomers implements EmailUniqueness {
@@ -16,8 +16,8 @@ interface EmailUniqueness {
     }
 
     @Override
-    public boolean guaranteed(String email) {
-      return !customerRepository.contains(email);
+    public boolean guaranteed(Email email) {
+      return !customerRepository.contains(email + "");
     }
 
   }

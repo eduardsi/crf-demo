@@ -51,15 +51,15 @@ class EmailBlacklistOverHttp implements EmailBlacklist {
   }
 
   @Override
-  public boolean allows(String email) {
+  public boolean allows(Email email) {
     return safelyAllows(email).equals(ALLOW);
   }
 
-  private String safelyAllows(String email) {
+  private String safelyAllows(Email email) {
     return failsafe.get(() -> unsafelyAllows(email));
   }
 
-  private String unsafelyAllows(String email) throws Exception {
+  private String unsafelyAllows(Email email) throws Exception {
     var uri = new URI(url + ":" + port + "/" + email);
     var request = HttpRequest.newBuilder()
         .uri(uri)

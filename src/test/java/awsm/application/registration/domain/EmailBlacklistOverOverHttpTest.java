@@ -73,8 +73,10 @@ class EmailBlacklistOverOverHttpTest {
     Stream.generate(() -> anyEmail()).limit(count).forEach(email -> blacklist.allows(email));
   }
 
-  private static String anyEmail() {
-    return new Faker().internet().emailAddress();
+  private static Email anyEmail() {
+    return new Email(
+        new Faker().internet().emailAddress()
+    );
   }
 
 

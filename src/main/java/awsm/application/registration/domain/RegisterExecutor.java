@@ -54,8 +54,8 @@ class RegisterExecutor implements Executor<Register, Response> {
         .with(() -> cmd.lastName, v -> !v.isBlank(), "lastName is missing")
         .with(() -> cmd.email, v -> !v.isBlank(), "email is missing", nested ->
             nested
-                .with(() -> cmd.email, uniqueness::guaranteed, "email is taken")
-                .with(() -> cmd.email, blacklist::allows,      "email %s is blacklisted")
+                .with(() -> new Email(cmd.email), uniqueness::guaranteed, "email is taken")
+                .with(() -> new Email(cmd.email), blacklist::allows,      "email %s is blacklisted")
         ).check(cmd);
   }
 

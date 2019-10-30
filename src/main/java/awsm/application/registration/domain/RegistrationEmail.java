@@ -6,8 +6,8 @@ class RegistrationEmail extends Email {
 
   RegistrationEmail(String email, EmailUniqueness uniqueness, EmailBlacklist blacklist) {
     super(email);
-    checkArgument(uniqueness.guaranteed(email), "Email %s is not unique", email);
-    checkArgument(blacklist.allows(email), "Email %s is blacklisted", email);
+    checkArgument(uniqueness.guaranteed(this), "Email %s is not unique", email);
+    checkArgument(blacklist.allows(this), "Email %s is blacklisted", email);
   }
 
 }
