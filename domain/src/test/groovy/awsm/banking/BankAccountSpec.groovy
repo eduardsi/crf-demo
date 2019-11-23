@@ -105,7 +105,7 @@ class BankAccountSpec extends Specification implements WithSampleBankAccount {
             e.message == "Bank account cannot be closed because a holder has unsatified obligations"
     }
 
-    def "provides statement for a given awsm.time interval"() {
+    def "provides statement for a given time interval"() {
         given: "I perform a series of deposits and withdrawals on different days"
             clock.add Days.ONE
             account.deposit eur("100.00")

@@ -139,7 +139,12 @@ project(':domain') {
         implementation jooq
         implementation failsafe
         implementation springTx
+        implementation springJdbc
+        implementation postgres
         implementation springContext
+        implementation flyway
+        testImplementation springBootJdbc
+        testImplementation testContainersPg
     }
 }
 

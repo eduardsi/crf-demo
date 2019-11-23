@@ -1,29 +1,37 @@
 package awsm.banking
 
+import awsm.base.BaseIntegrationSpec
+import org.jooq.DSLContext
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
-import spock.lang.Specification
+import spock.lang.Ignore
+import spock.lang.Subject
 
 import javax.annotation.PostConstruct
 
 import static Amount.amount
 
-@SpringBootTest
-class BankAccountRepositorySpec extends Specification implements WithSampleBankAccount {
+@Ignore
+class BankAccountRepositorySpec extends BaseIntegrationSpec implements WithSampleBankAccount {
 
     @Autowired
     PlatformTransactionManager txManager
 
     @Autowired
-    BankAccount.Repository repository
+    DSLContext dsl
 
     TransactionTemplate tx
+
+    @Subject
+    BankAccount.Repository repository
 
     @PostConstruct
     void init() {
         tx = new TransactionTemplate(txManager)
+        repository = new BankAccount.Repository(dsl,
+                new Transactions.Repository(dsl)
+        )
     }
 
     def "supports saving and reading"() {
