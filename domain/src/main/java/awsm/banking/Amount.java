@@ -82,12 +82,11 @@ class Amount {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof Amount)) {
+    if (obj instanceof Amount that) {
+      return decimal.equals(that.decimal());
+    } else {
       return false;
     }
-
-    var that = (Amount) obj;
-    return decimal.equals(that.decimal());
   }
 
   static Amount amount(String amount) {

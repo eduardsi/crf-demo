@@ -50,8 +50,8 @@ allprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_12
-        targetCompatibility = JavaVersion.VERSION_12
+        sourceCompatibility = JavaVersion.VERSION_14
+        targetCompatibility = JavaVersion.VERSION_14
     }
 
     checkstyle {
@@ -65,6 +65,7 @@ allprojects {
     }
 
     tasks.withType(JavaCompile).each {
+        it.options.compilerArgs.add('--enable-preview')
         it.options.errorprone { e ->
             e.disableWarningsInGeneratedCode = true
             e.disable "TypeParameterUnusedInFormals"
