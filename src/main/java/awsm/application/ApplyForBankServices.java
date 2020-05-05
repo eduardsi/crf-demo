@@ -102,30 +102,30 @@ public class ApplyForBankServices implements Command<Voidy> {
     private void validate(ApplyForBankServices cmd) {
       var email = memoized(() -> new Email(cmd.email));
       new Validator<ApplyForBankServices>()
-              .with(() -> cmd.firstName, this::notBlank, "firstName is missing")
-              .with(() -> cmd.lastName, this::notBlank, "lastName is missing")
-              .with(() -> cmd.email, this::notBlank, "email is missing", nested ->
+              .with(() -> cmd.firstName, this::isNotBlank, "firstName is missing")
+              .with(() -> cmd.lastName, this::isNotBlank, "lastName is missing")
+              .with(() -> cmd.email, this::isNotBlank, "email is missing", nested ->
                       nested
                               .with(email, uniqueness::guaranteed, "email is taken")
                               .with(email, blacklist::permits, "email %s is blacklisted")
               )
-              .with(() -> cmd.countryOfResidence, this::validCountry, "countryOfResidence is missing")
-              .with(() -> cmd.dateOfBirth, this::validDate, "invalid date", nested ->
+              .with(() -> cmd.countryOfResidence, this::isCountryOk, "countryOfResidence is missing")
+              .with(() -> cmd.dateOfBirth, this::isDateOk, "invalid date", nested ->
                       nested
                               .with(() -> cmd.dateOfBirth, this::isAdult, "you need to be at least 18")
               )
               .check(cmd);
     }
 
-    private boolean validCountry(String country) {
+    private boolean isCountryOk(String country) {
       return country.length() == 2;
     }
 
-    private boolean notBlank(String string) {
+    private boolean isNotBlank(String string) {
       return !string.isBlank();
     }
 
-    private boolean validDate(String date) {
+    private boolean isDateOk(String date) {
       var datePattern = "^\\d{4}-\\d{2}-\\d{2}$";
       return date.matches(datePattern);
     }
