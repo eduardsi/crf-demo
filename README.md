@@ -6,12 +6,12 @@ This is a demo enterprise Java application, built using some the best practices 
 ```
 unsuck-java/
 └── application         # what the application does (api to the domain) with acceptance tests
-    ├+─ awsm.banking
-    ├+─ awsm.crm
+    ├+─ awsm.domain.banking
+    ├+─ awsm.domain.crm
     ├+─ ...    
 └── domain              # what the application is (domain) with unit tests
-    ├+─ awsm.banking
-    ├+─ awsm.crm
+    ├+─ awsm.domain.banking
+    ├+─ awsm.domain.crm
     ├+─ ...
 └── infrastructure      # supporting infra and middleware
 └── database            # database migrations

@@ -79,4 +79,4 @@ task generateJooq {
     }
 }
 
-compileJava.dependsOn generateJooq
+//compileJava.dependsOn generateJooq

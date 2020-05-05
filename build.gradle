@@ -1,4 +1,15 @@
+import org.jooq.meta.jaxb.ForcedType
 import org.springframework.boot.gradle.tasks.run.BootRun
+import org.flywaydb.core.Flyway
+import org.jooq.codegen.GenerationTool
+import org.jooq.meta.jaxb.Database
+import org.jooq.meta.jaxb.Generate
+import org.jooq.meta.jaxb.Generator
+import org.jooq.meta.jaxb.Jdbc
+import org.jooq.meta.jaxb.Target
+import org.jooq.meta.postgres.PostgresDatabase
+import org.postgresql.Driver
+import org.testcontainers.containers.PostgreSQLContainer
 
 buildscript {
     repositories {
@@ -10,161 +21,199 @@ buildscript {
         classpath errorprone
         classpath springDepManager
         classpath springBoot
+        classpath("org.testcontainers:postgresql:1.12.2")
+        classpath("org.flywaydb:flyway-core:6.0.7")
+        classpath("org.postgresql:postgresql:42.2.8")
+        classpath("org.jooq:jooq:3.12.1")
+        classpath("org.jooq:jooq-meta:3.12.1")
+        classpath("org.jooq:jooq-codegen:3.12.1")
     }
 }
 
-allprojects {
-    group = "awsm"
-    version = "UNSPECIFIED"
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'groovy'
-    apply plugin: 'jacoco'
-    apply plugin: 'checkstyle'
-    apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'net.ltgt.errorprone'
 
-    repositories {
-        jcenter()
-        mavenCentral()
-        mavenLocal()
-        maven() {
-            url cronapp
-        }
+group = "awsm"
+version = "UNSPECIFIED"
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'groovy'
+apply plugin: 'jacoco'
+apply plugin: 'checkstyle'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'net.ltgt.errorprone'
+
+repositories {
+    jcenter()
+    mavenCentral()
+    mavenLocal()
+    maven() {
+        url cronapp
     }
+}
 
-    dependencyManagement {
-        imports {
-            mavenBom springBootBom
-        }
+dependencyManagement {
+    imports {
+        mavenBom springBootBom
     }
+}
 
-    dependencies {
-        implementation commonsLang
-        implementation gsonExtras
-        implementation noException
-        implementation guava
-        implementation streamEx
-        implementation faker
-        implementation threeten
+dependencies {
+    errorprone errorproneCore
+    errorprone nullaway
+
+    implementation validator
+    implementation commonsLang
+    implementation gsonExtras
+    implementation noException
+    implementation guava
+    implementation caffeine
+    implementation streamEx
+    implementation faker
+    implementation threeten
+    implementation springBootJetty
+    implementation springBootJdbc
+    implementation springTx
+    implementation springJdbc
+    implementation springContext
+    implementation springWebMvc
+    implementation(springBootWeb) {
+        exclude module: "spring-boot-starter-tomcat"
+        because 'we use Jetty instead of Tomcat'
     }
+    implementation javaxJson
+    implementation jooq
+    implementation failsafe
+    implementation postgres
+    implementation flyway
+    implementation pipelinr
+    implementation hashIds
+    testImplementation wiremock
+    testImplementation groovy
+    testImplementation archUnit
+    testImplementation spockSpring
+    testImplementation springBootTest
+    testImplementation springBootJdbc
+    testImplementation testContainersPg
+}
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_14
-        targetCompatibility = JavaVersion.VERSION_14
+java {
+    sourceCompatibility = JavaVersion.VERSION_14
+    targetCompatibility = JavaVersion.VERSION_14
+}
+
+checkstyle {
+    toolVersion = "8.23"
+}
+
+tasks.withType(Test) {
+    maxParallelForks = 4
+    useJUnitPlatform()
+    mustRunAfter = [ jacocoTestCoverageVerification ]
+}
+
+tasks.withType(JavaCompile).each {
+    it.options.errorprone { e ->
+        e.disableWarningsInGeneratedCode = true
+        e.disable "TypeParameterUnusedInFormals"
+        e.option "NullAway:AnnotatedPackages", "awsm"
+        e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
+        e.option "NullAway:ExternalInitAnnotations"
     }
+}
 
-    checkstyle {
-        toolVersion = "8.23"
-    }
+tasks.withType(Checkstyle) {
+    exclude 'jooq'
+}
 
-    tasks.withType(Test) {
-        maxParallelForks = 4
-        useJUnitPlatform()
-        mustRunAfter = [ jacocoTestCoverageVerification ]
-    }
-
-    tasks.withType(JavaCompile).each {
-        it.options.compilerArgs.add('--enable-preview')
-        it.options.errorprone { e ->
-            e.disableWarningsInGeneratedCode = true
-            e.disable "TypeParameterUnusedInFormals"
-            e.option "NullAway:AnnotatedPackages", "awsm"
-            e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
-            e.option "NullAway:ExternalInitAnnotations"
-        }
-    }
-
-    tasks.withType(Checkstyle) {
-        exclude 'jooq'
-    }
-
-    tasks.jacocoTestCoverageVerification {
-        violationRules {
-            rule {
-                limit {
-                    minimum = 0.7
-                }
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.7
             }
         }
     }
+}
 
-    compileJava {
-        options.annotationProcessorPath = configurations.annotationProcessor
-    }
+compileJava {
+    options.annotationProcessorPath = configurations.annotationProcessor
+}
 
-    dependencies {
-        errorprone errorproneCore
-        errorprone nullaway
 
-        testImplementation testContainersPg
-        testImplementation wiremock
-        testImplementation springBootTest
-        testImplementation spockSpring
+
+task bootDevRun(type: BootRun) {
+    group = "Application"
+    description = "Runs this project as a Spring Boot application in dev mode."
+    doFirst() {
+        main = mainApp
+        classpath = sourceSets.test.runtimeClasspath
+        systemProperty 'spring.profiles.active', 'dev'
     }
 }
 
-project(':application') {
-    apply plugin: 'org.springframework.boot'
-    dependencies {
-        implementation project(':domain')
-        implementation project(':infrastructure')
-        implementation(springBootWeb) {
-            exclude module: "spring-boot-starter-tomcat"
-            because 'we use Jetty instead of Tomcat'
-        }
-        implementation pipelinr
-        implementation springBootJetty
-        implementation springBootJdbc
-        testImplementation archUnit
-    }
-    task bootDevRun(type: BootRun) {
-        group = "Application"
-        description = "Runs this project as a Spring Boot application in dev mode."
-        doFirst() {
-            main = mainApp
-            classpath = sourceSets.test.runtimeClasspath
-            systemProperty 'spring.profiles.active', 'dev'
+def jooqOutput = "$buildDir/generated-src/jooq"
+sourceSets {
+    main {
+        java {
+            srcDirs += jooqOutput
         }
     }
-
 }
 
-project(':domain') {
-    dependencies {
-        implementation project(":infrastructure")
-        implementation project(":database")
-    }
-    dependencies {
-        implementation javaxJson
-        implementation jooq
-        implementation failsafe
-        implementation springTx
-        implementation springJdbc
-        implementation postgres
-        implementation springContext
-        implementation flyway
-        testImplementation springBootJdbc
-        testImplementation testContainersPg
+// there is a problem with Spock fetching Groovy 2.*.
+configurations.all {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.codehaus.groovy') {
+                details.useVersion('3.0.3')
+            }
+        }
     }
 }
 
-project(':infrastructure') {
-    dependencies {
-        implementation project(":database")
-        implementation failsafe
-        implementation jooq
-        implementation hashIds
-        implementation pipelinr
-        implementation springTx
-        implementation springWebMvc
+task generateJooq {
+    description = "Generates jOOQ sources."
+    doLast {
+        new PostgreSQLContainer("postgres:11.5").withCloseable { pg ->
+            pg.start()
+
+            def flyway = Flyway.configure()
+                    .locations("filesystem:$projectDir/src/main/resources/db/migration")
+                    .dataSource(pg.jdbcUrl, pg.username, pg.password)
+                    .load()
+
+            flyway.migrate()
+
+            def configuration = new org.jooq.meta.jaxb.Configuration()
+                    .withLogging(org.jooq.meta.jaxb.Logging.TRACE)
+                    .withJdbc(new Jdbc()
+                            .withDriver(Driver.name)
+                            .withUrl(pg.jdbcUrl)
+                            .withUser(pg.username)
+                            .withPassword(pg.password))
+                    .withGenerator(new Generator()
+                            .withGenerate(new Generate()
+                                    .withJavaTimeTypes(true)
+                                    .withFluentSetters(true)
+                            )
+                            .withDatabase(new Database()
+                                    .withName(PostgresDatabase.name)
+                                    .withIncludes(".*")
+                                    .withExcludes("")
+                                    .withInputSchema("public")
+                            )
+                            .withTarget(new Target()
+                                    .withClean(true)
+                                    .withDirectory(jooqOutput)
+                                    .withPackageName("jooq")
+                            )
+                    )
+
+            GenerationTool.generate(configuration)
+        }
+
     }
 }
 
-project(':database') {
-    dependencies {
-        implementation flyway
-        implementation jooq
-        implementation postgres
-    }
-}
+compileJava.dependsOn generateJooq
