@@ -2,13 +2,11 @@ package awsm.application;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
-import an.awesome.pipelinr.Voidy;
 import awsm.domain.banking.BankApplication;
 import awsm.domain.banking.BankService;
 import awsm.domain.banking.customer.Email;
 import awsm.domain.banking.customer.Name;
 import awsm.domain.banking.customer.blacklist.Blacklist;
-import awsm.infrastructure.ids.Ids;
 import awsm.infrastructure.middleware.resilience.RateLimit;
 import awsm.infrastructure.middleware.validation.Validator;
 import awsm.infrastructure.time.TimeMachine;
