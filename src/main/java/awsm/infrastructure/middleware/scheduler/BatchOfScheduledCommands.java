@@ -20,13 +20,13 @@ class BatchOfScheduledCommands {
 
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
-  private final ScheduledCommand.Repository repository;
+  private final ScheduledCommand.Repository scheduledCommands;
 
-  private final PlatformTransactionManager transactionManager;
+  private final PlatformTransactionManager txManager;
 
-  public BatchOfScheduledCommands(ScheduledCommand.Repository repository, PlatformTransactionManager transactionManager) {
-    this.repository = repository;
-    this.transactionManager = transactionManager;
+  public BatchOfScheduledCommands(ScheduledCommand.Repository scheduledCommands, PlatformTransactionManager txManager) {
+    this.scheduledCommands = scheduledCommands;
+    this.txManager = txManager;
   }
 
   @Transactional(readOnly = true)
@@ -37,15 +37,15 @@ class BatchOfScheduledCommands {
     ).join();
   }
 
-  private Stream<CompletableFuture> run() {
-    return repository
+  private Stream<CompletableFuture<Void>> run() {
+    return scheduledCommands
         .list(BATCH_SIZE)
         .map(this::wrapInATx)
         .map(this::runInPool);
   }
 
   private Runnable wrapInATx(Runnable runnable) {
-    var newTx = new TransactionTemplate(transactionManager);
+    var newTx = new TransactionTemplate(txManager);
     newTx.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
     return () -> newTx.executeWithoutResult(txStatus -> runnable.run());
   }

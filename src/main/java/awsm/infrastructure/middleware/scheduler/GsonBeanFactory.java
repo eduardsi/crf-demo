@@ -1,0 +1,55 @@
+package awsm.infrastructure.middleware.scheduler;
+
+import an.awesome.pipelinr.Command;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
+
+import javax.annotation.Nonnull;
+
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static com.google.gson.typeadapters.RuntimeTypeAdapterFactory.of;
+import static java.util.Arrays.asList;
+
+@Component
+class GsonBeanFactory extends AbstractFactoryBean<Gson> {
+
+  private final ListableBeanFactory beanFactory;
+  private final RuntimeTypeAdapterFactory<Command> adapter;
+
+  public GsonBeanFactory(ListableBeanFactory beanFactory) {
+    this.beanFactory = beanFactory;
+    this.adapter = of(Command.class);
+    commandIds().forEach(this::bindToType);
+  }
+
+  private List<String> commandIds() {
+    return asList(beanFactory.getBeanNamesForAnnotation(ScheduledCommandId.class));
+  }
+
+  private void bindToType(String commandId) {
+    var type =  beanFactory.getType(commandId).asSubclass(Command.class);
+    adapter.registerSubtype(type, commandId);
+  }
+
+  @Override
+  @Nonnull
+  protected Gson createInstance() {
+    return new GsonBuilder()
+            .registerTypeAdapterFactory(adapter)
+            .create();
+  }
+
+
+  @Override
+  public Class<?> getObjectType() {
+    return Gson.class;
+  }
+
+}

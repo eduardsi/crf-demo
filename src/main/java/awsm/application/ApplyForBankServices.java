@@ -90,7 +90,6 @@ public class ApplyForBankServices implements Command<Voidy> {
     public Voidy handle(ApplyForBankServices cmd) {
       validate(cmd);
 
-
       // todo: make sure <= 1 pending applications
 
       var customer = newCustomer(cmd);
