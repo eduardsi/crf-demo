@@ -8,19 +8,12 @@ import java.util.function.Function;
 
 import jooq.tables.records.CustomerRecord;
 import org.jooq.DSLContext;
-import org.springframework.stereotype.Component;
 
 public class Customer {
 
-  public enum Status {
-    PENDING, CONFIRMED
-  }
+  private Email email;
 
-  private Status status = Status.PENDING;
-
-  private final Email email;
-
-  private final Name name;
+  private Name name;
 
   private String countryOfResidence;
 
@@ -35,6 +28,9 @@ public class Customer {
     this.countryOfResidence = countryOfResidence;
   }
 
+  private Customer() {
+  }
+
   public Name name() {
     return name;
   }
@@ -43,61 +39,30 @@ public class Customer {
     return email;
   }
 
-  public String countryOfResidence() {
-    return countryOfResidence;
-  }
-
-  public LocalDate dateOfBirth() {
-    return dateOfBirth;
-  }
-
-  public void saveNew(Repository repo) {
-    repo.insert(this);
+  public void saveNew(DSLContext db) {
+    var id = db
+        .insertInto(CUSTOMER)
+            .set(CUSTOMER.EMAIL, this.email + "")
+            .set(CUSTOMER.DATE_OF_BIRTH, this.dateOfBirth)
+            .set(CUSTOMER.COUNTRY_OF_RESIDENCE, this.countryOfResidence)
+            .set(CUSTOMER.FIRST_NAME, this.name.firstName)
+            .set(CUSTOMER.LAST_NAME, this.name.lastName)
+        .returning(CUSTOMER.ID)
+        .fetchOne()
+        .getId();
+    this.id = Optional.of(id);
   }
 
   public long id() {
     return id.orElseThrow();
   }
 
-  public void confirm(Repository repo) {
-    this.status = Status.CONFIRMED;
-    repo.update(this);
-  }
-
-  @Component
-  public static class Repository {
+  public static class Repo {
 
     private final DSLContext dsl;
 
-    public Repository(DSLContext dsl) {
+    public Repo(DSLContext dsl) {
       this.dsl = dsl;
-    }
-
-    private void insert(Customer self) {
-      var id = dsl
-          .insertInto(CUSTOMER)
-          .set(toJooq(self))
-          .returning(CUSTOMER.ID)
-          .fetchOne()
-          .getId();
-      self.id = Optional.of(id);
-    }
-
-    private void update(Customer self) {
-      dsl.update(CUSTOMER)
-              .set(toJooq(self))
-              .where(CUSTOMER.ID.equal(self.id()))
-              .execute();
-    }
-
-    private CustomerRecord toJooq(Customer self) {
-      return new CustomerRecord()
-              .setEmail(self.email + "")
-              .setStatus(self.status.name())
-              .setDateOfBirth(self.dateOfBirth)
-              .setCountryOfResidence(self.countryOfResidence)
-              .setFirstName(self.name.firstName)
-              .setLastName(self.name.lastName);
     }
 
     public Customer findBy(long id) {
@@ -119,10 +84,12 @@ public class Customer {
 
     private Function<CustomerRecord, Customer> fromJooq() {
       return jooq -> {
-        var fullName = new Name(jooq.getFirstName(), jooq.getLastName());
-        var email = new Email(jooq.getEmail());
-        var customer = new Customer(fullName, email, jooq.getDateOfBirth(), jooq.getCountryOfResidence());
-        customer.status = Status.valueOf(jooq.getStatus());
+        var customer = new Customer();
+        customer.name = new Name(jooq.getFirstName(), jooq.getLastName());
+        customer.email = new Email(jooq.getEmail());
+        customer.countryOfResidence = jooq.getCountryOfResidence();
+        customer.dateOfBirth = jooq.getDateOfBirth();
+        customer.id = Optional.of(jooq.getId());
         return customer;
       };
     }

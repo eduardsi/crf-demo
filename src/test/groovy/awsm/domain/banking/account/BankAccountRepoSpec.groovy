@@ -1,4 +1,4 @@
-package awsm.domain.banking
+package awsm.domain.banking.account
 
 import org.jooq.DSLContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,10 +10,10 @@ import spock.lang.Subject
 
 import javax.annotation.PostConstruct
 
-import static Amount.amount
+import static awsm.domain.banking.commons.Amount.amount
 
 @SpringBootTest
-class BankAccountRepositorySpec extends Specification implements WithSampleBankAccount {
+class BankAccountRepoSpec extends Specification implements WithSampleBankAccount {
 
     @Autowired
     PlatformTransactionManager txManager
@@ -24,14 +24,12 @@ class BankAccountRepositorySpec extends Specification implements WithSampleBankA
     TransactionTemplate tx
 
     @Subject
-    BankAccount.Repository repository
+    BankAccount.Repo repository
 
     @PostConstruct
     void init() {
         tx = new TransactionTemplate(txManager)
-        repository = new BankAccount.Repository(dsl,
-                new Transactions.Repository(dsl)
-        )
+        repository = new BankAccount.Repo(dsl)
     }
 
     def "supports saving and reading"() {
@@ -40,7 +38,7 @@ class BankAccountRepositorySpec extends Specification implements WithSampleBankA
             account.withdraw amount("20")
 
         when: "I save my bank account in a repo"
-            tx.executeWithoutResult { account.open(repository) }
+            tx.executeWithoutResult { account.open(dsl) }
 
         and: "I read it back from the repo"
             def acc = tx.execute {

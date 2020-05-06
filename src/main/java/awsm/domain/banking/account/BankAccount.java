@@ -1,6 +1,6 @@
-package awsm.domain.banking;
+package awsm.domain.banking.account;
 
-import static awsm.domain.banking.Transactions.Transaction.depositOf;
+import static awsm.domain.banking.account.Transactions.Transaction.depositOf;
 import static awsm.infrastructure.time.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 import static jooq.tables.BankAccount.BANK_ACCOUNT;
@@ -9,9 +9,12 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Optional;
 import java.util.function.Function;
+
+import awsm.domain.banking.*;
+import awsm.domain.banking.commons.Amount;
+import awsm.domain.banking.customer.Customer;
 import jooq.tables.records.BankAccountRecord;
 import org.jooq.DSLContext;
-import org.springframework.stereotype.Component;
 
 public class BankAccount {
 
@@ -29,6 +32,8 @@ public class BankAccount {
 
   private Optional<Long> id = Optional.empty();
 
+  private Optional<Long> holderId = Optional.empty();
+
   public BankAccount(WithdrawalLimits withdrawalLimits) {
     this(new Iban(), withdrawalLimits);
   }
@@ -36,6 +41,10 @@ public class BankAccount {
   private BankAccount(Iban iban, WithdrawalLimits withdrawalLimits) {
     this.iban = iban;
     this.withdrawalLimits = withdrawalLimits;
+  }
+
+  void claim(Customer customer) {
+    this.holderId = Optional.of(customer.id());
   }
 
   public long id() {
@@ -82,12 +91,13 @@ public class BankAccount {
     status = Status.CLOSED;
   }
 
-  public void open(Repository repository) {
-    repository.insert(this);
+  public void open(DSLContext dsl) {
+    var repo = new Repo(dsl);
+    repo.insert(this);
   }
 
-  public void update(Repository repository) {
-    repository.update(this);
+  public void update(Repo repo) {
+    repo.update(this);
   }
 
   private class EnforceOpen {
@@ -155,27 +165,17 @@ public class BankAccount {
     }
   }
 
-  @Component
-  public static class Repository {
+  public static class Repo {
 
     private final DSLContext dsl;
-    private final Transactions.Repository transactionsRepository;
+    private final Transactions.Repo transactionsRepo;
 
-    Repository(DSLContext dsl, Transactions.Repository transactionsRepository) {
+    Repo(DSLContext dsl) {
       this.dsl = dsl;
-      this.transactionsRepository = transactionsRepository;
+      this.transactionsRepo = new Transactions.Repo(dsl);
     }
 
-    private void update(BankAccount self) {
-      dsl.update(BANK_ACCOUNT)
-          .set(toJooq(self))
-          .where(BANK_ACCOUNT.ID.equal(self.id()))
-          .execute();
-      self.committedTransactions.delete(transactionsRepository);
-      self.committedTransactions.insert(transactionsRepository);
-    }
-
-    public void insert(BankAccount self) {
+    private void insert(BankAccount self) {
       var id = dsl
               .insertInto(BANK_ACCOUNT)
               .set(toJooq(self))
@@ -183,7 +183,16 @@ public class BankAccount {
               .fetchOne()
               .getId();
       self.id = Optional.of(id);
-      self.committedTransactions.insert(transactionsRepository);
+      self.committedTransactions.insert(transactionsRepo);
+    }
+
+    private void update(BankAccount self) {
+      dsl.update(BANK_ACCOUNT)
+          .set(toJooq(self))
+          .where(BANK_ACCOUNT.ID.equal(self.id()))
+          .execute();
+      self.committedTransactions.delete(transactionsRepo);
+      self.committedTransactions.insert(transactionsRepo);
     }
 
     BankAccount singleBy(long id) {
@@ -202,8 +211,9 @@ public class BankAccount {
             new WithdrawalLimits(Amount.amount(jooq.getDailyLimit()), Amount.amount(jooq.getMonthlyLimit()))
         );
         self.id = Optional.of(jooq.getId());
+        self.holderId = Optional.ofNullable(jooq.getHolderId());
         self.status = Status.valueOf(jooq.getStatus());
-        self.committedTransactions = transactionsRepository.listBy(self);
+        self.committedTransactions = transactionsRepo.listBy(self);
         return self;
       };
     }
@@ -211,6 +221,7 @@ public class BankAccount {
     private BankAccountRecord toJooq(BankAccount self) {
       return new BankAccountRecord()
           .setIban(self.iban + "")
+          .setHolderId(self.holderId.orElse(null))
           .setStatus(self.status.name())
           .setMonthlyLimit(self.withdrawalLimits.monthlyLimit().decimal())
           .setDailyLimit(self.withdrawalLimits.dailyLimit().decimal());

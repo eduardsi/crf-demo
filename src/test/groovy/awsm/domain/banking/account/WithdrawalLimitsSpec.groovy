@@ -1,8 +1,9 @@
-package awsm.domain.banking
+package awsm.domain.banking.account
 
 import spock.lang.Specification
 
-import static Amount.amount
+import static awsm.domain.banking.commons.Amount.amount
+
 
 class WithdrawalLimitsSpec extends Specification {
 

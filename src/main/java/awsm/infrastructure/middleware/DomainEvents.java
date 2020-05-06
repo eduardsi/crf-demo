@@ -36,6 +36,7 @@ public class DomainEvents {
                             inTx(() -> sideEffect.invoke(event))));
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   private void runAsync(Runnable runnable) {
     CompletableFuture.runAsync(runnable, executor);
   }

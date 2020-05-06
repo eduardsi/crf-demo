@@ -1,6 +1,7 @@
 package awsm.domain.banking.customer;
 
 import com.google.common.base.Splitter;
+import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -35,10 +36,10 @@ public class Email {
     @Component
     class AcrossCustomers implements Uniqueness {
 
-      private final Customer.Repository customerRepo;
+      private final Customer.Repo customerRepo;
 
-      private AcrossCustomers(Customer.Repository customerRepo) {
-        this.customerRepo = customerRepo;
+      private AcrossCustomers(DSLContext db) {
+        this.customerRepo = new Customer.Repo(db);
       }
 
       @Override

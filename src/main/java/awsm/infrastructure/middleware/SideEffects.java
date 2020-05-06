@@ -15,24 +15,24 @@ import static java.util.stream.Collectors.toList;
 @SuppressWarnings("rawtypes")
 class SideEffects {
 
-  private final LoadingCache<Type, List<SideEffect>> cachedSideEffects;
+  private final LoadingCache<Type, List<DomainEventListener>> cachedSideEffects;
 
   public SideEffects(ListableBeanFactory beanFactory) {
     this.cachedSideEffects = Caffeine.newBuilder()
             .build(key -> sideEffects(beanFactory)
                     .stream()
-                    .filter(sideEffect -> sideEffect.eventType().isSupertypeOf(key))
+                    .filter(domainEventListener -> domainEventListener.eventType().isSupertypeOf(key))
                     .collect(toList()));
 
   }
 
-  private Collection<SideEffect> sideEffects(ListableBeanFactory beanFactory) {
+  private Collection<DomainEventListener> sideEffects(ListableBeanFactory beanFactory) {
     return beanFactory
-            .getBeansOfType(SideEffect.class)
+            .getBeansOfType(DomainEventListener.class)
             .values();
   }
 
-  public Collection<SideEffect> filteredBy(DomainEvent event) {
+  public Collection<DomainEventListener> filteredBy(DomainEvent event) {
     return cachedSideEffects.get(event.type());
   }
 }

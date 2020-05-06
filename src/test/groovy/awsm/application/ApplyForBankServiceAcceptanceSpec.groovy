@@ -1,35 +1,40 @@
 package awsm.application
 
 import awsm.base.BaseAcceptanceSpec
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 
 import static org.hamcrest.text.CharSequenceLength.hasLength
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class ApplyForBankServicesAcceptanceSpec extends BaseAcceptanceSpec {
+class ApplyForBankServiceAcceptanceSpec extends BaseAcceptanceSpec {
 
-    def validRegistrationInfo() {
+    def validApplication() {
         [
                 email: fake().internet().emailAddress(),
                 firstName: fake().name().firstName(),
-                lastName: fake().name().lastName()
+                lastName: fake().name().lastName(),
+                countryOfResidence: fake().country().countryCode2(),
+                dateOfBirth: '1988-10-10'
         ]
     }
 
-    def "registration"() {
-        when: 'I register with valid registration info'
-            def _ = perform jsonPost("/customers", validRegistrationInfo())
-        then: 'I get my unique hashed customer id'
+    def "valid application"() {
+        when: 'I apply for bank services'
+            def _ = perform jsonPost("/applications", validApplication())
+        then: 'I get my application id'
             _.andExpect status().isOk()
-            _.andExpect jsonPath('$.customerHashId', hasLength(10))
+            _.andDo(MockMvcResultHandlers.print())
+            _.andExpect content().string(hasLength(10))
     }
 
 
-    def "cannot register with blacklisted email"() {
+    def "cannot apply with blacklisted email"() {
         given: 'An email is in the blacklist'
             blacklist().disallow(domain)
-        when: 'I register with a blacklisted email'
-            def _ = perform jsonPost("/customers", [
+        when: 'I apply with a blacklisted email'
+            def _ = perform jsonPost("/applications", [
                     email: "$username@$domain",
                     firstName: fake().name().firstName(),
                     lastName: fake().name().lastName()
@@ -44,7 +49,7 @@ class ApplyForBankServicesAcceptanceSpec extends BaseAcceptanceSpec {
         fake().name().username() || "rotten.com"
     }
 
-    def "cannot register without first name, last name or email"() {
+    def "cannot apply without first name, last name or email"() {
         when: 'I register without first name, last name and email'
             def _ = perform jsonPost("/customers", [
                     email: "",
@@ -58,7 +63,7 @@ class ApplyForBankServicesAcceptanceSpec extends BaseAcceptanceSpec {
             _.andExpect jsonPath('$.[2]').value('email is missing')
     }
 
-    def "cannot register with the same email"() {
+    def "cannot apply with the same email"() {
         given: 'Somebody has registered with an email'
             def email = fake().internet().emailAddress()
         perform jsonPost("/customers", [

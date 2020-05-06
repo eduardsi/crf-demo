@@ -3,13 +3,16 @@ package awsm.application;
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
 import an.awesome.pipelinr.Voidy;
+import awsm.domain.banking.BankApplication;
+import awsm.domain.banking.BankService;
 import awsm.domain.banking.customer.Email;
-import awsm.domain.banking.customer.Customer;
 import awsm.domain.banking.customer.Name;
 import awsm.domain.banking.customer.blacklist.Blacklist;
+import awsm.infrastructure.ids.Ids;
 import awsm.infrastructure.middleware.resilience.RateLimit;
 import awsm.infrastructure.middleware.validation.Validator;
 import awsm.infrastructure.time.TimeMachine;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -18,14 +21,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.Set;
 
+import static awsm.infrastructure.ids.Ids.encoded;
 import static awsm.infrastructure.memoization.Memoizers.memoized;
 import static java.time.Period.between;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
-public class ApplyForBankServices implements Command<Voidy> {
+public class ApplyForBankServices implements Command<String> {
 
-  private final String email;
+  public final String email;
 
   private final String firstName;
 
@@ -35,12 +41,15 @@ public class ApplyForBankServices implements Command<Voidy> {
 
   private final String dateOfBirth;
 
-  public ApplyForBankServices(String email, String firstName, String lastName, String countryOfResidence, String dateOfBirth) {
+  private final Set<BankService> services;
+
+  public ApplyForBankServices(String email, String firstName, String lastName, String countryOfResidence, String dateOfBirth, Set<BankService> services) {
     this.email = email;
     this.firstName = firstName;
     this.lastName = lastName;
     this.countryOfResidence = countryOfResidence;
     this.dateOfBirth = dateOfBirth;
+    this.services = services;
   }
 
   @RestController
@@ -52,7 +61,7 @@ public class ApplyForBankServices implements Command<Voidy> {
     }
 
     @PostMapping("/applications")
-    Voidy post(@RequestBody ApplyForBankServices cmd) {
+    String post(@RequestBody ApplyForBankServices cmd) {
       return cmd.execute(pipeline);
     }
   }
@@ -61,7 +70,7 @@ public class ApplyForBankServices implements Command<Voidy> {
   static class Resilience implements RateLimit<ApplyForBankServices> {
     private final int rateLimit;
 
-    public Resilience(@Value("${registration.rateLimit}") int rateLimit) {
+    public Resilience(@Value("${applications.rateLimit}") int rateLimit) {
       this.rateLimit = rateLimit;
     }
 
@@ -74,42 +83,51 @@ public class ApplyForBankServices implements Command<Voidy> {
 
   @Component
   @Scope(SCOPE_PROTOTYPE)
-  static class Handler implements Command.Handler<ApplyForBankServices, Voidy> {
+  static class Handler implements Command.Handler<ApplyForBankServices, String> {
 
     private final Blacklist blacklist;
     private final Email.Uniqueness uniqueness;
-    private final Customer.Repository customerRepo;
+    private final DSLContext db;
 
-    Handler(Blacklist blacklist, Email.Uniqueness uniqueness, Customer.Repository customerRepo) {
-      this.customerRepo = customerRepo;
+    Handler(Blacklist blacklist, Email.Uniqueness uniqueness, DSLContext db) {
+      this.db = db;
       this.uniqueness = memoized(uniqueness::guaranteed)::apply;
       this.blacklist = memoized(blacklist::permits)::apply;
     }
 
     @Override
-    public Voidy handle(ApplyForBankServices cmd) {
+    public String handle(ApplyForBankServices cmd) {
       validate(cmd);
 
       // todo: make sure <= 1 pending applications
+      //  todo: avoid multiple parsings of date.
 
-      var customer = newCustomer(cmd);
-      customer.saveNew(customerRepo);
+      var application = new BankApplication(
+              new Email(cmd.email),
+              new Name(cmd.firstName, cmd.lastName),
+              cmd.countryOfResidence,
+              LocalDate.parse(cmd.dateOfBirth));
 
-      return new Voidy();
+      if (isNotEmpty(cmd.services)) {
+        application.optIn(cmd.services);
+      }
+      application.saveNew(db);
+
+      return encoded(application.id());
     }
 
     private void validate(ApplyForBankServices cmd) {
       var email = memoized(() -> new Email(cmd.email));
       new Validator<ApplyForBankServices>()
-              .with(() -> cmd.firstName, this::isNotBlank, "firstName is missing")
-              .with(() -> cmd.lastName, this::isNotBlank, "lastName is missing")
+              .with(() -> cmd.firstName, this::isNotBlank, "first name is missing")
+              .with(() -> cmd.lastName, this::isNotBlank, "last name is missing")
               .with(() -> cmd.email, this::isNotBlank, "email is missing", nested ->
                       nested
                               .with(email, uniqueness::guaranteed, "email is taken")
                               .with(email, blacklist::permits, "email %s is blacklisted")
               )
-              .with(() -> cmd.countryOfResidence, this::isCountryOk, "countryOfResidence is missing")
-              .with(() -> cmd.dateOfBirth, this::isDateOk, "invalid date", nested ->
+              .with(() -> cmd.countryOfResidence, this::isCountryOk, "country of residence is missing")
+              .with(() -> cmd.dateOfBirth, this::isDateOk, "date of birth is invalid", nested ->
                       nested
                               .with(() -> cmd.dateOfBirth, this::isAdult, "you need to be at least 18")
               )
@@ -134,14 +152,6 @@ public class ApplyForBankServices implements Command<Voidy> {
       var birthday = LocalDate.parse(dateOfBirth);
       return between(birthday, today).getYears() >= 18;
     }
-
-    private Customer newCustomer(ApplyForBankServices cmd) {
-      var name = new Name(cmd.firstName, cmd.lastName);
-      var email = new Email(cmd.email);
-      var customer = new Customer(name, email, LocalDate.parse(cmd.dateOfBirth), cmd.countryOfResidence);
-      return customer;
-    }
-
 
   }
 }

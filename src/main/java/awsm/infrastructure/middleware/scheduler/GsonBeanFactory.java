@@ -11,10 +11,8 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static com.google.gson.typeadapters.RuntimeTypeAdapterFactory.of;
 import static java.util.Arrays.asList;
 
 @Component
@@ -25,7 +23,7 @@ class GsonBeanFactory extends AbstractFactoryBean<Gson> {
 
   public GsonBeanFactory(ListableBeanFactory beanFactory) {
     this.beanFactory = beanFactory;
-    this.adapter = of(Command.class);
+    this.adapter = RuntimeTypeAdapterFactory.of(Command.class);
     commandIds().forEach(this::bindToType);
   }
 
@@ -45,7 +43,6 @@ class GsonBeanFactory extends AbstractFactoryBean<Gson> {
             .registerTypeAdapterFactory(adapter)
             .create();
   }
-
 
   @Override
   public Class<?> getObjectType() {

@@ -1,6 +1,7 @@
-package awsm.domain.banking
+package awsm.domain.banking.account
 
-import static awsm.domain.banking.Amount.amount
+import static awsm.domain.banking.commons.Amount.amount
+
 
 trait WithSampleBankAccount {
 

@@ -1,6 +1,6 @@
 package awsm.domain.banking;
 
-interface UnsatisfiedObligations {
+public interface UnsatisfiedObligations {
 
   UnsatisfiedObligations NONE = () -> false;
 

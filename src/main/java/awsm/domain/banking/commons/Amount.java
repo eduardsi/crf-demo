@@ -1,11 +1,11 @@
-package awsm.domain.banking;
+package awsm.domain.banking.commons;
 
 import awsm.infrastructure.data.Data;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-class Amount extends Data {
+public class Amount extends Data {
 
   private final BigDecimal decimal;
 
@@ -13,27 +13,27 @@ class Amount extends Data {
     this.decimal = decimal.setScale(2, RoundingMode.UNNECESSARY);
   }
 
-  Amount add(Amount other) {
+  public Amount add(Amount other) {
     return new Amount(decimal.add(other.decimal));
   }
 
-  Amount subtract(Amount other) {
+  public Amount subtract(Amount other) {
     return new Amount(decimal.subtract(other.decimal));
   }
 
-  Amount abs() {
+  public Amount abs() {
     return new Amount(decimal.abs());
   }
 
-  boolean isGreaterThan(Amount other) {
+  public boolean isGreaterThan(Amount other) {
     return decimal.compareTo(other.decimal) > 0;
   }
 
-  boolean isGreaterThanOrEqualTo(Amount other) {
+  public boolean isGreaterThanOrEqualTo(Amount other) {
     return decimal.compareTo(other.decimal) >= 0;
   }
 
-  boolean isLessThanOrEqualTo(Amount other) {
+  public boolean isLessThanOrEqualTo(Amount other) {
     return decimal.compareTo(other.decimal) <= 0;
   }
 
@@ -46,11 +46,11 @@ class Amount extends Data {
     return decimal.toString();
   }
 
-  static Amount amount(String amount) {
+  public static Amount amount(String amount) {
     return amount(new BigDecimal(amount));
   }
 
-  static Amount amount(BigDecimal amount) {
+  public static Amount amount(BigDecimal amount) {
     return new Amount(amount);
   }
 }

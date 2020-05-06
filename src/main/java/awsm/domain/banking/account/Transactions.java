@@ -1,13 +1,14 @@
-package awsm.domain.banking;
+package awsm.domain.banking.account;
 
-import static awsm.domain.banking.Transactions.Transaction.Type.DEPOSIT;
-import static awsm.domain.banking.Transactions.Transaction.Type.WITHDRAWAL;
+import static awsm.domain.banking.account.Transactions.Transaction.Type.DEPOSIT;
+import static awsm.domain.banking.account.Transactions.Transaction.Type.WITHDRAWAL;
 import static awsm.infrastructure.time.TimeMachine.clock;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static jooq.tables.BankAccountTx.BANK_ACCOUNT_TX;
 
-import awsm.domain.banking.Transactions.Transaction.Type;
+import awsm.domain.banking.account.Transactions.Transaction.Type;
+import awsm.domain.banking.commons.Amount;
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,12 +72,12 @@ class Transactions {
           .build());
   }
 
-  void insert(Repository repository) {
-    repository.insert(this);
+  void insert(Repo repo) {
+    repo.insert(this);
   }
 
-  void delete(Repository repository) {
-    repository.delete(this);
+  void delete(Repo repo) {
+    repo.delete(this);
   }
 
   static class Transaction {
@@ -157,11 +158,11 @@ class Transactions {
   }
 
   @Component
-  static class Repository {
+  static class Repo {
 
     private final DSLContext dsl;
 
-    Repository(DSLContext dsl) {
+    Repo(DSLContext dsl) {
       this.dsl = dsl;
     }
 

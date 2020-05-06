@@ -1,5 +1,6 @@
-package awsm.domain.banking
+package awsm.domain.banking.account
 
+import awsm.domain.banking.UnsatisfiedObligations
 import org.junit.Before
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
@@ -7,7 +8,7 @@ import org.threeten.extra.Days
 import org.threeten.extra.MutableClock
 import spock.lang.Specification
 
-import static Amount.amount
+import static awsm.domain.banking.commons.Amount.amount
 import static awsm.infrastructure.time.TimeMachine.today
 import static awsm.infrastructure.time.TimeMachine.with
 

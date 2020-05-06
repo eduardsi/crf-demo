@@ -1,8 +1,9 @@
-package awsm.domain.banking;
+package awsm.domain.banking.account;
 
+import awsm.domain.banking.commons.Amount;
 import org.springframework.core.env.Environment;
 
-import static awsm.domain.banking.Amount.amount;
+import static awsm.domain.banking.commons.Amount.amount;
 import static com.google.common.base.Preconditions.checkState;
 
 public class WithdrawalLimits {

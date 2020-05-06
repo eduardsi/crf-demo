@@ -1,4 +1,4 @@
-package awsm.domain.banking;
+package awsm.domain.banking.account;
 
 import awsm.infrastructure.middleware.DomainEvent;
 

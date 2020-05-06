@@ -2,55 +2,39 @@ package awsm.application;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
-import awsm.domain.banking.BankAccount;
-import awsm.domain.banking.WithdrawalLimits;
-import awsm.domain.banking.customer.Customer;
-import org.springframework.core.env.Environment;
+import awsm.domain.banking.BankApplication;
+import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
 import static awsm.infrastructure.ids.Ids.decoded;
 
 public class ApproveApplication implements Command<Voidy> {
 
-  private final String customerId;
+  private final String applicationId;
 
-  public ApproveApplication(String customerId) {
-    this.customerId = customerId;
+  public ApproveApplication(String applicationId) {
+    this.applicationId = applicationId;
   }
 
   @Component
   public static class Handler implements Command.Handler<ApproveApplication, Voidy> {
 
-    private final BankAccount.Repository accountRepo;
-    private final Customer.Repository customerRepo;
-    private final Environment env;
+    private final DSLContext db;
 
-    public Handler(
-            BankAccount.Repository accountRepo,
-            Customer.Repository customerRepo,
-            Environment env) {
-      this.accountRepo = accountRepo;
-      this.customerRepo = customerRepo;
-      this.env = env;
+    public Handler(DSLContext db) {
+      this.db = db;
     }
 
     @Override
     public Voidy handle(ApproveApplication command) {
-      var customerId = decoded(command.customerId);
+      var applicationId = decoded(command.applicationId);
+      var application = new BankApplication.Repo(db).findOne(applicationId);
 
-      var customer = customerRepo.findBy(customerId);
-      customer.confirm(customerRepo);
-
-      var bankAccount = newBankAccount();
-      bankAccount.open(accountRepo);
+      application.approve(db);
 
       return new Voidy();
     }
 
-    private BankAccount newBankAccount() {
-      var limits = WithdrawalLimits.DEFAULTS(env);
-      return new BankAccount(limits);
-    }
   }
 
 }

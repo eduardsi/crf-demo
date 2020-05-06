@@ -1,4 +1,6 @@
-package awsm.domain.banking;
+package awsm.domain.banking.account;
+
+import awsm.domain.banking.commons.Amount;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;

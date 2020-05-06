@@ -8,4 +8,8 @@ public interface DomainEvent {
     return this.getClass();
   }
 
+  default void publish() {
+    DomainEvents.INSTANCE().put(this);
+  }
+
 }

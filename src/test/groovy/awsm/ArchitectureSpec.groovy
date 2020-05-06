@@ -24,20 +24,6 @@ class ArchitectureSpec extends Specification {
       rule.check(allClasses())
   }
 
-  def "all dependencies to jOOQ are in repositories or in a special infra package"() {
-    given:
-      final rule = noClasses()
-              .that()
-              .haveSimpleNameNotContaining("Repository")
-              .and()
-              .resideOutsideOfPackage("awsm.infrastructure.jooq..")
-              .should()
-              .dependOnClassesThat()
-              .resideInAnyPackage("..jooq..")
-    expect:
-      rule.check(allClasses())
-  }
-
   def "no package cycles allowed"() {
     given:
       final rule = slices().matching("..(*)..").should().beFreeOfCycles()
