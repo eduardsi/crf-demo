@@ -1,7 +1,4 @@
 .idea
-!.idea/codeStyles
-!.idea/inspectionProfiles
-!.idea/checkstyle-idea.xml
 *.iml
 *.ipr
 *.iws

@@ -1,5 +1,4 @@
 import org.jooq.meta.jaxb.ForcedType
-import org.springframework.boot.gradle.tasks.run.BootRun
 import org.flywaydb.core.Flyway
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Database
@@ -18,15 +17,16 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
+        classpath aspectj
         classpath errorprone
         classpath springDepManager
         classpath springBoot
-        classpath("org.testcontainers:postgresql:1.12.2")
-        classpath("org.flywaydb:flyway-core:6.0.7")
-        classpath("org.postgresql:postgresql:42.2.8")
-        classpath("org.jooq:jooq:3.12.1")
-        classpath("org.jooq:jooq-meta:3.12.1")
-        classpath("org.jooq:jooq-codegen:3.12.1")
+        classpath testContainersPg
+        classpath flyway
+        classpath postgres
+        classpath jooq
+        classpath jooqMeta
+        classpath jooqCodegen
     }
 }
 
@@ -35,9 +35,9 @@ group = "awsm"
 version = "UNSPECIFIED"
 
 apply plugin: 'java'
+apply plugin: 'io.freefair.aspectj.post-compile-weaving'
 apply plugin: 'java-library'
 apply plugin: 'groovy'
-apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
@@ -58,13 +58,22 @@ dependencyManagement {
     }
 }
 
+aspectj {
+    version = '1.9.6'
+}
+
 dependencies {
+
+    aspect springAspects
+
     errorprone errorproneCore
     errorprone nullaway
 
     implementation validator
+    implementation springAspects
     implementation commonsLang
     implementation gsonExtras
+    implementation hibernate
     implementation noException
     implementation guava
     implementation caffeine
@@ -73,6 +82,7 @@ dependencies {
     implementation threeten
     implementation springBootJetty
     implementation springBootJdbc
+    implementation springBootJpa
     implementation springTx
     implementation springJdbc
     implementation springContext
@@ -109,7 +119,6 @@ checkstyle {
 tasks.withType(Test) {
     maxParallelForks = 4
     useJUnitPlatform()
-    mustRunAfter = [ jacocoTestCoverageVerification ]
 }
 
 tasks.withType(JavaCompile).each {
@@ -118,7 +127,7 @@ tasks.withType(JavaCompile).each {
         e.disable "TypeParameterUnusedInFormals"
         e.option "NullAway:AnnotatedPackages", "awsm"
         e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
-        e.option "NullAway:ExternalInitAnnotations"
+        e.option "NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable"
     }
 }
 
@@ -126,30 +135,8 @@ tasks.withType(Checkstyle) {
     exclude 'jooq'
 }
 
-tasks.jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.7
-            }
-        }
-    }
-}
-
 compileJava {
     options.annotationProcessorPath = configurations.annotationProcessor
-}
-
-
-
-task bootDevRun(type: BootRun) {
-    group = "Application"
-    description = "Runs this project as a Spring Boot application in dev mode."
-    doFirst() {
-        main = mainApp
-        classpath = sourceSets.test.runtimeClasspath
-        systemProperty 'spring.profiles.active', 'dev'
-    }
 }
 
 def jooqOutput = "$buildDir/generated-src/jooq"

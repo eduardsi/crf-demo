@@ -1,15 +1,8 @@
 ---
-applications:
-  rateLimit: 2
-
 banking:
   account-limits:
     daily: 500.00
     monthly: 3000.00
-
-blacklist:
-  url: http://localhost
-  port: 8090
 
 spring:
   datasource:
