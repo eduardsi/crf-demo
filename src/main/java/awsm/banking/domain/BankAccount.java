@@ -1,4 +1,4 @@
-package awsm.banking;
+package awsm.banking.domain;
 
 import com.github.javafaker.Faker;
 
@@ -9,7 +9,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static awsm.banking.Transaction.depositOf;
+import static awsm.banking.domain.Transaction.depositOf;
 import static awsm.infrastructure.clock.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 

@@ -1,4 +1,4 @@
-package awsm.banking;
+package awsm.banking.domain;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;

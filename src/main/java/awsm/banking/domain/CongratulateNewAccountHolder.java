@@ -1,11 +1,11 @@
-package awsm.banking;
+package awsm.banking.domain;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
 import awsm.infrastructure.scheduling.ScheduledCommandId;
 import org.springframework.stereotype.Component;
 
-import static awsm.banking.CongratulateNewAccountHolder.ID;
+import static awsm.banking.domain.CongratulateNewAccountHolder.ID;
 
 @ScheduledCommandId(ID)
 class CongratulateNewAccountHolder implements Command<Voidy> {

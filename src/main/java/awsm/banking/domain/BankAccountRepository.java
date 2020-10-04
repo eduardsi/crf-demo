@@ -1,4 +1,4 @@
-package awsm.banking;
+package awsm.banking.domain;
 
 import org.springframework.data.repository.Repository;
 

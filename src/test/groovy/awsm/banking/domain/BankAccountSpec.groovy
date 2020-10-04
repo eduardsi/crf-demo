@@ -1,4 +1,4 @@
-package awsm.banking
+package awsm.banking.domain
 
 
 import awsm.infrastructure.clock.TimeMachine

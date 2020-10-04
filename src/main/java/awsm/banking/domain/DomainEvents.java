@@ -1,4 +1,4 @@
-package awsm.banking;
+package awsm.banking.domain;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Component;
