@@ -1,42 +1,17 @@
-# Awesome Bank app
+# unsuck-java
 
-This is a demo enterprise Java application, built using some the best practices covered in Effective Java Software Design [course](https://devchampions.com/training/java). 
-
-## Structure
-```
-unsuck-java/
-└── application         # what the application does (api to the domain) with acceptance tests
-    ├+─ awsm.banking.banking
-    ├+─ awsm.banking.crm
-    ├+─ ...    
-└── domain              # what the application is (domain) with unit tests
-    ├+─ awsm.banking.banking
-    ├+─ awsm.banking.crm
-    ├+─ ...
-└── infrastructure      # supporting infra and middleware
-└── database            # database migrations
-```
-
-## Tech stack
-- [x] Spring for configuration and dependency injection
-- [x] jOOQ for fluent data access
-- [x] Flyway for database migrations
-- [x] Failsafe for fault tolerance
-- [x] PipelinR for service layer
-- [x] Testcontainers for wrapping dependencies in Docker
-- [x] Spock for testing
-- [x] ArchUnit for enforcing architecture constraints
+Complementary materials for Java Software Design [course](https://devchampions.com/training/java). 
 
 ### Requirements
 - [x] Docker
-- [x] Java 12+
+- [x] Java 14+
 
 #### Running the app in dev mode
 ```
-./gradlew build assemble bootDevRun -x test
+./gradlew bootRun
 ```
 
 #### Running tests
 ```
-./gradlew clean test
+./gradlew test
 ```
