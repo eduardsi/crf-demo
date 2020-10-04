@@ -9,6 +9,12 @@ import javax.annotation.Nullable;
 
 public class BankAccountOpened implements DomainEvent {
 
+    private final String iban;
+
+    BankAccountOpened(String iban) {
+        this.iban = iban;
+    }
+
     @Override
     public final boolean equals(@Nullable Object that) {
         return EqualsBuilder.reflectionEquals(this, that);

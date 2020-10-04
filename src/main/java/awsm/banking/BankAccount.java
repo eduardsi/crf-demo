@@ -32,6 +32,9 @@ public class BankAccount implements DomainEntity {
   @Embedded
   private WithdrawalLimits withdrawalLimits;
 
+  @Embedded
+  private AccountHolder holder;
+
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
@@ -40,21 +43,26 @@ public class BankAccount implements DomainEntity {
   @Version
   private long version;
 
-  public BankAccount(WithdrawalLimits withdrawalLimits) {
+  public BankAccount(AccountHolder holder, WithdrawalLimits withdrawalLimits) {
     this.withdrawalLimits = withdrawalLimits;
+    this.holder = holder;
     this.iban = new Faker().finance().iban();
   }
 
   private BankAccount() {
   }
 
-  public String iban() {
+  AccountHolder holder() {
+    return holder;
+  }
+
+  String iban() {
     return iban;
   }
 
   public void open() {
     this.status = Status.OPEN;
-    events.publish(new BankAccountOpened());
+    events.publish(new BankAccountOpened(iban));
   }
 
   public Transaction withdraw(BigDecimal amount) {

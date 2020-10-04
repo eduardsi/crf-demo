@@ -13,11 +13,13 @@ class BankAccountSpec extends Specification {
 
     def events = Mock(DomainEvents)
 
+    def accountHolder = new AccountHolder("Eduards", "Sizovs")
+
     def defaultLimits = WithdrawalLimits.defaults(new MockEnvironment()
             .withProperty("banking.account-limits.daily", "100.00")
             .withProperty("banking.account-limits.monthly", "1000.00"))
 
-    def account = new BankAccount(defaultLimits)
+    def account = new BankAccount(accountHolder, defaultLimits)
 
     @Before
     void beforeEach() {
@@ -172,7 +174,7 @@ class BankAccountSpec extends Specification {
         account.open()
 
         then: "An event gets published"
-        1 * events.publish(new BankAccountOpened())
+        1 * events.publish(new BankAccountOpened(account.iban()))
     }
 
     def "calculates a balance"() {
