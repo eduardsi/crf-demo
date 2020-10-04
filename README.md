@@ -1,6 +1,6 @@
 # unsuck-java
 
-Complementary materials for **Effective Java Software Design [course](https://devchampions.com/training/java)**. 
+Complementary materials for the course **[Effective Java Software Design](https://devchampions.com/training/java)**. 
 
 ### Requirements
 - [x] Docker
