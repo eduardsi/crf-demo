@@ -18,7 +18,6 @@ public class BankAccount implements DomainEntity {
 
   transient DomainEvents events = DomainEvents.defaultInstance();
 
-
   enum Status {
     NEW, OPEN, CLOSED
   }
@@ -46,7 +45,7 @@ public class BankAccount implements DomainEntity {
   public BankAccount(AccountHolder holder, WithdrawalLimits withdrawalLimits) {
     this.withdrawalLimits = withdrawalLimits;
     this.holder = holder;
-    this.iban = new Faker().finance().iban();
+    this.iban = new Faker().finance().iban("LV");
   }
 
   private BankAccount() {
@@ -56,7 +55,7 @@ public class BankAccount implements DomainEntity {
     return holder;
   }
 
-  String iban() {
+  public String iban() {
     return iban;
   }
 
@@ -96,18 +95,18 @@ public class BankAccount implements DomainEntity {
     status = Status.CLOSED;
   }
 
-  private class EnforceOpen {
-    private EnforceOpen() {
-      checkState(isOpen(), "Account is not open.");
-    }
-  }
-
   public boolean isOpen() {
     return status.equals(Status.OPEN);
   }
 
   public boolean isClosed() {
     return status.equals(Status.CLOSED);
+  }
+
+  private class EnforceOpen {
+    private EnforceOpen() {
+      checkState(isOpen(), "Account is not open.");
+    }
   }
 
   private class EnforcePositiveBalance {

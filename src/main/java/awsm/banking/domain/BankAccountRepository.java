@@ -7,4 +7,5 @@ public interface BankAccountRepository extends Repository<BankAccount, String> {
 
     BankAccount getOne(String iban);
 
+    void save(BankAccount account);
 }

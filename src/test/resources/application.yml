@@ -1,10 +1,14 @@
 ---
 banking:
+  bonuses:
+    opening: 10.00
   account-limits:
     daily: 500.00
     monthly: 3000.00
 
 spring:
+  jpa:
+    open-in-view: false
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     platform: postgres
