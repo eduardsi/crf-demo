@@ -15,25 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 
-public class ApplyForBankAccount implements Command<String> {
+record ApplyForBankAccount(String firstName, String lastName, String personalId) implements Command<ApplyForBankAccount.Response> {
 
-    private final String firstName;
-    private final String lastName;
-    private final String personalId;
-
-    ApplyForBankAccount(String firstName, String lastName, String personalId) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.personalId = personalId;
-    }
-
-    static class Response {
-        private final String iban;
-
-        Response(String iban) {
-            this.iban = iban;
-        }
-    }
+    record Response(String iban) { }
 
     @RestController
     static class WebController {
@@ -43,13 +27,12 @@ public class ApplyForBankAccount implements Command<String> {
 
         @PostMapping("/bank-accounts")
         Response post(@RequestBody ApplyForBankAccount command) {
-            String iban = pipeline.send(command);
-            return new Response(iban);
+            return pipeline.send(command);
         }
     }
 
     @Component
-    static class Handler implements Command.Handler<ApplyForBankAccount, String> {
+    static class Handler implements Command.Handler<ApplyForBankAccount, ApplyForBankAccount.Response> {
 
         private final BankAccountRepository bankAccountRepository;
         private final Environment env;
@@ -60,7 +43,7 @@ public class ApplyForBankAccount implements Command<String> {
         }
 
         @Override
-        public String handle(ApplyForBankAccount cmd) {
+        public Response handle(ApplyForBankAccount cmd) {
             var holder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId);
             var withdrawalLimits = WithdrawalLimits.defaults(env);
             var account = new BankAccount(holder, withdrawalLimits);
@@ -68,7 +51,7 @@ public class ApplyForBankAccount implements Command<String> {
             account.deposit(openingBonus());
 
             bankAccountRepository.save(account);
-            return account.iban();
+            return new Response(account.iban());
         }
 
         private BigDecimal openingBonus() {

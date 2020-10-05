@@ -17,8 +17,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath aspectj
-        classpath errorprone
+//        classpath errorprone
         classpath springDepManager
         classpath springBoot
         classpath testContainersPg
@@ -35,13 +34,12 @@ group = "awsm"
 version = "UNSPECIFIED"
 
 apply plugin: 'java'
-apply plugin: 'io.freefair.aspectj.post-compile-weaving'
 apply plugin: 'java-library'
 apply plugin: 'groovy'
 apply plugin: 'checkstyle'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'net.ltgt.errorprone'
+//apply plugin: 'net.ltgt.errorprone'
 
 repositories {
     jcenter()
@@ -58,19 +56,15 @@ dependencyManagement {
     }
 }
 
-aspectj {
-    version = '1.9.6'
-}
 
 dependencies {
 
-    aspect springAspects
 
-    errorprone errorproneCore
-    errorprone nullaway
+//    wait for Java 15 support :(
+//    errorprone errorproneCore
+//    errorprone nullaway
 
     implementation validator
-    implementation springAspects
     implementation commonsLang
     implementation gsonExtras
     implementation hibernate
@@ -108,8 +102,8 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_15
+    targetCompatibility = JavaVersion.VERSION_15
 }
 
 checkstyle {
@@ -121,14 +115,21 @@ tasks.withType(Test) {
     useJUnitPlatform()
 }
 
+test {
+    jvmArgs '--enable-preview'
+}
+
 tasks.withType(JavaCompile).each {
-    it.options.errorprone { e ->
-        e.disableWarningsInGeneratedCode = true
-        e.disable "TypeParameterUnusedInFormals"
-        e.option "NullAway:AnnotatedPackages", "awsm"
-        e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
-        e.option "NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable"
-    }
+    it.options.compilerArgs << "-Xlint:unchecked"
+    it.options.compilerArgs << "-Xlint:preview"
+    it.options.compilerArgs << "--enable-preview"
+//    it.options.errorprone { e ->
+//        e.disableWarningsInGeneratedCode = true
+//        e.disable "TypeParameterUnusedInFormals"
+//        e.option "NullAway:AnnotatedPackages", "awsm"
+//        e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
+//        e.option "NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable"
+//    }
 }
 
 tasks.withType(Checkstyle) {
