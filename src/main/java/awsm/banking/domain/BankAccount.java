@@ -2,6 +2,7 @@ package awsm.banking.domain;
 
 import awsm.banking.domain.core.Amount;
 import com.github.javafaker.Faker;
+import one.util.streamex.StreamEx;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -92,7 +93,7 @@ public class BankAccount {
 
 
   public Amount balance() {
-    return new Balance(transactions.stream()).abs();
+    return StreamEx.of(transactions).foldRight(Amount.ZERO, Transaction::apply);
   }
 
   public void close(UnsatisfiedObligations unsatisfiedObligations) {
@@ -118,8 +119,7 @@ public class BankAccount {
 
 
     private EnforcePositiveBalance() {
-      var balance = new Balance(transactions.stream());
-      checkState(balance.isPositive(), "Not enough funds available on your account.");
+      checkState(balance().isPositive(), "Not enough funds available on your account.");
     }
   }
 
@@ -132,11 +132,11 @@ public class BankAccount {
     }
 
     private Amount withdrawn(LocalDate someDay) {
-      var balance = new Balance(transactions
-              .stream()
+      return StreamEx.of(transactions)
               .filter(tx -> tx.bookedIn(someDay))
-              .filter(tx -> tx.isWithdrawal()));
-      return balance.abs();
+              .filter(tx -> tx.isWithdrawal())
+              .foldRight(Amount.ZERO, Transaction::apply)
+              .abs();
     }
   }
 
@@ -150,14 +150,15 @@ public class BankAccount {
     }
 
     private Amount withdrawn(Month month) {
-      Balance balance = new Balance(transactions
-              .stream()
+      return StreamEx.of(transactions)
               .filter(tx -> tx.bookedIn(month))
               .filter(tx -> tx.isWithdrawal())
-      );
-      return balance.abs();
+              .foldRight(Amount.ZERO, Transaction::apply)
+              .abs();
+      }
     }
-  }
+
+
 
 }
 

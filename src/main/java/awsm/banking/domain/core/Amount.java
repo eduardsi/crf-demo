@@ -15,7 +15,7 @@ public class Amount {
         this.decimal = decimal.setScale(2, RoundingMode.UNNECESSARY);
     }
 
-    private  Amount(String decimal) {
+    private Amount(String decimal) {
         this(new BigDecimal(decimal));
     }
 
@@ -45,6 +45,10 @@ public class Amount {
 
     public boolean isGreaterThanOrEqualTo(Amount that) {
         return this.decimal.compareTo(that.decimal) >= 0;
+    }
+
+    public boolean isPositive() {
+        return isGreaterThanOrEqualTo(ZERO);
     }
 
     @Override
