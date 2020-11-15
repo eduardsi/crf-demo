@@ -2,10 +2,8 @@ package awsm.acceptance
 
 import com.toomuchcoding.jsonassert.JsonPath
 import com.toomuchcoding.jsonassert.JsonVerifiable
-import groovy.json.JsonSlurper
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.util.EntityUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest

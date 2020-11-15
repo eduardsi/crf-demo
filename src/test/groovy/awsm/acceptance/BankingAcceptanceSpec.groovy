@@ -1,8 +1,6 @@
 package awsm.acceptance
 
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.web.servlet.MockMvc
 import spock.util.concurrent.PollingConditions
 
 import static org.hamcrest.Matchers.hasLength
