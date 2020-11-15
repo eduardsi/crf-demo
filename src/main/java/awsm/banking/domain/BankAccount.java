@@ -87,10 +87,9 @@ public class BankAccount {
     return tx;
   }
 
-  public BankStatement statement(LocalDate from, LocalDate to) {
-    return new BankStatement(from, to, transactions);
+  public BankStatement statement(LocalDate fromInclusive, LocalDate toInclusive) {
+    return new BankStatement(fromInclusive, toInclusive, transactions);
   }
-
 
   public Amount balance() {
     return StreamEx.of(transactions).foldRight(Amount.ZERO, Transaction::apply);
@@ -116,7 +115,6 @@ public class BankAccount {
   }
 
   private class EnforcePositiveBalance {
-
 
     private EnforcePositiveBalance() {
       checkState(balance().isPositive(), "Not enough funds available on your account.");

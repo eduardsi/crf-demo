@@ -22,23 +22,23 @@ class BankStatement {
 
   private final BalanceOnADate startingBalance;
 
-  BankStatement(LocalDate from, LocalDate to, Collection<Transaction> transactions) {
+  BankStatement(LocalDate fromInclusive, LocalDate toInclusive, Collection<Transaction> transactions) {
     var startingBalance =  StreamEx
             .of(transactions)
-            .filter(tx -> tx.bookedBefore(from))
+            .filter(tx -> tx.bookedBefore(fromInclusive))
             .foldRight(Amount.ZERO, Transaction::apply);
 
     var closingBalance = StreamEx
             .of(transactions)
-            .filter(tx -> tx.bookedDuring(from, to))
+            .filter(tx -> tx.bookedDuring(fromInclusive, toInclusive))
             .foldLeft(startingBalance, (amount, tx) -> {
               var balance = tx.apply(amount);
               newEntry(tx, balance);
               return balance;
     });
 
-    this.startingBalance = new BalanceOnADate(from, startingBalance);
-    this.closingBalance = new BalanceOnADate(to, closingBalance);
+    this.startingBalance = new BalanceOnADate(fromInclusive, startingBalance);
+    this.closingBalance = new BalanceOnADate(toInclusive, closingBalance);
   }
 
   private void newEntry(Transaction tx, Amount balance) {
