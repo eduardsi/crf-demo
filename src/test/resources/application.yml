@@ -1,7 +1,5 @@
 ---
 banking:
-  bonuses:
-    opening: 10.00
   account-limits:
     daily: 500.00
     monthly: 3000.00
@@ -16,3 +14,9 @@ spring:
   groovy:
     template:
       check-template-location: false
+
+  simplejavamail:
+    defaults:
+      from:
+        name: Awesome Bank
+        address: no-reply@awesome.bank

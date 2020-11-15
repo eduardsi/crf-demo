@@ -41,7 +41,6 @@ class CongratulateNewAccountHolder implements Command<Voidy> {
       var account = bankAccountRepository.getOne(cmd.iban);
       var email = EmailBuilder
               .startingBlank()
-              .from("no-reply@bank.io")
               .to(account.holder().email())
               .withSubject("Congratulations!")
               .withPlainText(format("Congratulations, %s. Thanks for using our services", account.holder().name()))
