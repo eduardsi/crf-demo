@@ -3,7 +3,6 @@ package awsm.banking.domain
 import awsm.banking.domain.core.Amount
 import awsm.infrastructure.clock.TimeMachine
 
-import org.junit.Before
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.springframework.mock.env.MockEnvironment
@@ -27,8 +26,7 @@ class BankAccountSpec extends Specification {
 
     def account = new BankAccount(accountHolder, defaultLimits)
 
-    @Before
-    void beforeEach() {
+    def setup() {
         account.events = events
         TimeMachine.with(clock)
     }

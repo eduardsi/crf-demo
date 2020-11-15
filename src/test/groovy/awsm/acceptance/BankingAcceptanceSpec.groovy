@@ -1,5 +1,10 @@
 package awsm.acceptance
 
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.web.servlet.MockMvc
+
 import static org.hamcrest.Matchers.hasLength
 import static org.hamcrest.Matchers.startsWith
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -7,7 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 
 
-class BankingAcceptanceSpec extends BaseAcceptanceSpecification {
+@SpringBootTest
+@AutoConfigureMockMvc
+class BankingAcceptanceSpec extends BaseAcceptanceSpec {
+
+    @Autowired
+    MockMvc mvc
 
     def validApplication() {
         [
@@ -17,9 +27,9 @@ class BankingAcceptanceSpec extends BaseAcceptanceSpecification {
         ]
     }
 
-    def 'for every newly opened bank account, account holders gets 10$ bonus on his account'() {
+    def 'for every newly opened bank account, account holders gets 10$ bonus'() {
         when: 'I apply for bank services'
-        def _ = perform jsonPost("/bank-accounts", validApplication())
+        def _ = mvc.perform jsonPost("/bank-accounts", validApplication())
 
         then: 'I get my application id'
         _.andExpect status().isOk()

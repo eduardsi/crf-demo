@@ -66,6 +66,7 @@ dependencies {
 
     implementation validator
     implementation commonsLang
+    implementation gson
     implementation gsonExtras
     implementation hibernate
     implementation noException
@@ -75,10 +76,8 @@ dependencies {
     implementation faker
     implementation threeten
     implementation springBootJetty
-    implementation springBootJdbc
     implementation springBootJpa
     implementation springTx
-    implementation springJdbc
     implementation springContext
     implementation springWebMvc
     implementation(springBootWeb) {
@@ -94,10 +93,11 @@ dependencies {
     implementation hashIds
     testImplementation wiremock
     testImplementation groovy
+    testImplementation groovyJson
     testImplementation archUnit
     testImplementation spockSpring
     testImplementation springBootTest
-    testImplementation springBootJdbc
+    testImplementation springBootTestCfg
     testImplementation testContainersPg
 }
 

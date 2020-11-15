@@ -14,9 +14,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-record ApplyForBankAccount(String firstName, String lastName, String personalId) implements Command<ApplyForBankAccount.Response> {
+class ApplyForBankAccount implements Command<ApplyForBankAccount.Response> {
 
-    record Response(String iban) { }
+    public final String firstName;
+    public final String lastName;
+    public final String personalId;
+
+    ApplyForBankAccount(String firstName, String lastName, String personalId) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.personalId = personalId;
+    }
+
+    static class Response {
+
+        public final String iban;
+
+        Response(String iban) {
+            this.iban = iban;
+        }
+    }
 
     @RestController
     static class WebController {
