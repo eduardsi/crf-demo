@@ -1,23 +1,24 @@
 package awsm.banking.domain;
 
+import awsm.banking.domain.core.Amount;
 import one.util.streamex.StreamEx;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 public class Balance {
 
-    private final BigDecimal balance;
+    private final Amount balance;
 
     Balance(Stream<Transaction> transactions) {
-        this.balance = StreamEx.of(transactions).foldRight(BigDecimal.ZERO, Transaction::apply);
+        this.balance = StreamEx.of(transactions).foldRight(Amount.ZERO, Transaction::apply);
     }
 
     boolean isPositive() {
-        return balance.compareTo(BigDecimal.ZERO) >= 0;
+        return balance.isGreaterThanOrEqualTo(Amount.ZERO);
     }
 
-    BigDecimal abs() {
+    Amount abs() {
         return balance.abs();
     }
+
 }

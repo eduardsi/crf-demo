@@ -1,8 +1,10 @@
 package awsm.banking.domain;
 
+import awsm.banking.domain.core.Amount;
 import org.springframework.core.env.Environment;
 
 import javax.persistence.Embeddable;
+
 import java.math.BigDecimal;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -10,12 +12,12 @@ import static com.google.common.base.Preconditions.checkState;
 @Embeddable
 public class WithdrawalLimits {
 
-  private BigDecimal dailyLimit;
+  private Amount dailyLimit;
 
-  private BigDecimal monthlyLimit;
+  private Amount monthlyLimit;
 
-  public WithdrawalLimits(BigDecimal dailyLimit, BigDecimal monthlyLimit) {
-    var withinLimits = monthlyLimit.compareTo(dailyLimit) > 0;
+  public WithdrawalLimits(Amount dailyLimit, Amount monthlyLimit) {
+    var withinLimits = monthlyLimit.isGreaterThan(dailyLimit);
     checkState(withinLimits, "Monthly limit (%s) must be higher than daily limit (%s)", monthlyLimit, dailyLimit);
 
     this.dailyLimit = dailyLimit;
@@ -25,18 +27,18 @@ public class WithdrawalLimits {
   private WithdrawalLimits() {
   }
 
-  BigDecimal dailyLimit() {
+  Amount dailyLimit() {
     return dailyLimit;
   }
 
-  BigDecimal monthlyLimit() {
+  Amount monthlyLimit() {
     return monthlyLimit;
   }
 
   public static WithdrawalLimits defaults(Environment env) {
     return new WithdrawalLimits(
-            env.getProperty("banking.account-limits.daily", BigDecimal.class),
-            env.getProperty("banking.account-limits.monthly", BigDecimal.class));
+            Amount.of(env.getProperty("banking.account-limits.daily", BigDecimal.class)),
+            Amount.of(env.getProperty("banking.account-limits.monthly", BigDecimal.class)));
   }
 
 }

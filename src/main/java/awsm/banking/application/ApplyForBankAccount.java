@@ -6,14 +6,13 @@ import awsm.banking.domain.AccountHolder;
 import awsm.banking.domain.BankAccount;
 import awsm.banking.domain.BankAccountRepository;
 import awsm.banking.domain.WithdrawalLimits;
+import awsm.banking.domain.core.Amount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
 
 record ApplyForBankAccount(String firstName, String lastName, String personalId) implements Command<ApplyForBankAccount.Response> {
 
@@ -54,8 +53,8 @@ record ApplyForBankAccount(String firstName, String lastName, String personalId)
             return new Response(account.iban());
         }
 
-        private BigDecimal openingBonus() {
-            return new BigDecimal("5.00");
+        private Amount openingBonus() {
+            return Amount.of("5.00");
         }
     }
 

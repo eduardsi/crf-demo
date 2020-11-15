@@ -1,9 +1,9 @@
 package awsm.banking.domain;
 
+import awsm.banking.domain.core.Amount;
 import com.github.javafaker.Faker;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import static awsm.infrastructure.clock.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 
 @Entity
-public class BankAccount implements DomainEntity {
+public class BankAccount {
 
   transient DomainEvents events = DomainEvents.defaultInstance();
 
@@ -64,7 +64,7 @@ public class BankAccount implements DomainEntity {
     events.publish(new BankAccountOpened(iban));
   }
 
-  public Transaction withdraw(BigDecimal amount) {
+  public Transaction withdraw(Amount amount) {
     new EnforceOpen();
 
     var tx = Transaction.withdrawalOf(amount);
@@ -77,7 +77,7 @@ public class BankAccount implements DomainEntity {
     return tx;
   }
 
-  public Transaction deposit(BigDecimal amount) {
+  public Transaction deposit(Amount amount) {
     new EnforceOpen();
 
     var tx = depositOf(amount);
@@ -86,7 +86,12 @@ public class BankAccount implements DomainEntity {
     return tx;
   }
 
-  public BigDecimal balance() {
+  public BankStatement statement(LocalDate from, LocalDate to) {
+    return new BankStatement(from, to, transactions);
+  }
+
+
+  public Amount balance() {
     return new Balance(transactions.stream()).abs();
   }
 
@@ -122,11 +127,11 @@ public class BankAccount implements DomainEntity {
 
     private EnforceDailyWithdrawalLimit() {
       var dailyLimit = withdrawalLimits.dailyLimit();
-      var dailyLimitReached = withdrawn(today()).compareTo(dailyLimit) > 0;
+      var dailyLimitReached = withdrawn(today()).isGreaterThan(dailyLimit);
       checkState(!dailyLimitReached, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }
 
-    private BigDecimal withdrawn(LocalDate someDay) {
+    private Amount withdrawn(LocalDate someDay) {
       var balance = new Balance(transactions
               .stream()
               .filter(tx -> tx.bookedIn(someDay))
@@ -140,11 +145,11 @@ public class BankAccount implements DomainEntity {
     private EnforceMonthlyWithdrawalLimit() {
       var thisMonth = today().getMonth();
       var monthlyLimit = withdrawalLimits.monthlyLimit();
-      var monthlyLimitReached = withdrawn(thisMonth).compareTo(monthlyLimit) > 0;
+      var monthlyLimitReached = withdrawn(thisMonth).isGreaterThan(monthlyLimit);
       checkState(!monthlyLimitReached, "Monthly withdrawal limit (%s) reached.", monthlyLimit);
     }
 
-    private BigDecimal withdrawn(Month month) {
+    private Amount withdrawn(Month month) {
       Balance balance = new Balance(transactions
               .stream()
               .filter(tx -> tx.bookedIn(month))

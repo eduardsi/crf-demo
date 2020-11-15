@@ -1,9 +1,11 @@
 package awsm.banking.domain;
 
+import awsm.banking.domain.core.Amount;
+import org.threeten.extra.LocalDateRange;
+
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -16,29 +18,28 @@ class Transaction {
     enum Type {
         DEPOSIT {
             @Override
-            BigDecimal apply(BigDecimal amount, BigDecimal balance) {
+            Amount apply(Amount amount, Amount balance) {
                 return balance.add(amount);
             }
         },
         WITHDRAW {
             @Override
-            BigDecimal apply(BigDecimal amount, BigDecimal balance) {
+            Amount apply(Amount amount, Amount balance) {
                 return balance.subtract(amount);
             }
         };
 
-        abstract BigDecimal apply(BigDecimal amount, BigDecimal balance);
+        abstract Amount apply(Amount amount, Amount balance);
     }
 
-    private BigDecimal amount;
+    private Amount amount;
 
     private LocalDateTime bookingTime;
-
 
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    private Transaction(Type type, BigDecimal amount, LocalDateTime bookingTime) {
+    private Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
         this.type = type;
         this.amount = amount;
         this.bookingTime = bookingTime;
@@ -47,39 +48,51 @@ class Transaction {
     private Transaction() {
     }
 
-    BigDecimal apply(BigDecimal balance) {
+    Amount apply(Amount balance) {
         return type.apply(amount, balance);
     }
 
-    BigDecimal withdrawn() {
-        return isWithdrawal() ? amount : BigDecimal.ZERO;
+    Amount withdrawn() {
+        return isWithdrawal() ? amount : Amount.ZERO;
     }
 
     boolean isWithdrawal() {
         return type == Type.WITHDRAW;
     }
 
-    BigDecimal deposited() {
-        return isDeposit() ? amount : BigDecimal.ZERO;
+    Amount deposited() {
+        return isDeposit() ? amount : Amount.ZERO;
     }
 
     boolean isDeposit() {
         return type == Type.DEPOSIT;
     }
 
+    LocalDateTime bookingTime() {
+        return bookingTime;
+    }
+
     boolean bookedIn(LocalDate date) {
         return bookingTime.toLocalDate().isEqual(date);
+    }
+
+    boolean bookedBefore(LocalDate dateExclusive) {
+        return LocalDateRange.ofUnboundedStart(dateExclusive).contains(bookingTime.toLocalDate());
+    }
+
+    boolean bookedDuring(LocalDate fromInclusive, LocalDate toInclusive) {
+        return LocalDateRange.ofClosed(fromInclusive, toInclusive).contains(bookingTime.toLocalDate());
     }
 
     boolean bookedIn(Month month) {
         return bookingTime.toLocalDate().getMonth().equals(month);
     }
 
-    static Transaction withdrawalOf(BigDecimal amount) {
+    static Transaction withdrawalOf(Amount amount) {
         return new Transaction(Type.WITHDRAW, amount, LocalDateTime.now(clock()));
     }
 
-    static Transaction depositOf(BigDecimal amount) {
+    static Transaction depositOf(Amount amount) {
         return new Transaction(Type.DEPOSIT, amount, LocalDateTime.now(clock()));
     }
 
