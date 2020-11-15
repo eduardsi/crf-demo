@@ -14,15 +14,12 @@ class BankingAcceptanceSpec extends BaseAcceptanceSpec {
 
     def conditions = new PollingConditions(timeout: 10)
 
-    @Autowired
-    MockMvc mvc
-
     def validApplication() {
         [
-                firstName: fake().name().firstName(),
-                lastName: fake().name().lastName(),
-                personalId: fake().idNumber().valid(),
-                email: fake().internet().emailAddress()
+            firstName: fake().name().firstName(),
+            lastName: fake().name().lastName(),
+            personalId: fake().idNumber().valid(),
+            email: fake().internet().emailAddress()
         ]
     }
 
@@ -30,12 +27,12 @@ class BankingAcceptanceSpec extends BaseAcceptanceSpec {
         def application = validApplication()
 
         when: 'I apply for a new bank account'
-            def _ = mvc.perform jsonPost("/bank-accounts", application)
+            def applyForAccount = mvc.perform jsonPost("/bank-accounts", application)
 
         then: 'I am getting a bank account with a new iban'
-            _.andExpect status().isOk()
-            _.andExpect jsonPath("iban", startsWith('LV'))
-            _.andExpect jsonPath("iban", hasLength(21))
+            applyForAccount.andExpect status().isOk()
+            applyForAccount.andExpect jsonPath("iban", startsWith('LV'))
+            applyForAccount.andExpect jsonPath("iban", hasLength(21))
 
         and: 'I am receiving a congratulations email'
         conditions.eventually {
@@ -44,7 +41,6 @@ class BankingAcceptanceSpec extends BaseAcceptanceSpec {
             assert outgoingEmail.field("Content", "Headers", "Subject").contains('Congratulations!')
             assert outgoingEmail.field("Content", "Body").isEqualTo("Congratulations, $application.firstName $application.lastName. Thanks for using our services")
         }
-
 
     }
 

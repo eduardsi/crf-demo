@@ -6,12 +6,14 @@ import groovy.json.JsonSlurper
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
@@ -35,7 +37,18 @@ abstract class BaseAcceptanceSpec extends Specification implements WithFaker, Wi
             .waitingFor(Wait.forHttp("/"))
 
     @Shared
-    GenericContainer mailhog = MAILHOG_SINGLETON
+    private GenericContainer mailhog = MAILHOG_SINGLETON
+
+    @Autowired
+    protected MockMvc mvc
+
+    JsonVerifiable outgoingEmails() {
+        def httpClient = HttpClientBuilder.create().build()
+        def httpGet = new HttpGet("http://${mailhog.containerIpAddress}:${mailhog.getMappedPort(MAILHOG_PORT_HTTP)}/api/v2/messages")
+        def httpResponse = httpClient.execute(httpGet)
+
+        return JsonPath.builder(toString(httpResponse.entity)).array("items")
+    }
 
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
@@ -45,14 +58,6 @@ abstract class BaseAcceptanceSpec extends Specification implements WithFaker, Wi
                     "simplejavamail.smtp.port=${MAILHOG_SINGLETON.getMappedPort(MAILHOG_PORT_SMTP)}"
             ).applyTo(applicationContext.environment)
         }
-    }
-
-    JsonVerifiable outgoingEmails() {
-        def httpClient = HttpClientBuilder.create().build()
-        def httpGet = new HttpGet("http://${mailhog.containerIpAddress}:${mailhog.getMappedPort(MAILHOG_PORT_HTTP)}/api/v2/messages")
-        def httpResponse = httpClient.execute(httpGet)
-
-        return JsonPath.builder(toString(httpResponse.entity)).array("items")
     }
 
 }
