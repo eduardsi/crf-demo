@@ -15,6 +15,10 @@ public class BankAccountOpened implements DomainEvent {
         this.iban = iban;
     }
 
+    String iban() {
+        return iban;
+    }
+
     @Override
     public final boolean equals(@Nullable Object that) {
         return EqualsBuilder.reflectionEquals(this, that);

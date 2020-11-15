@@ -75,6 +75,7 @@ dependencies {
     implementation streamEx
     implementation faker
     implementation threeten
+    implementation simpleJavaMail
     implementation springBootJetty
     implementation springBootJpa
     implementation springTx
@@ -94,11 +95,13 @@ dependencies {
     testImplementation wiremock
     testImplementation groovy
     testImplementation groovyJson
+    testImplementation jsonAssert
     testImplementation archUnit
     testImplementation spockSpring
     testImplementation springBootTest
     testImplementation springBootTestCfg
     testImplementation testContainersPg
+    testImplementation testContainersSpo
 }
 
 java {

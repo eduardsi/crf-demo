@@ -49,7 +49,8 @@ public class BankAccount {
     this.iban = new Faker().finance().iban("LV");
   }
 
-  private BankAccount() {
+  @Deprecated
+  BankAccount() {
   }
 
   AccountHolder holder() {

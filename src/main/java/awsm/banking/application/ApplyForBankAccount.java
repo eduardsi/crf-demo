@@ -19,11 +19,13 @@ class ApplyForBankAccount implements Command<ApplyForBankAccount.Response> {
     public final String firstName;
     public final String lastName;
     public final String personalId;
+    public final String email;
 
-    ApplyForBankAccount(String firstName, String lastName, String personalId) {
+    ApplyForBankAccount(String firstName, String lastName, String personalId, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;
+        this.email = email;
     }
 
     static class Response {
@@ -60,7 +62,7 @@ class ApplyForBankAccount implements Command<ApplyForBankAccount.Response> {
 
         @Override
         public Response handle(ApplyForBankAccount cmd) {
-            var holder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId);
+            var holder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId, cmd.email);
             var withdrawalLimits = WithdrawalLimits.defaults(env);
             var account = new BankAccount(holder, withdrawalLimits);
             account.open();

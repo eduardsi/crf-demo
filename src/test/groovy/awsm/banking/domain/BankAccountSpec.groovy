@@ -18,7 +18,7 @@ class BankAccountSpec extends Specification {
 
     def events = Mock(DomainEvents)
 
-    def accountHolder = new AccountHolder("Eduards", "Sizovs", "210888-12345")
+    def accountHolder = new AccountHolder("Eduards", "Sizovs", "210888-12345", "eduards@sizovs.net")
 
     def defaultLimits = WithdrawalLimits.defaults(new MockEnvironment()
             .withProperty("banking.account-limits.daily", "100.00")
