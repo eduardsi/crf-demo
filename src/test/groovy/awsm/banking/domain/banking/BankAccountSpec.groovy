@@ -1,7 +1,6 @@
 package awsm.banking.domain.banking
 
 import awsm.banking.domain.AllDomainEvents
-import awsm.banking.domain.core.DomainEvents
 import awsm.banking.domain.core.Amount
 import awsm.infrastructure.clock.TimeMachine
 

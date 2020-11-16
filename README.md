@@ -8,6 +8,7 @@ Complementary materials for the course **[Effective Java Software Design](https:
 
 #### Running the app in dev mode
 ```
+./gradlew generateJooq
 ./gradlew bootRun
 ```
 
