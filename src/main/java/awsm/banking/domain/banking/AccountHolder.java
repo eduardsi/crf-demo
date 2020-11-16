@@ -1,4 +1,4 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
 import javax.persistence.Embeddable;
 
@@ -20,7 +20,7 @@ public class AccountHolder {
     private AccountHolder() {
     }
 
-    String email() {
+    public String email() {
         return email;
     }
 

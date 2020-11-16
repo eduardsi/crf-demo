@@ -1,4 +1,4 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
 import awsm.banking.domain.core.Amount;
 import one.util.streamex.StreamEx;

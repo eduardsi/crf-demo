@@ -1,4 +1,4 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
 public interface UnsatisfiedObligations {
 

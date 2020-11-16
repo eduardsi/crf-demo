@@ -2,10 +2,10 @@ package awsm.banking.application;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Pipeline;
-import awsm.banking.domain.AccountHolder;
-import awsm.banking.domain.BankAccount;
-import awsm.banking.domain.BankAccountRepository;
-import awsm.banking.domain.WithdrawalLimits;
+import awsm.banking.domain.banking.AccountHolder;
+import awsm.banking.domain.banking.BankAccount;
+import awsm.banking.domain.banking.BankAccountRepository;
+import awsm.banking.domain.banking.WithdrawalLimits;
 import awsm.banking.domain.core.Amount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -52,23 +52,22 @@ class ApplyForBankAccount implements Command<ApplyForBankAccount.Response> {
     @Component
     static class Handler implements Command.Handler<ApplyForBankAccount, ApplyForBankAccount.Response> {
 
-        private final BankAccountRepository bankAccountRepository;
+        private final BankAccountRepository accounts;
         private final Environment env;
 
-        Handler(BankAccountRepository bankAccountRepository, Environment env) {
-            this.bankAccountRepository = bankAccountRepository;
+        Handler(BankAccountRepository accounts, Environment env) {
+            this.accounts = accounts;
             this.env = env;
         }
 
         @Override
         public Response handle(ApplyForBankAccount cmd) {
-            var holder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId, cmd.email);
             var withdrawalLimits = WithdrawalLimits.defaults(env);
-            var account = new BankAccount(holder, withdrawalLimits);
+            var accountHolder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId, cmd.email);
+            var account = new BankAccount(accountHolder, withdrawalLimits);
             account.open();
             account.deposit(openingBonus());
-
-            bankAccountRepository.save(account);
+            accounts.save(account);
             return new Response(account.iban());
         }
 

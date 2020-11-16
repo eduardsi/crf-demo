@@ -1,4 +1,4 @@
-package awsm.banking.domain;
+package awsm.banking.domain.core;
 
 import com.google.common.reflect.TypeToken;
 

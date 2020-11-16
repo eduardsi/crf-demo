@@ -1,5 +1,6 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
+import awsm.banking.domain.core.AggregateRoot;
 import awsm.banking.domain.core.Amount;
 import com.github.javafaker.Faker;
 import one.util.streamex.StreamEx;
@@ -8,16 +9,15 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
-import static awsm.banking.domain.Transaction.depositOf;
+import static awsm.banking.domain.banking.Transaction.depositOf;
 import static awsm.infrastructure.clock.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkState;
 
 @Entity
-public class BankAccount {
-
-  transient DomainEvents events = DomainEvents.defaultInstance();
+public class BankAccount extends AggregateRoot<BankAccount> {
 
   enum Status {
     NEW, OPEN, CLOSED
@@ -38,7 +38,7 @@ public class BankAccount {
   @ElementCollection
   @CollectionTable(name = "BANK_ACCOUNT_TX")
   @OrderColumn(name = "INDEX")
-  private Collection<Transaction> transactions = new ArrayList<>();
+  private List<Transaction> transactions = new ArrayList<>();
 
   @Version
   private long version;
@@ -49,11 +49,10 @@ public class BankAccount {
     this.iban = new Faker().finance().iban("LV");
   }
 
-  @Deprecated
-  BankAccount() {
+  private BankAccount() {
   }
 
-  AccountHolder holder() {
+  public AccountHolder holder() {
     return holder;
   }
 
@@ -63,7 +62,11 @@ public class BankAccount {
 
   public void open() {
     this.status = Status.OPEN;
-    events.publish(new BankAccountOpened(iban));
+    publish(new BankAccountOpened(iban));
+  }
+
+  public Transaction tx(UUID uid) {
+    return transactions.stream().filter(tx -> tx.uid().equals(uid)).findAny().orElseThrow();
   }
 
   public Transaction withdraw(Amount amount) {
@@ -75,6 +78,8 @@ public class BankAccount {
     new EnforcePositiveBalance();
     new EnforceMonthlyWithdrawalLimit();
     new EnforceDailyWithdrawalLimit();
+
+    publish(new WithdrawalHappened(iban, tx.uid()));
 
     return tx;
   }

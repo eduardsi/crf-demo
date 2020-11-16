@@ -1,7 +1,8 @@
-package awsm.banking.domain;
+package awsm.banking.application;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
+import awsm.banking.domain.banking.BankAccountRepository;
 import awsm.infrastructure.scheduling.ScheduledCommandId;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
@@ -9,17 +10,17 @@ import org.simplejavamail.springsupport.SimpleJavaMailSpringSupport;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
-import static awsm.banking.domain.CongratulateNewAccountHolder.ID;
+import static awsm.banking.application.CongratulateNewAccountHolder.ID;
 import static java.lang.String.format;
 
 @ScheduledCommandId(ID)
-class CongratulateNewAccountHolder implements Command<Voidy> {
+public class CongratulateNewAccountHolder implements Command<Voidy> {
 
   static final String ID = "Congratulations";
 
   final String iban;
 
-  CongratulateNewAccountHolder(String iban) {
+  public CongratulateNewAccountHolder(String iban) {
     this.iban = iban;
   }
 
@@ -27,18 +28,18 @@ class CongratulateNewAccountHolder implements Command<Voidy> {
   @Import(SimpleJavaMailSpringSupport.class)
   static class Handler implements Command.Handler<CongratulateNewAccountHolder, Voidy> {
 
-    private final BankAccountRepository bankAccountRepository;
+    private final BankAccountRepository bankAccounts;
 
     private final Mailer mailer;
 
-    private Handler(BankAccountRepository bankAccountRepository, Mailer mailer) {
-      this.bankAccountRepository = bankAccountRepository;
+    private Handler(BankAccountRepository bankAccounts, Mailer mailer) {
+      this.bankAccounts = bankAccounts;
       this.mailer = mailer;
     }
 
     @Override
     public Voidy handle(CongratulateNewAccountHolder cmd) {
-      var account = bankAccountRepository.getOne(cmd.iban);
+      var account = bankAccounts.getOne(cmd.iban);
       var email = EmailBuilder
               .startingBlank()
               .to(account.holder().email())
@@ -49,5 +50,6 @@ class CongratulateNewAccountHolder implements Command<Voidy> {
       return new Voidy();
     }
   }
+
 
 }

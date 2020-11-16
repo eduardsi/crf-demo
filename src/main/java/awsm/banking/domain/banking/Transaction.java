@@ -1,5 +1,6 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
+import awsm.banking.domain.core.DomainEntity;
 import awsm.banking.domain.core.Amount;
 import org.threeten.extra.LocalDateRange;
 
@@ -9,11 +10,12 @@ import javax.persistence.Enumerated;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.UUID;
 
 import static awsm.infrastructure.clock.TimeMachine.clock;
 
 @Embeddable
-class Transaction {
+class Transaction implements DomainEntity<Transaction> {
 
     enum Type {
         DEPOSIT {
@@ -32,6 +34,8 @@ class Transaction {
         abstract Amount apply(Amount amount, Amount balance);
     }
 
+    private UUID uid;
+
     private Amount amount;
 
     private LocalDateTime bookingTime;
@@ -40,12 +44,17 @@ class Transaction {
     private Type type;
 
     private Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
+        this.uid = UUID.randomUUID();
         this.type = type;
         this.amount = amount;
         this.bookingTime = bookingTime;
     }
 
     private Transaction() {
+    }
+
+    public UUID uid() {
+        return uid;
     }
 
     Amount apply(Amount balance) {

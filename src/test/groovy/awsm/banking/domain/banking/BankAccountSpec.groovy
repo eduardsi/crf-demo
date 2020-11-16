@@ -1,5 +1,7 @@
-package awsm.banking.domain
+package awsm.banking.domain.banking
 
+import awsm.banking.domain.AllDomainEvents
+import awsm.banking.domain.core.DomainEvents
 import awsm.banking.domain.core.Amount
 import awsm.infrastructure.clock.TimeMachine
 
@@ -16,7 +18,7 @@ class BankAccountSpec extends Specification {
 
     def clock = MutableClock.epochUTC()
 
-    def events = Mock(DomainEvents)
+    def events = new AllDomainEvents()
 
     def accountHolder = new AccountHolder("Eduards", "Sizovs", "210888-12345", "eduards@sizovs.net")
 
@@ -27,8 +29,8 @@ class BankAccountSpec extends Specification {
     def account = new BankAccount(accountHolder, defaultLimits)
 
     def setup() {
-        account.events = events
-        TimeMachine.with(clock)
+        account.set(events)
+        TimeMachine.set(clock)
     }
 
     def "can be closed"() {
@@ -86,6 +88,7 @@ class BankAccountSpec extends Specification {
         tx.isWithdrawal()
         tx.withdrawn() == Amount.of(100.00)
         tx.deposited() == Amount.of(0.00)
+        events.any { it -> new WithdrawalHappened(account.iban(), tx.uid()) }
     }
 
     def "cannot be withdrawn if closed"() {
@@ -178,7 +181,7 @@ class BankAccountSpec extends Specification {
         account.open()
 
         then: "An event gets published"
-        1 * events.publish(new BankAccountOpened(account.iban()))
+        events.any { it -> new BankAccountOpened(account.iban())}
     }
 
     def "calculates a balance"() {

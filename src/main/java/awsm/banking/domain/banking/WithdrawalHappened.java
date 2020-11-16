@@ -1,22 +1,30 @@
-package awsm.banking.domain;
+package awsm.banking.domain.banking;
 
+import awsm.banking.domain.core.DomainEvent;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
-public class BankAccountOpened implements DomainEvent {
+public class WithdrawalHappened implements DomainEvent {
 
     private final String iban;
+    private final UUID txUid;
 
-    BankAccountOpened(String iban) {
+    public WithdrawalHappened(String iban, UUID txUid) {
         this.iban = iban;
+        this.txUid = txUid;
     }
 
     String iban() {
         return iban;
+    }
+
+    UUID txUid() {
+        return txUid;
     }
 
     @Override
@@ -33,5 +41,4 @@ public class BankAccountOpened implements DomainEvent {
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-
 }

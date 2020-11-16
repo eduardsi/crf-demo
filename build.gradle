@@ -152,17 +152,6 @@ sourceSets {
     }
 }
 
-// there is a problem with Spock fetching Groovy 2.*.
-configurations.all {
-    resolutionStrategy {
-        eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.codehaus.groovy') {
-                details.useVersion('3.0.6')
-            }
-        }
-    }
-}
-
 task generateJooq {
     description = "Generates jOOQ sources."
     doLast {

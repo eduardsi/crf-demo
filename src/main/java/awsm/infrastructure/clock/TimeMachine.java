@@ -11,7 +11,7 @@ public class TimeMachine {
     return clock.get();
   }
 
-  public static void with(Clock clock) {
+  public static void set(Clock clock) {
     TimeMachine.clock.set(clock);
   }
 
