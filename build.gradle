@@ -74,6 +74,7 @@ dependencies {
     implementation caffeine
     implementation streamEx
     implementation faker
+    implementation jasypt
     implementation threeten
     implementation simpleJavaMail
     implementation springBootJetty
@@ -93,6 +94,7 @@ dependencies {
     implementation pipelinr
     implementation hashIds
     testImplementation wiremock
+    testImplementation guavaTestlib
     testImplementation groovy
     testImplementation groovyJson
     testImplementation jsonAssert
