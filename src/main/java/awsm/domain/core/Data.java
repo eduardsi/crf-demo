@@ -7,20 +7,20 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.annotation.Nullable;
 
-abstract class Data {
+public abstract class Data {
 
   @Override
-  public boolean equals(@Nullable Object that) {
+  public final boolean equals(@Nullable Object that) {
     return EqualsBuilder.reflectionEquals(this, that);
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return HashCodeBuilder.reflectionHashCode(this);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
   }
 }
