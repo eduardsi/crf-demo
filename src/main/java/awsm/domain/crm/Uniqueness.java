@@ -17,7 +17,7 @@ public interface Uniqueness {
 
         @Override
         public boolean guaranteed(String email) {
-            return customers.findByEmail(email).isEmpty();
+            return !customers.existsByEmail(email);
         }
 
     }
