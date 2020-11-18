@@ -4,7 +4,7 @@ import org.jooq.DSLContext;
 
 class Transactional<R> implements Command<R> {
 
-    private DSLContext dsl;
+    private final DSLContext dsl;
     private final Command<R> wrapped;
 
     Transactional(DSLContext dsl, Command<R> wrapped) {
