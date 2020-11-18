@@ -49,7 +49,7 @@ public class BankAccount extends AggregateRoot<BankAccount> {
     this.iban = new Faker().finance().iban("LV");
   }
 
-  private BankAccount() {
+  BankAccount() {
   }
 
   public AccountHolder holder() {
