@@ -32,6 +32,15 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
 
     @Override
     public RegistrationOk execute() {
+        validate();
+
+        var customer = new CustomerRecord(personalId, firstName, lastName, email);
+        customer.insert();
+
+        return new RegistrationOk(encryptor.encrypt(personalId));
+    }
+
+    private void validate() {
         new Validator<>()
                 .with(() -> firstName, v -> !isNullOrEmpty(v), "firstName is missing")
                 .with(() -> lastName, v -> !isNullOrEmpty(v), "lastName is missing")
@@ -40,11 +49,6 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
                         nested.with(() -> email, v -> uniqueness.guaranteed(v), "email is taken")
                 )
                 .check(this);
-
-        var customer = new CustomerRecord(personalId, firstName, lastName, email);
-        customer.insert();
-
-        return new RegistrationOk(encryptor.encrypt(personalId));
     }
 
     public static class RegistrationOk {
