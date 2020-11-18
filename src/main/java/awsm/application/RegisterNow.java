@@ -3,22 +3,35 @@ package awsm.application;
 
 import awsm.domain.crm.Uniqueness;
 import awsm.infrastructure.validation.Validator;
+import awsm_dagger.Command;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
 import jooq.tables.records.CustomerRecord;
 import org.jasypt.util.text.TextEncryptor;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-public class RegistrationFacade {
+@AutoFactory
+public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
 
     private final Uniqueness uniqueness;
     private final TextEncryptor encryptor;
+    private final String firstName;
+    private final String lastName;
+    private final String personalId;
+    private final String email;
 
-    public RegistrationFacade(Uniqueness uniqueness, TextEncryptor encryptor) {
+    public RegisterNow(@Provided Uniqueness uniqueness, @Provided TextEncryptor encryptor, String firstName, String lastName, String personalId, String email) {
         this.uniqueness = uniqueness;
         this.encryptor = encryptor;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.personalId = personalId;
+        this.email = email;
     }
 
-    public RegistrationOk register(String firstName, String lastName, String personalId, String email) {
+    @Override
+    public RegistrationOk execute() {
         new Validator<>()
                 .with(() -> firstName, v -> !isNullOrEmpty(v), "firstName is missing")
                 .with(() -> lastName, v -> !isNullOrEmpty(v), "lastName is missing")
@@ -34,7 +47,7 @@ public class RegistrationFacade {
         return new RegistrationOk(encryptor.encrypt(personalId));
     }
 
-    static class RegistrationOk {
+    public static class RegistrationOk {
 
         public final String personalId;
 

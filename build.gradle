@@ -67,6 +67,8 @@ dependencies {
 
     api 'com.google.dagger:dagger:2.29.1'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.29.1'
+    annotationProcessor 'com.google.auto.factory:auto-factory:1.0-beta8'
+    api 'com.google.auto.factory:auto-factory:1.0-beta8'
     implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
 
