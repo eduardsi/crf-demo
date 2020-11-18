@@ -64,6 +64,14 @@ dependencies {
 //    errorprone errorproneCore
 //    errorprone nullaway
 
+
+    api 'com.google.dagger:dagger:2.29.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.29.1'
+
+// https://mvnrepository.com/artifact/io.javalin/javalin
+    implementation group: 'io.javalin', name: 'javalin', version: '3.12.0'
+
+
     implementation validator
     implementation commonsLang
     implementation gson
@@ -120,14 +128,9 @@ tasks.withType(Test) {
     useJUnitPlatform()
 }
 
-test {
-    jvmArgs '--enable-preview'
-}
-
-tasks.withType(JavaCompile).each {
-    it.options.compilerArgs << "-Xlint:unchecked"
-    it.options.compilerArgs << "-Xlint:preview"
-    it.options.compilerArgs << "--enable-preview"
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "-Xlint:unchecked"
+    options.compilerArgs += "-Xlint:preview"
 //    it.options.errorprone { e ->
 //        e.disableWarningsInGeneratedCode = true
 //        e.disable "TypeParameterUnusedInFormals"

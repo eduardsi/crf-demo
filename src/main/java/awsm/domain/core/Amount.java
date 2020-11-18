@@ -53,7 +53,8 @@ public class Amount {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Amount that) {
+        if (obj instanceof Amount) {
+            var that = (Amount) obj;
             return this.decimal.equals(that.decimal);
         }
         return false;

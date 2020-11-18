@@ -32,7 +32,8 @@ public class UniqueEmail {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof UniqueEmail that) {
+        if (obj instanceof UniqueEmail) {
+            var that = (UniqueEmail) obj;
             return this.email.equals(that.email);
         }
         return false;
