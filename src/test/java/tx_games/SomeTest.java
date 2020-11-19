@@ -52,22 +52,21 @@ public class SomeTest {
         }).get();
 
         threads.spinOff(tx.wrap(() -> {
-            var offer = accounts.getOne(offerId);
-            offer.deposit(Amount.of("500.00"));
+            var account = accounts.getOne(offerId);
+            account.deposit(Amount.of("500.00"));
             threads.sync();
         }));
 
         threads.spinOff(tx.wrap(() -> {
-            var offer = accounts.getOne(offerId);
-            offer.deposit(Amount.of("400.00"));
+            var account = accounts.getOne(offerId);
+            account.deposit(Amount.of("400.00"));
             threads.sync();
         }));
 
         Thread.sleep(3000);
         tx.wrap(() -> {
-            var offer = accounts.getOne(offerId);
-            System.out.println("BALANCE");
-            System.out.println(offer.balance());
+            var account = accounts.getOne(offerId);
+            System.out.println(account.balance());
         }).run();
 
         var e = assertThrows(CompletionException.class, threads::waitForAll);

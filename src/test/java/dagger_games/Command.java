@@ -1,4 +1,4 @@
-package awsm_dagger;
+package dagger_games;
 
 public interface Command<R> {
 

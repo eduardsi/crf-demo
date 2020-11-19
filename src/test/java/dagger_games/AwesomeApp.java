@@ -1,10 +1,16 @@
-package awsm_dagger;
+package dagger_games;
 
 
 import dagger.Component;
 import io.javalin.Javalin;
 
-@Component(modules = AwesomeAppModule.class)
+import javax.inject.Singleton;
+
+@Component(modules = {
+        AwesomeAppModule.class,
+        PostgresJooqModule.class
+})
+@Singleton
 public interface AwesomeApp {
 
     Javalin app();

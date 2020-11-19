@@ -64,20 +64,16 @@ dependencies {
 //    errorprone errorproneCore
 //    errorprone nullaway
 
-
+    // dagger experiments
     api 'com.google.dagger:dagger:2.29.1'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.29.1'
-    annotationProcessor 'com.google.auto.factory:auto-factory:1.0-beta8'
     api 'com.google.auto.factory:auto-factory:1.0-beta8'
-    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
-
-
-
-// https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation group: 'io.javalin', name: 'javalin', version: '3.12.0'
-
+    testAnnotationProcessor 'com.google.dagger:dagger-compiler:2.29.1'
+    testAnnotationProcessor 'com.google.auto.factory:auto-factory:1.0-beta8'
+    testImplementation group: 'io.javalin', name: 'javalin', version: '3.12.0'
+    testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     implementation validator
+    implementation lightbendConfig
     implementation commonsLang
     implementation gson
     implementation gsonExtras
