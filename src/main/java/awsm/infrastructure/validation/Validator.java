@@ -96,22 +96,4 @@ public class Validator<R> {
     String text(T value);
   }
 
-  public static class ValidationException extends RuntimeException {
-
-    private final List<String> violations;
-
-    private ValidationException(List<String> violations) {
-      this.violations = violations;
-    }
-
-    public List<String> violations() {
-      return violations;
-    }
-
-    @Override
-    public String getMessage() {
-      return String.join(", ", violations);
-    }
-
-  }
 }

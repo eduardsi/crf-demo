@@ -1,10 +1,10 @@
-import org.jooq.meta.jaxb.ForcedType
 import org.flywaydb.core.Flyway
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Database
 import org.jooq.meta.jaxb.Generate
 import org.jooq.meta.jaxb.Generator
 import org.jooq.meta.jaxb.Jdbc
+import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Target
 import org.jooq.meta.postgres.PostgresDatabase
 import org.postgresql.Driver
@@ -102,6 +102,7 @@ dependencies {
     implementation flyway
     implementation pipelinr
     implementation hashIds
+    implementation uuidGenerator
     testImplementation wiremock
     testImplementation guavaTestlib
     testImplementation groovy
@@ -188,6 +189,22 @@ task generateJooq {
                                     .withIncludes(".*")
                                     .withExcludes("")
                                     .withInputSchema("public")
+                                    .withRecordVersionFields("VERSION")
+                                    .withForcedTypes([
+                                        new ForcedType()
+                                            .withUserType("dagger_games.TransactionType")
+                                            .withEnumConverter(true)
+                                            .withIncludeExpression("TYPE"),
+                                        new ForcedType()
+                                                .withUserType("dagger_games.BankAccount.Status")
+                                                .withEnumConverter(true)
+                                                .withIncludeExpression("STATUS"),
+                                        new ForcedType()
+                                                .withUserType("dagger_games.Amount")
+                                                .withConverter("dagger_games.AmountConverter")
+                                                .withIncludeTypes("NUMERIC\\(13, 2\\)")
+                                    ]
+                                    )
                             )
                             .withTarget(new Target()
                                     .withClean(true)

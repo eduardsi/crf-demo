@@ -1,7 +1,5 @@
-package awsm.domain.core;
+package dagger_games;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -74,18 +72,4 @@ public class Amount {
         return decimal;
     }
 
-    @Converter(autoApply = true)
-    static public class JpaConverter implements AttributeConverter<Amount, BigDecimal> {
-
-        @Override
-        public BigDecimal convertToDatabaseColumn(Amount amount) {
-            return amount.decimal;
-        }
-
-        @Override
-        public Amount convertToEntityAttribute(BigDecimal decimalNumber) {
-            return new Amount(decimalNumber);
-        }
-
-    }
 }

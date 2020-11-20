@@ -16,14 +16,17 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
 
     private final TextEncryptor encryptor;
     private final DSLContext dsl;
+    private final WithdrawalLimits withdrawalLimits;
+
     private final String firstName;
     private final String lastName;
     private final String personalId;
     private final String email;
 
-    public RegisterNow(@Provided DSLContext dsl, @Provided TextEncryptor encryptor, String firstName, String lastName, String personalId, String email) {
+    public RegisterNow(@Provided DSLContext dsl, @Provided TextEncryptor encryptor, @Provided WithdrawalLimits withdrawalLimits, String firstName, String lastName, String personalId, String email) {
         this.dsl = dsl;
         this.encryptor = encryptor;
+        this.withdrawalLimits = withdrawalLimits;
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;
@@ -36,6 +39,19 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
 
         var customer = new CustomerRecord(personalId, firstName, lastName, email);
         dsl.insertInto(CUSTOMER).set(customer).execute();
+
+        var accountHolder = new BankAccountHolder("Eduards", "Sizovs", "2112412", "eduards@sizovs.net");
+        var account = new BankAccount(accountHolder, withdrawalLimits);
+        account.deposit(Amount.of("100.00"));
+        account.deposit(Amount.of("100.00"));
+        account.deposit(Amount.of("100.00"));
+        account.withdraw(Amount.of("5.00"));
+        account.save(dsl);
+
+        var iban = account.iban();
+
+        var accountByIban = new BankAccountByIban(dsl, iban).find();
+        System.out.println(accountByIban.balance());
 
         return new RegistrationOk(encryptor.encrypt(personalId));
     }
