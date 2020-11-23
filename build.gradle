@@ -108,6 +108,7 @@ dependencies {
     }
     implementation javaxJson
     implementation jooq
+    implementation bucket4j
     implementation failsafe
     implementation postgres
     implementation flyway

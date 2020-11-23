@@ -17,7 +17,6 @@ public class WithdrawalLimits {
         this.monthlyLimit = monthlyLimit;
     }
 
-
     @Inject
     public WithdrawalLimits(@Provided Config config) {
         this(
