@@ -74,9 +74,9 @@ class ScheduledCommand {
 
     private Function<ScheduledCommandRecord, ScheduledCommand> fromJooq() {
       return jooq -> {
-        var cmd = gson.fromJson(jooq.getCommand(), Command.class);
-        var self = new ScheduledCommand(jooq.getCreationDate(), cmd);
-        self.id = Optional.of(jooq.getId());
+        var cmd = gson.fromJson(jooq.command(), Command.class);
+        var self = new ScheduledCommand(jooq.creationDate(), cmd);
+        self.id = Optional.of(jooq.id());
         return self;
       };
     }
@@ -88,7 +88,7 @@ class ScheduledCommand {
             .set(SCHEDULED_COMMAND.COMMAND, gson.toJson(self.command, Command.class))
             .returning(SCHEDULED_COMMAND.ID)
             .fetchOne()
-            .getId();
+            .id();
       self.id = Optional.of(id);
     }
 

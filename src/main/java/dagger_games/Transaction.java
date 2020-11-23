@@ -27,7 +27,7 @@ public class Transaction implements Comparable<Transaction> {
     }
 
     LocalDateTime bookingTime() {
-      return self.getBookingTime();
+      return self.bookingTime();
     }
 
     private LocalDate bookingDate() {
@@ -35,19 +35,19 @@ public class Transaction implements Comparable<Transaction> {
     }
 
     Amount apply(Amount balance) {
-      return self.getType().apply(self.getAmount(), balance);
+      return self.type().apply(self.amount(), balance);
     }
 
     Amount withdrawn() {
-      return isWithdrawal() ? self.getAmount() : Amount.ZERO;
+      return isWithdrawal() ? self.amount() : Amount.ZERO;
     }
 
     public boolean isWithdrawal() {
-        return self.getType().equals(TransactionType.WITHDRAWAL);
+        return self.type().equals(TransactionType.WITHDRAWAL);
     }
 
     Amount deposited() {
-      return self.getType().equals(TransactionType.DEPOSIT) ? self.getAmount() : Amount.ZERO;
+      return self.type().equals(TransactionType.DEPOSIT) ? self.amount() : Amount.ZERO;
     }
 
     boolean bookedOn(LocalDate date) {
@@ -61,6 +61,6 @@ public class Transaction implements Comparable<Transaction> {
 
     @Override
     public int compareTo(Transaction that) {
-        return this.self.getUid().compareTo(that.self.getUid());
+        return this.self.uid().compareTo(that.self.uid());
     }
 }

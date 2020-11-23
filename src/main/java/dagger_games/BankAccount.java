@@ -58,13 +58,13 @@ public class BankAccount {
   }
 
   String iban() {
-    return self.getIban();
+    return self.iban();
   }
 
   public Transaction withdraw(Amount amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(self.getIban(), WITHDRAWAL, amount, now(clock()));
+    var tx = new Transaction(self.iban(), WITHDRAWAL, amount, now(clock()));
     transactions.add(tx);
 
     new EnforcePositiveBalance();
@@ -76,7 +76,7 @@ public class BankAccount {
   public Transaction deposit(Amount amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(self.getIban(), TransactionType.DEPOSIT, amount, now(clock()));
+    var tx = new Transaction(self.iban(), TransactionType.DEPOSIT, amount, now(clock()));
     transactions.add(tx);
 
     return tx;
@@ -98,7 +98,7 @@ public class BankAccount {
   }
 
   public boolean isOpen() {
-    return self.getStatus().equals(Status.OPEN);
+    return self.status().equals(Status.OPEN);
   }
 
   private class EnforceOpen {
@@ -117,7 +117,7 @@ public class BankAccount {
   private class EnforceWithdrawalLimits {
 
     private EnforceWithdrawalLimits() {
-      var dailyLimit = self.getDailyLimit();
+      var dailyLimit = self.dailyLimit();
       var dailyLimitReached = withdrawn(today()).isGreaterThan(dailyLimit);
       checkState(!dailyLimitReached, "Daily withdrawal limit (%s) reached.", dailyLimit);
     }

@@ -1,11 +1,15 @@
 import org.flywaydb.core.Flyway
 import org.jooq.codegen.GenerationTool
+import org.jooq.codegen.DefaultGeneratorStrategy
+import org.jooq.meta.Definition
+import org.jooq.impl.Mode
 import org.jooq.meta.jaxb.Database
 import org.jooq.meta.jaxb.Generate
 import org.jooq.meta.jaxb.Generator
 import org.jooq.meta.jaxb.Jdbc
 import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Target
+import org.jooq.meta.jaxb.Strategy
 import org.jooq.meta.postgres.PostgresDatabase
 import org.postgresql.Driver
 import org.testcontainers.containers.PostgreSQLContainer
@@ -166,6 +170,13 @@ sourceSets {
     }
 }
 
+class JooqGeneratorStrategy extends DefaultGeneratorStrategy {
+    @Override
+    String getJavaGetterName(Definition definition, Mode mode) {
+        super.getterSetterSuffix(definition).uncapitalize()
+    }
+}
+
 task generateJooq {
     description = "Generates jOOQ sources."
     doLast {
@@ -187,6 +198,9 @@ task generateJooq {
                             .withUser(pg.username)
                             .withPassword(pg.password))
                     .withGenerator(new Generator()
+                            .withStrategy(new Strategy()
+                                    .withName("JooqGeneratorStrategy")
+                            )
                             .withGenerate(new Generate()
                                     .withJavaTimeTypes(true)
                                     .withFluentSetters(true)
