@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toCollection;
 public class BankAccount {
 
   public enum Status {
-    OPEN, CLOSED;
+    OPEN, CLOSED
   }
 
   private final SortedSet<Transaction> transactions;

@@ -2,6 +2,7 @@ package awsm.domain.banking;
 
 import awsm.domain.core.DomainEntity;
 import awsm.domain.core.Amount;
+import de.huxhorn.sulky.ulid.ULID;
 import org.threeten.extra.LocalDateRange;
 
 import javax.persistence.Embeddable;
@@ -16,6 +17,8 @@ import static awsm.infrastructure.clock.TimeMachine.clock;
 
 @Embeddable
 class Transaction implements DomainEntity<Transaction> {
+
+    private static final ULID ulid = new ULID();
 
     enum Type {
         DEPOSIT {
@@ -34,7 +37,7 @@ class Transaction implements DomainEntity<Transaction> {
         abstract Amount apply(Amount amount, Amount balance);
     }
 
-    private UUID uid;
+    private String uid;
 
     private Amount amount;
 
@@ -44,7 +47,7 @@ class Transaction implements DomainEntity<Transaction> {
     private Type type;
 
     private Transaction(Type type, Amount amount, LocalDateTime bookingTime) {
-        this.uid = UUID.randomUUID();
+        this.uid = ulid.nextULID();
         this.type = type;
         this.amount = amount;
         this.bookingTime = bookingTime;
@@ -53,7 +56,7 @@ class Transaction implements DomainEntity<Transaction> {
     private Transaction() {
     }
 
-    public UUID uid() {
+    public String uid() {
         return uid;
     }
 

@@ -5,6 +5,8 @@ import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import static dagger.internal.Preconditions.checkNotNull;
+
 public class Amount {
 
     public static final Amount ZERO = new Amount(BigDecimal.ZERO);
@@ -12,6 +14,7 @@ public class Amount {
     private final BigDecimal decimal;
 
     private Amount(BigDecimal decimal) {
+        checkNotNull(decimal, "Cannot create Amount from null");
         this.decimal = decimal.setScale(2, RoundingMode.UNNECESSARY);
     }
 

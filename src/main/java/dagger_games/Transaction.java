@@ -1,19 +1,15 @@
 package dagger_games;
 
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import de.huxhorn.sulky.ulid.ULID;
 import jooq.tables.records.BankAccountTxRecord;
 import org.jooq.DSLContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-
-import static com.fasterxml.uuid.UUIDComparator.staticCompare;
 
 public class Transaction implements Comparable<Transaction> {
 
-    private final static TimeBasedGenerator ORDERED_UUID = Generators.timeBasedGenerator();
+    private static final ULID ulid = new ULID();
 
     private final BankAccountTxRecord self;
 
@@ -24,7 +20,7 @@ public class Transaction implements Comparable<Transaction> {
     Transaction(String iban, TransactionType type, Amount amount, LocalDateTime bookingTime) {
         this.self = new BankAccountTxRecord()
                 .setBankAccountIban(iban)
-                .setUid(ORDERED_UUID.generate())
+                .setUid(ulid.nextULID())
                 .setAmount(amount)
                 .setBookingTime(bookingTime)
                 .setType(type);
@@ -65,6 +61,6 @@ public class Transaction implements Comparable<Transaction> {
 
     @Override
     public int compareTo(Transaction that) {
-        return staticCompare(this.self.getUid(), that.self.getUid());
+        return this.self.getUid().compareTo(that.self.getUid());
     }
 }

@@ -33,8 +33,11 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
         this.email = email;
     }
 
+
+
     @Override
     public RegistrationOk execute() {
+
         validate();
 
         var customer = new CustomerRecord(personalId, firstName, lastName, email);

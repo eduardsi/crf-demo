@@ -8,9 +8,9 @@ import java.util.UUID;
 public class WithdrawalHappened extends Data implements DomainEvent {
 
     private final String iban;
-    private final UUID txUid;
+    private final String txUid;
 
-    public WithdrawalHappened(String iban, UUID txUid) {
+    public WithdrawalHappened(String iban, String txUid) {
         this.iban = iban;
         this.txUid = txUid;
     }
@@ -19,7 +19,7 @@ public class WithdrawalHappened extends Data implements DomainEvent {
         return iban;
     }
 
-    UUID txUid() {
+    String txUid() {
         return txUid;
     }
 

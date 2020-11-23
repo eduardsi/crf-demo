@@ -7,7 +7,6 @@ public class BankAccountHolder {
     public final String personalId;
     public final String email;
 
-
     BankAccountHolder(String firstName, String lastName, String personalId, String email) {
         this.firstName = firstName;
         this.lastName = lastName;

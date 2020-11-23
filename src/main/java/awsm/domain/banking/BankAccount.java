@@ -65,7 +65,7 @@ public class BankAccount extends AggregateRoot<BankAccount> {
     publish(new BankAccountOpened(iban));
   }
 
-  public Transaction tx(UUID uid) {
+  public Transaction tx(String uid) {
     return transactions.stream().filter(tx -> tx.uid().equals(uid)).findAny().orElseThrow();
   }
 
