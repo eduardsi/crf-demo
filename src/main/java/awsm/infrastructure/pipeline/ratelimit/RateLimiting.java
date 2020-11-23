@@ -1,9 +1,9 @@
 package awsm.infrastructure.pipeline.ratelimit;
 
 import an.awesome.pipelinr.Command;
-import com.github.bucket4j.Bandwidth;
-import com.github.bucket4j.Bucket;
-import com.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ class RateLimiting implements Command.Middleware {
     var bandwidth = rateLimited.bandwidth();
 
     var bucket = bucket(command, bandwidth);
-    if (bucket.tryConsumeSingleToken()) {
+    if (bucket.tryConsume(1)) {
       return next.invoke();
     } else {
       throw new RateLimitException();

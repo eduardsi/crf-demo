@@ -26,6 +26,7 @@ public interface DomainEvents {
             SpringManaged.INSTANCE = Optional.of(this);
         }
 
+        @SuppressWarnings({"unchecked", "UnstableApiUsage"})
         @Override
         public void publish(DomainEvent event) {
             beanFactory

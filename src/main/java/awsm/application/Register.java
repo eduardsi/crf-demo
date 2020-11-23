@@ -5,15 +5,19 @@ import awsm.domain.crm.Customer;
 import awsm.domain.crm.CustomerRepository;
 import awsm.domain.crm.UniqueEmail;
 import awsm.domain.crm.Uniqueness;
+import awsm.infrastructure.pipeline.ratelimit.RateLimited;
 import awsm.infrastructure.validation.Validator;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Refill;
 import org.jasypt.util.text.TextEncryptor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import static awsm.infrastructure.memoize.Memoizers.memoized;
+import static java.time.Duration.ofSeconds;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
-public class Register implements Command<Register.Response> {
+public class Register implements Command<Register.Response>, RateLimited {
 
     public final String firstName;
     public final String lastName;
@@ -25,6 +29,16 @@ public class Register implements Command<Register.Response> {
         this.lastName = lastName;
         this.personalId = personalId;
         this.email = email;
+    }
+
+    @Override
+    public Bandwidth bandwidth() {
+        var maxCallsPerSecond = 50;
+
+        // Tokens in the bucket increase at a refill rate of 10 calls per second.
+        // So, if request rate is 10 calls per second, it will never be throttled.
+        var refillRate = Refill.greedy(10, ofSeconds(1));
+        return Bandwidth.classic(maxCallsPerSecond, refillRate);
     }
 
     public static class Response {
