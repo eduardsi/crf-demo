@@ -90,7 +90,7 @@ class BankAccountSpec extends Specification {
         events.any { it -> new WithdrawalHappened(account.iban(), tx.uid()) }
     }
 
-    def "cannot be withdrawn if closed"() {
+    def "cannot be withdrawn when closed"() {
         given: "Account is closed"
         account.close(UnsatisfiedObligations.NONE)
 

@@ -4,7 +4,7 @@ Complementary materials for the course **[Effective Java Software Design](https:
 
 ### Requirements
 - [x] Docker
-- [x] Java 14+
+- [x] Java 15+
 
 #### Running the app in dev mode
 ```
