@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = AwesomeApp.class)
-public class SomeTest {
+public class DemoConcurrencyTest {
 
     @Autowired
     PlatformTransactionManager txManager;
