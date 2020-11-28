@@ -117,6 +117,7 @@ dependencies {
     implementation ulidGenerator
     testImplementation wiremock
     testImplementation guavaTestlib
+    testImplementation concurrentUnit
     testImplementation groovy
     testImplementation groovyJson
     testImplementation jsonAssert

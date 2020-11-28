@@ -2,6 +2,7 @@ package awsm.domain.banking
 
 import awsm.domain.core.Amount
 import com.github.javafaker.Faker
+import net.jodah.concurrentunit.Waiter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.dao.OptimisticLockingFailureException
@@ -15,7 +16,6 @@ import spock.lang.Specification
 import javax.persistence.EntityManager
 import javax.persistence.LockModeType
 import javax.persistence.PessimisticLockException
-import java.util.concurrent.CountDownLatch
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -35,7 +35,7 @@ class BankAccountLockingSpec extends Specification {
     def defaultWithdrawalLimits
 
     def setup() {
-        inANewTx {
+        newTx {
             def holder = new AccountHolder(name().firstName(), name().lastName(), idNumber().valid(), internet().emailAddress())
             def withdrawalLimits = new WithdrawalLimits(Amount.of(1000.00), Amount.of(5000.00))
             def account = new BankAccount(holder, withdrawalLimits)
@@ -49,11 +49,11 @@ class BankAccountLockingSpec extends Specification {
 
     def "without optimistic locking, I can override some else's successful commit"() {
         when: "I am modifying bank account and meanwhile someone else has modified the same account and committed the change"
-        inANewTx {
+        newTx {
             def account = entityManager.find(BankAccountWithoutOptimisticLock, iban)
             account.suspend()
             Thread.start {
-                inANewTx {
+                newTx {
                     def sameAccount = entityManager.find(BankAccountWithoutOptimisticLock, iban)
                     sameAccount.close(UnsatisfiedObligations.NONE)
                 }
@@ -61,7 +61,7 @@ class BankAccountLockingSpec extends Specification {
         }
 
         then: "After I commit, I completely override some else's committed change and someone else loses the update"
-        assert inANewTx {
+        assert newTx {
             def acc = entityManager.find(BankAccountWithoutOptimisticLock, iban)
             acc.isSuspended()
         }
@@ -69,11 +69,11 @@ class BankAccountLockingSpec extends Specification {
 
     def "without optimistic locking and with dynamic update turned on, I can spectacularly mess up the data"() {
         when: "I am modifying bank account and meanwhile someone else has modified the same account and committed the change"
-        inANewTx {
+        newTx {
             def account = entityManager.find(BankAccountWithDynamicUpdateAndWithoutOptimisticLock, iban)
             account.suspend()
             Thread.start {
-                inANewTx {
+                newTx {
                     def sameAccount = entityManager.find(BankAccountWithDynamicUpdateAndWithoutOptimisticLock, iban)
                     def withdrawalLimits = new WithdrawalLimits(Amount.of(10000.00), Amount.of(1000000.00))
                     sameAccount.lift(withdrawalLimits)
@@ -85,7 +85,7 @@ class BankAccountLockingSpec extends Specification {
         then: "When I commit, I partially override some else's successfully committed change. " +
                 "Due to dynamic update turned on, I override only 'status' field, because it's the only field that has changed." +
                 "So we ended up with 'partial' commit and messed up production data."
-        assert inANewTx {
+        assert newTx {
             def acc = entityManager.find(BankAccountWithDynamicUpdateAndWithoutOptimisticLock, iban)
             acc.isSuspended() && acc.withdrawalLimits() !== defaultWithdrawalLimits
         }
@@ -93,11 +93,11 @@ class BankAccountLockingSpec extends Specification {
 
     def "without optimistic locking, I can mess up the data even if dynamic update is disabled"() {
         when: "I am modifying bank account and meanwhile someone else has modified the same account and committed the change"
-        inANewTx {
+        newTx {
             def account = entityManager.find(BankAccountWithoutOptimisticLock, iban)
             account.deposit(Amount.of(100.00))
             Thread.start {
-                inANewTx {
+                newTx {
                     def sameAccount = entityManager.find(BankAccountWithoutOptimisticLock, iban)
                     sameAccount.deposit(Amount.of(1000.00))
                     sameAccount.close(UnsatisfiedObligations.NONE)
@@ -108,7 +108,7 @@ class BankAccountLockingSpec extends Specification {
         then: "When I commit, I override some else's successfully committed change. " +
                 "Moreover, I fuck up Transactions, not Account itself, because Hibernate think Account is not 'dirty'. " +
                 "So we ended up with 'partial' commit and messed up production data."
-            assert inANewTx {
+            assert newTx {
                 def acc = entityManager.find(BankAccountWithoutOptimisticLock, iban)
                 acc.isClosed() && acc.balance() == Amount.of(100.00)
             }
@@ -116,11 +116,11 @@ class BankAccountLockingSpec extends Specification {
 
     def "with optimistic locking, no concurrent modification is allowed and the last transaction should roll back"() {
         when: "I am modifying bank account and meanwhile someone else has modified the same account and committed the change"
-        inANewTx {
+        newTx {
             def account = entityManager.find(BankAccount, iban)
             account.deposit(Amount.of(100.00))
             Thread.start {
-                inANewTx {
+                newTx {
                     def sameAccount = entityManager.find(BankAccount, iban)
                     sameAccount.deposit(Amount.of(100.00))
                 }
@@ -131,21 +131,21 @@ class BankAccountLockingSpec extends Specification {
         thrown(OptimisticLockingFailureException)
     }
 
-    def "with pessimistic locking, no concurrent modification is allowed and the first transaction fails"() {
-        def countdownLatch = new CountDownLatch(1)
-        given: "Some is doing something with the bank account"
+    def "with pessimistic locking, no concurrent modification is allowed"() {
+        def anotherThread = new Waiter()
+        given: "Some has acquired pessimistic lock and to do something with the bank account"
         Thread.start "someone", {
-            inANewTx {
+            newTx {
                 def sameAccount = entityManager.find(BankAccountWithoutOptimisticLock, iban, LockModeType.PESSIMISTIC_READ)
                 sameAccount.suspend()
-                countdownLatch.countDown()
+                anotherThread.resume()
                 sleep(5000)
             }
         }
 
-        when: "I try to read the same bank account"
-        inANewTx {
-            countdownLatch.await()
+        when: "I try to read the same bank account to mess up the data :-)"
+        newTx {
+            anotherThread.await()
             entityManager.find(BankAccountWithoutOptimisticLock, iban, LockModeType.PESSIMISTIC_READ)
         }
 
@@ -154,7 +154,7 @@ class BankAccountLockingSpec extends Specification {
     }
 
 
-    def <T> T inANewTx(Closure<T> closure) {
+    def <T> T newTx(Closure<T> closure) {
         def tx = new TransactionTemplate(txManager)
         tx.propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRES_NEW
         tx.execute(closure) as T
