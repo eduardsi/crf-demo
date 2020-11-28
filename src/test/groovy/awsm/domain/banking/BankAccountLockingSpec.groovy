@@ -67,7 +67,7 @@ class BankAccountLockingSpec extends Specification {
         }
     }
 
-    def "without optimistic locking and dynamic update on, I can mess up the data"() {
+    def "without optimistic locking and with dynamic update turned on, I can spectacularly mess up the data"() {
         when: "I am modifying bank account and meanwhile someone else has modified the same account and committed the change"
         inANewTx {
             def account = entityManager.find(BankAccountWithDynamicUpdateAndWithoutOptimisticLock, iban)
