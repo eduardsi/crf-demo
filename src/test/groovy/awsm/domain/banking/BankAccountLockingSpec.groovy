@@ -133,11 +133,11 @@ class BankAccountLockingSpec extends Specification {
 
     def "with pessimistic locking, no concurrent modification is allowed"() {
         def anotherThread = new Waiter()
-        given: "Some has acquired pessimistic lock and to do something with the bank account"
-        Thread.start "someone", {
+        given: "Some has acquired pessimistic lock to do something with the bank account"
+        Thread.start {
             newTx {
-                def sameAccount = entityManager.find(BankAccountWithoutOptimisticLock, iban, LockModeType.PESSIMISTIC_READ)
-                sameAccount.suspend()
+                def account = entityManager.find(BankAccountWithoutOptimisticLock, iban, LockModeType.PESSIMISTIC_READ)
+                account.suspend()
                 anotherThread.resume()
                 sleep(5000)
             }
