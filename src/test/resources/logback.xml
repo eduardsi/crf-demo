@@ -10,8 +10,8 @@
     <logger name="org.springframework.transaction" level="DEBUG"/>
     <logger name="org.springframework.orm.jpa" level="DEBUG"/>
     <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type" level="TRACE"/>
 
-<!--    <Logger name="org.jooq.tools.LoggerListener" level="DEBUG" />-->
     <Logger name="org.jooq" level="DEBUG" />
 
 </configuration>

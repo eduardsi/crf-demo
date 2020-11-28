@@ -1,5 +1,7 @@
 package awsm.domain.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +9,8 @@ import java.util.Optional;
 
 
 public interface DomainEvents {
+
+    Logger logger = LoggerFactory.getLogger(DomainEvents.class);
 
     static DomainEvents defaultInstance() {
         return SpringManaged.INSTANCE.orElseGet(() -> new Unsupported());
@@ -42,7 +46,7 @@ public interface DomainEvents {
     class Unsupported implements DomainEvents {
         @Override
         public void publish(DomainEvent event) {
-            throw new UnsupportedOperationException("No domain events configured. Cannot send event: " + event);
+            logger.warn("No domain events configured. Cannot send event: " + event);
         }
     }
 }

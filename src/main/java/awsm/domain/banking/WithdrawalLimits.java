@@ -1,6 +1,7 @@
 package awsm.domain.banking;
 
 import awsm.domain.core.Amount;
+import awsm.domain.core.Data;
 import org.springframework.core.env.Environment;
 
 import javax.persistence.Embeddable;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 import static com.google.common.base.Preconditions.checkState;
 
 @Embeddable
-public class WithdrawalLimits {
+public class WithdrawalLimits extends Data {
 
   private Amount dailyLimit;
 
