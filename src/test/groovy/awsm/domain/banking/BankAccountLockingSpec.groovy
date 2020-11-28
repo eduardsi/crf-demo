@@ -133,9 +133,9 @@ class BankAccountLockingSpec extends Specification {
         thrown(OptimisticLockingFailureException)
     }
 
-    def "with pessimistic locking, no concurrent modification is allowed"() {
+    def "with pessimistic locking, no concurrent modification is possible"() {
         def anotherThread = new Waiter()
-        given: "Some has acquired pessimistic lock to do something with the bank account"
+        given: "Someone has acquired pessimistic lock to do something with the bank account"
         Thread.start {
             newTx {
                 def account = find(BankAccountWithoutOptimisticLock, iban, PESSIMISTIC_READ)
