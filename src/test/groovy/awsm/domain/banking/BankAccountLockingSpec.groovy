@@ -86,7 +86,7 @@ class BankAccountLockingSpec extends Specification {
 
         then: "When I commit, I partially override some else's successfully committed change. " +
                 "Due to dynamic update turned on, I override only 'status' field, because it's the only field that has changed." +
-                "So we ended up with 'partial' commit and messed up production data."
+                "So we ended up with partial commit and messed up production data."
         assert newTx {
             def acc = find(BankAccountWithDynamicUpdateAndWithoutOptimisticLock, iban)
             acc.isSuspended() && acc.withdrawalLimits() !== defaultWithdrawalLimits
@@ -109,7 +109,7 @@ class BankAccountLockingSpec extends Specification {
 
         then: "When I commit, I override some else's successfully committed change. " +
                 "Moreover, I fuck up Transactions, not Account itself, because Hibernate thinks Account is not 'dirty'. " +
-                "So we ended up with 'partial' commit and messed up production data."
+                "So we ended up with partial commit and messed up production data."
             assert newTx {
                 def acc = find(BankAccountWithoutOptimisticLock, iban)
                 acc.isClosed() && acc.balance() == Amount.of(100.00)
