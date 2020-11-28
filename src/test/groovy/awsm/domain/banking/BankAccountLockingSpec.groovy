@@ -60,7 +60,7 @@ class BankAccountLockingSpec extends Specification {
             }.join()
         }
 
-        then: "After I commit, I completely override some else's committed change and someone else's loses the update"
+        then: "After I commit, I completely override some else's committed change and someone else loses the update"
         assert inANewTx {
             def acc = entityManager.find(BankAccountWithoutOptimisticLock, iban)
             acc.isSuspended()
