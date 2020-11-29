@@ -17,6 +17,7 @@ import javax.persistence.EntityManager
 import javax.persistence.PessimisticLockException
 
 import static javax.persistence.LockModeType.PESSIMISTIC_READ
+import static javax.persistence.LockModeType.PESSIMISTIC_WRITE
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -138,8 +139,7 @@ class BankAccountLockingSpec extends Specification {
         given: "Someone has acquired pessimistic lock to do something with the bank account"
         Thread.start {
             newTx {
-                def account = find(BankAccountWithoutOptimisticLock, iban, PESSIMISTIC_READ)
-                account.suspend()
+                find(BankAccountWithoutOptimisticLock, iban, PESSIMISTIC_WRITE)
                 anotherThread.resume()
                 sleep(5000)
             }
@@ -148,13 +148,12 @@ class BankAccountLockingSpec extends Specification {
         when: "I try to read the same bank account to mess up the data :-)"
         newTx {
             anotherThread.await()
-            find(BankAccountWithoutOptimisticLock, iban, PESSIMISTIC_READ)
+            find(BankAccountWithoutOptimisticLock, iban, PESSIMISTIC_WRITE)
         }
 
         then: "I should receive an exception"
         thrown(PessimisticLockException)
     }
-
 
     def <T> T newTx(Closure<T> closure) {
         def tx = new TransactionTemplate(txManager)
