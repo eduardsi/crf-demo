@@ -13,7 +13,7 @@ import org.jasypt.util.text.TextEncryptor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import static awsm.infrastructure.memoize.Memoizers.memoized;
+import static awsm.infrastructure.memoize.FunctionMemoizer.memoize;
 import static java.time.Duration.ofSeconds;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
@@ -62,7 +62,7 @@ public class Register implements Command<Register.Response>, RateLimited {
         Handler(TextEncryptor textEncryptor, CustomerRepository customers, Uniqueness uniqueness) {
             this.textEncryptor = textEncryptor;
             this.customers = customers;
-            this.uniqueness = memoized(uniqueness::guaranteed)::apply;
+            this.uniqueness = memoize(uniqueness::guaranteed)::apply;
         }
 
         @Override
