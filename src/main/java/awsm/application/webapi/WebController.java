@@ -1,4 +1,4 @@
-package awsm.webapi;
+package awsm.application.webapi;
 
 import an.awesome.pipelinr.Pipeline;
 import awsm.application.ApplyForBankAccount;
