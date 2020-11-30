@@ -16,11 +16,11 @@ class WebController {
 
     @PostMapping("/registrations")
     Register.Response register(@RequestBody Register command) {
-        return pipeline.send(command);
+        return command.execute(pipeline);
     }
 
     @PostMapping("/bank-accounts")
     ApplyForBankAccount.Response applyForBankAccount(@RequestBody ApplyForBankAccount command) {
-        return pipeline.send(command);
+        return command.execute(pipeline);
     }
 }
