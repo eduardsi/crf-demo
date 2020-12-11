@@ -11,9 +11,8 @@ import javax.persistence.Enumerated;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.UUID;
 
-import static awsm.infrastructure.clock.TimeMachine.clock;
+import static awsm.infrastructure.clock.TimeMachine.now;
 
 @Embeddable
 class Transaction implements DomainEntity<Transaction> {
@@ -101,11 +100,11 @@ class Transaction implements DomainEntity<Transaction> {
     }
 
     static Transaction withdrawalOf(Amount amount) {
-        return new Transaction(Type.WITHDRAW, amount, LocalDateTime.now(clock()));
+        return new Transaction(Type.WITHDRAW, amount, now());
     }
 
     static Transaction depositOf(Amount amount) {
-        return new Transaction(Type.DEPOSIT, amount, LocalDateTime.now(clock()));
+        return new Transaction(Type.DEPOSIT, amount, now());
     }
 
 }

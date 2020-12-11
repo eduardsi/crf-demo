@@ -2,12 +2,13 @@ package awsm.infrastructure.clock;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class TimeMachine {
 
   private static final ThreadLocal<Clock> clock = ThreadLocal.withInitial(Clock::systemUTC);
 
-  public static Clock clock() {
+  private static Clock clock() {
     return clock.get();
   }
 
@@ -17,6 +18,10 @@ public class TimeMachine {
 
   public static LocalDate today() {
     return LocalDate.now(clock());
+  }
+
+  public static LocalDateTime now() {
+    return LocalDateTime.now(clock());
   }
 
 }

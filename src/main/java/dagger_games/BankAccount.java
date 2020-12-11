@@ -11,11 +11,9 @@ import java.time.LocalDate;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static awsm.infrastructure.clock.TimeMachine.clock;
-import static awsm.infrastructure.clock.TimeMachine.today;
+import static awsm.infrastructure.clock.TimeMachine.*;
 import static com.google.common.base.Preconditions.checkState;
 import static dagger_games.TransactionType.WITHDRAWAL;
-import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toCollection;
 
 public class BankAccount {
@@ -64,7 +62,7 @@ public class BankAccount {
   public Transaction withdraw(Amount amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(self.iban(), WITHDRAWAL, amount, now(clock()));
+    var tx = new Transaction(self.iban(), WITHDRAWAL, amount, now());
     transactions.add(tx);
 
     new EnforcePositiveBalance();
@@ -76,7 +74,7 @@ public class BankAccount {
   public Transaction deposit(Amount amount) {
     new EnforceOpen();
 
-    var tx = new Transaction(self.iban(), TransactionType.DEPOSIT, amount, now(clock()));
+    var tx = new Transaction(self.iban(), TransactionType.DEPOSIT, amount, now());
     transactions.add(tx);
 
     return tx;
