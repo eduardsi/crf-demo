@@ -28,24 +28,23 @@ class BankAccountSpec extends Specification {
             .withProperty("banking.account-limits.monthly", "1000.00"))
 
     @Subject
-    @Delegate
     BankAccount account = new BankAccount(accountHolder, defaultLimits)
 
     def setup() {
-        set(events)
+        account.set(events)
         TimeMachine.set(clock)
     }
 
     def "can be closed"() {
         given: "Account is open"
-        open()
-        assert isOpen()
+        account.open()
+        assert account.isOpen()
 
         when: "I try to close the account"
-        close(UnsatisfiedObligations.NONE)
+        account.close(UnsatisfiedObligations.NONE)
 
         then: "Account must close"
-        isClosed()
+        account.isClosed()
     }
 
     def "cannot be closed if some unsatisfied obligations exist"() {
@@ -53,7 +52,7 @@ class BankAccountSpec extends Specification {
         def unsatisfiedObligations = { true } as UnsatisfiedObligations
 
         when: "I close my account"
-        close(unsatisfiedObligations)
+        account.close(unsatisfiedObligations)
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -62,13 +61,13 @@ class BankAccountSpec extends Specification {
 
     def "supports deposits"() {
         given: "account is open"
-        open()
+        account.open()
 
         and: "I am out of cash"
-        assert balance() == Amount.ZERO
+        assert account.balance() == Amount.ZERO
 
         when: "I deposit some cash"
-        def tx = deposit(Amount.of(100.00))
+        def tx = account.deposit(Amount.of(100.00))
 
         then: "A deposit transaction should be created"
         tx.isDeposit()
@@ -78,28 +77,28 @@ class BankAccountSpec extends Specification {
 
     def "supports withdrawals"() {
         given: "account is open"
-        open()
+        account.open()
 
         and: "I have some cash"
-        deposit(Amount.of(100.00))
-        assert balance() == Amount.of(100.00)
+        account.deposit(Amount.of(100.00))
+        assert account.balance() == Amount.of(100.00)
 
         when: "I withdraw it"
-        def tx = withdraw(Amount.of(100.00))
+        def tx = account.withdraw(Amount.of(100.00))
 
         then: "A withdrawal transaction should be created"
         tx.isWithdrawal()
         tx.withdrawn() == Amount.of(100.00)
         tx.deposited() == Amount.of(0.00)
-        events.any { it -> new WithdrawalHappened(iban(), tx.uid()) }
+        events.any { it -> new WithdrawalHappened(account.iban(), tx.uid()) }
     }
 
     def "cannot be withdrawn when closed"() {
         given: "Account is closed"
-        close(UnsatisfiedObligations.NONE)
+        account.close(UnsatisfiedObligations.NONE)
 
         when: "I try to withdraw my cash"
-        withdraw(Amount.of(100.00))
+        account.withdraw(Amount.of(100.00))
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -108,10 +107,10 @@ class BankAccountSpec extends Specification {
 
     def "cannot be deposited when closed"() {
         given: "Account is closed"
-        close(UnsatisfiedObligations.NONE)
+        account.close(UnsatisfiedObligations.NONE)
 
         when: "I try to deposit some cash"
-        deposit(Amount.of(100.00))
+        account.deposit(Amount.of(100.00))
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -120,13 +119,13 @@ class BankAccountSpec extends Specification {
 
     def "cannot be withdrawn for the amount that exceeds the balance"() {
         given: "Account is open"
-        open()
+        account.open()
 
         and: "I am out of money"
-        assert balance() == Amount.ZERO
+        assert account.balance() == Amount.ZERO
 
         when: "I withdraw some cash"
-        withdraw(Amount.of(1.00))
+        account.withdraw(Amount.of(1.00))
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -135,13 +134,13 @@ class BankAccountSpec extends Specification {
 
     def "cannot be withdrawn for the amount that exceeds the daily limit"() {
         given: "Account is open"
-        open()
+        account.open()
 
         and: "I have some spare cash"
-        deposit(Amount.of(1000.00))
+        account.deposit(Amount.of(1000.00))
 
         when: "I withdraw more than allowed by daily limit"
-        withdraw(Amount.of(101.00))
+        account.withdraw(Amount.of(101.00))
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -150,13 +149,13 @@ class BankAccountSpec extends Specification {
 
     def "cannot be withdrawn for the amount than exceeds the monthly limit"() {
         given: "Account is open"
-        open()
+        account.open()
 
         and: "I have some spare cash"
-        deposit(Amount.of(2000.00))
+        account.deposit(Amount.of(2000.00))
 
         when: "I withdraw more than allowed by monthly limit"
-        withdraw(Amount.of(1001.00))
+        account.withdraw(Amount.of(1001.00))
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -165,13 +164,13 @@ class BankAccountSpec extends Specification {
 
     def "cannot be closed if unsatisfied obligations exist"() {
         given: "Account is open"
-        open()
+        account.open()
 
         and: "I have some unsatisfied obligations"
         def unsatisfiedObligations = { true } as UnsatisfiedObligations
 
         when: "I close my account"
-        close unsatisfiedObligations
+        account.close unsatisfiedObligations
 
         then: "I get an error"
         def e = thrown(IllegalStateException)
@@ -181,21 +180,21 @@ class BankAccountSpec extends Specification {
 
     def "publishes a BankAccountOpened event"() {
         when: "I try to open a bank account"
-        open()
+        account.open()
 
         then: "An event gets published"
-        events.any { it -> new BankAccountOpened(iban())}
+        events.any { it -> new BankAccountOpened(account.iban())}
     }
 
     def "calculates a balance"() {
         given: "Account is open"
-        open()
+        account.open()
 
         when: "I try to deposit and withdraw some cash"
-        deposit(Amount.of(100.00))
-        withdraw(Amount.of(20.50))
-        withdraw(Amount.of(20.00))
-        def balance = balance()
+        account.deposit(Amount.of(100.00))
+        account.withdraw(Amount.of(20.50))
+        account.withdraw(Amount.of(20.00))
+        def balance = account.balance()
 
         then: "My balance shows a sum of all transactions"
         balance == Amount.of(59.50)
@@ -203,26 +202,26 @@ class BankAccountSpec extends Specification {
 
     def "provides statement for a given time interval"() {
         given: "Account is open"
-        open()
+        account.open()
 
         and: "I perform a series of deposits and withdrawals on different days"
 
         clock + ofDays(1)
-        deposit(Amount.of(100.00))
+        account.deposit(Amount.of(100.00))
 
         clock + ofDays(1)
         def from = today()
-        deposit(Amount.of(99.00))
+        account.deposit(Amount.of(99.00))
 
         clock + ofDays(1)
         def to = today()
-        withdraw(Amount.of(98.00))
+        account.withdraw(Amount.of(98.00))
 
         clock + ofDays(1)
-        withdraw(Amount.of(2.00))
+        account.withdraw(Amount.of(2.00))
 
         when: "I ask for a bank statement"
-        def actual = statement(from, to).json()
+        def actual = account.statement(from, to).json()
 
         then: "I should see all operations as a nicely formatted JSON"
         def expected = """

@@ -150,7 +150,7 @@ public abstract class BaseBankAccount<T> extends AggregateRoot<T> {
             var dailyLimit = withdrawalLimits.dailyLimit();
             var dailyLimitReached = withdrawn(today()).isGreaterThan(dailyLimit);
             checkState(!dailyLimitReached, "Daily withdrawal limit (%s) reached.", dailyLimit);
-        }
+        } 
 
         private Amount withdrawn(LocalDate someDay) {
             return StreamEx.of(transactions)
