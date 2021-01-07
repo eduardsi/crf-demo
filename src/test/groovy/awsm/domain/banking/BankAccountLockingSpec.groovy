@@ -16,7 +16,6 @@ import spock.lang.Specification
 import javax.persistence.EntityManager
 import javax.persistence.PessimisticLockException
 
-import static javax.persistence.LockModeType.PESSIMISTIC_READ
 import static javax.persistence.LockModeType.PESSIMISTIC_WRITE
 
 @DataJpaTest

@@ -33,8 +33,6 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
         this.email = email;
     }
 
-
-
     @Override
     public RegistrationOk execute() {
 
@@ -56,7 +54,7 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
         var accountByIban = new BankAccountByIban(dsl, iban).find();
         System.out.println(accountByIban.balance());
 
-        return new RegistrationOk(encryptor.encrypt(personalId));
+        return new RegistrationOk(encryptedPersonalId());
     }
 
     private void validate() {
@@ -68,6 +66,10 @@ public class RegisterNow implements Command<RegisterNow.RegistrationOk> {
                 .with(() -> email, v -> !v.isBlank(), "email is missing", nested ->
                         nested.with(() -> email, isUnique, "email is taken")
                 ).check(this);
+    }
+
+    private String encryptedPersonalId() {
+        return encryptor.encrypt(personalId);
     }
 
     public static class RegistrationOk {

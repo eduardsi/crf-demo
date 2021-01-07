@@ -12,3 +12,4 @@ public class IsManualApprovalNeeded implements Specification<Transaction> {
         return tx.deposited().isGreaterThanOrEqualTo(threshold) || tx.withdrawn().isGreaterThanOrEqualTo(threshold);
     }
 }
+

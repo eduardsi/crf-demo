@@ -7,13 +7,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-
 public interface DomainEvents {
+
+    DomainEvents NONE = new NoDomainEvents();
 
     Logger logger = LoggerFactory.getLogger(DomainEvents.class);
 
     static DomainEvents defaultInstance() {
-        return SpringManaged.INSTANCE.orElseGet(() -> new Unsupported());
+        return SpringManaged.INSTANCE.orElse(NONE);
     }
 
     void publish(DomainEvent event);
@@ -43,7 +44,7 @@ public interface DomainEvents {
 
     }
 
-    class Unsupported implements DomainEvents {
+    class NoDomainEvents implements DomainEvents {
         @Override
         public void publish(DomainEvent event) {
             logger.warn("No domain events configured. Cannot send event: " + event);
