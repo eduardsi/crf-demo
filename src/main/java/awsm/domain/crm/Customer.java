@@ -24,4 +24,8 @@ public class Customer {
 
     private Customer() {
     }
+
+    public void register(CustomerRepository repo) {
+        repo.save(this);
+    }
 }

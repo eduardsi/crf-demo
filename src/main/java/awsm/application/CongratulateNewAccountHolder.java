@@ -28,18 +28,18 @@ public class CongratulateNewAccountHolder implements Command<Voidy> {
   @Import(SimpleJavaMailSpringSupport.class)
   static class Handler implements Command.Handler<CongratulateNewAccountHolder, Voidy> {
 
-    private final BankAccountRepository accounts;
+    private final BankAccountRepository accountRepo;
 
     private final Mailer mailer;
 
-    private Handler(BankAccountRepository accounts, Mailer mailer) {
-      this.accounts = accounts;
+    private Handler(BankAccountRepository accountRepo, Mailer mailer) {
+      this.accountRepo = accountRepo;
       this.mailer = mailer;
     }
 
     @Override
     public Voidy handle(CongratulateNewAccountHolder cmd) {
-      var account = accounts.getOne(cmd.iban);
+      var account = accountRepo.getOne(cmd.iban);
       var email = EmailBuilder
               .startingBlank()
               .to(account.holder().email())

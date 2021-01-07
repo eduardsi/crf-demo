@@ -9,15 +9,15 @@ public interface Uniqueness {
     @Component
     class AcrossCustomers implements Uniqueness {
 
-        private final CustomerRepository customers;
+        private final CustomerRepository customersRepo;
 
-        private AcrossCustomers(CustomerRepository customers) {
-            this.customers = customers;
+        private AcrossCustomers(CustomerRepository customersRepo) {
+            this.customersRepo = customersRepo;
         }
 
         @Override
         public boolean guaranteed(String email) {
-            return !customers.existsByEmail(email);
+            return !customersRepo.existsByEmail(email);
         }
 
     }

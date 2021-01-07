@@ -1,6 +1,7 @@
 package awsm.domain.crm;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;

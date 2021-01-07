@@ -19,10 +19,10 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 
 public class Register implements Command<Register.Response>, RateLimited {
 
-    public final String firstName;
-    public final String lastName;
-    public final String personalId;
-    public final String email;
+    private final String firstName;
+    private final String lastName;
+    private final String personalId;
+    private final String email;
 
     Register(String firstName, String lastName, String personalId, String email) {
         this.firstName = firstName;
@@ -48,25 +48,34 @@ public class Register implements Command<Register.Response>, RateLimited {
         }
     }
 
-
     @Scope(SCOPE_PROTOTYPE)
     @Component
     static class Handler implements Command.Handler<Register, Response> {
 
         private final TextEncryptor textEncryptor;
 
-        private final CustomerRepository customers;
+        private final CustomerRepository repo;
 
         private final Uniqueness uniqueness;
 
-        Handler(TextEncryptor textEncryptor, CustomerRepository customers, Uniqueness uniqueness) {
+        Handler(TextEncryptor textEncryptor, CustomerRepository repo, Uniqueness uniqueness) {
             this.textEncryptor = textEncryptor;
-            this.customers = customers;
+            this.repo = repo;
             this.uniqueness = memoize(uniqueness::guaranteed)::apply;
         }
 
         @Override
         public Response handle(Register command) {
+            validate(command);
+
+            var email = new UniqueEmail(command.email, uniqueness);
+            var customer = new Customer(command.personalId, command.firstName, command.lastName, email);
+            customer.register(repo);
+
+            return new Response(encrypted(command.personalId));
+        }
+
+        private void validate(Register command) {
             new Validator<>()
                     .with(() -> command.firstName, v -> !v.isBlank(), "firstName is missing")
                     .with(() -> command.lastName, v -> !v.isBlank(), "lastName is missing")
@@ -75,11 +84,10 @@ public class Register implements Command<Register.Response>, RateLimited {
                             nested.with(() -> command.email, (email) -> uniqueness.guaranteed(email), "email is taken")
                     )
                     .check(command);
+        }
 
-            var email = new UniqueEmail(command.email, uniqueness);
-            var customer = new Customer(command.personalId, command.firstName, command.lastName, email);
-            customers.save(customer);
-            return new Response(textEncryptor.encrypt(command.personalId));
+        private String encrypted(String personalId) {
+            return textEncryptor.encrypt(personalId);
         }
 
     }
