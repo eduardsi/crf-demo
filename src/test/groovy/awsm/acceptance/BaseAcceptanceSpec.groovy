@@ -7,10 +7,8 @@ import org.apache.http.impl.client.HttpClientBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.util.TestPropertyValues
-import org.springframework.context.ApplicationContextInitializer
-import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -24,7 +22,6 @@ import static org.apache.http.util.EntityUtils.toString
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = Initializer)
 abstract class BaseAcceptanceSpec extends Specification implements WithFaker, WithJsonOperations {
 
     private static final MAILHOG_PORT_SMTP = 1025
@@ -48,14 +45,10 @@ abstract class BaseAcceptanceSpec extends Specification implements WithFaker, Wi
         return JsonPath.builder(toString(httpResponse.entity)).array("items")
     }
 
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        void initialize(ConfigurableApplicationContext applicationContext) {
-            TestPropertyValues.of(
-                    "simplejavamail.smtp.host=${MAILHOG_SINGLETON.getContainerIpAddress()}",
-                    "simplejavamail.smtp.port=${MAILHOG_SINGLETON.getMappedPort(MAILHOG_PORT_SMTP)}"
-            ).applyTo(applicationContext.environment)
-        }
+    @DynamicPropertySource
+    static void mailHogProperties(DynamicPropertyRegistry registry) {
+        registry.add("simplejavamail.smtp.host", () -> MAILHOG_SINGLETON.getContainerIpAddress())
+        registry.add("simplejavamail.smtp.port", () -> MAILHOG_SINGLETON.getMappedPort(MAILHOG_PORT_SMTP))
     }
 
 }
