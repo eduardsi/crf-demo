@@ -38,6 +38,7 @@ group = "awsm"
 version = "UNSPECIFIED"
 
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'java-library'
 apply plugin: 'groovy'
 apply plugin: 'checkstyle'
@@ -52,6 +53,10 @@ repositories {
     maven() {
         url cronapp
     }
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+
 }
 
 dependencyManagement {
@@ -132,6 +137,10 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_15
     targetCompatibility = JavaVersion.VERSION_15
+}
+
+jacoco {
+    toolVersion = '0.8.7-SNAPSHOT'
 }
 
 checkstyle {
