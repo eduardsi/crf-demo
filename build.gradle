@@ -91,6 +91,7 @@ dependencies {
     implementation emojiJava
     implementation lightbendConfig
     implementation commonsText
+    implementation jool
     implementation commonsLang
     implementation gson
     implementation gsonExtras
