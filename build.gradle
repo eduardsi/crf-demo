@@ -92,6 +92,7 @@ dependencies {
     implementation lightbendConfig
     implementation commonsText
     implementation jool
+    implementation vavr
     implementation commonsLang
     implementation gson
     implementation gsonExtras
