@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 @MappedSuperclass
-public abstract class BaseBankAccount<T> extends AggregateRoot<T> {
+abstract class BaseBankAccount<T> extends AggregateRoot<T> {
 
     enum Status {
         NEW, OPEN, SUSPENDED, CLOSED
