@@ -10,12 +10,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 public class ApplyForBankAccountCommand implements Command<ApplyForBankAccountCommand.Response> {
-
     public final String firstName;
     public final String lastName;
     public final String personalId;
     public final String email;
-
     ApplyForBankAccountCommand(String firstName, String lastName, String personalId, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -30,15 +28,12 @@ public class ApplyForBankAccountCommand implements Command<ApplyForBankAccountCo
         }
     }
 
-
     @Component
     static class Handler implements Command.Handler<ApplyForBankAccountCommand, Response> {
-
-        private final BankAccountRepository accounts;
+        private final BankAccountRepository repo;
         private final Environment env;
-
-        Handler(BankAccountRepository accounts, Environment env) {
-            this.accounts = accounts;
+        Handler(BankAccountRepository repo, Environment env) {
+            this.repo = repo;
             this.env = env;
         }
 
@@ -49,7 +44,7 @@ public class ApplyForBankAccountCommand implements Command<ApplyForBankAccountCo
             var account = new BankAccount(accountHolder, withdrawalLimits);
             account.open();
             account.deposit(openingBonus());
-            accounts.save(account);
+            repo.save(account);
             return new Response(account.iban());
         }
 

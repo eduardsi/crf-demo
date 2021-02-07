@@ -5,15 +5,16 @@ import awsm.domain.crm.Customer;
 import awsm.domain.crm.CustomerRepository;
 import awsm.domain.crm.Uniqueness;
 import awsm.infrastructure.pipeline.middlewares.resilience.RateLimit;
+import awsm.infrastructure.security.Encryption;
 import awsm.infrastructure.validation.Validator;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Refill;
 import org.apache.commons.lang3.StringUtils;
-import org.jasypt.util.text.TextEncryptor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import static awsm.infrastructure.memoize.FunctionMemoizer.memoize;
+import static awsm.infrastructure.security.Encryption.encrypt;
 import static java.time.Duration.ofSeconds;
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
@@ -49,11 +50,10 @@ public class RegisterCommand implements Command<RegisterCommand.Response> {
     @Component
     @Scope(SCOPE_PROTOTYPE)
     static class Handler implements Command.Handler<RegisterCommand, Response> {
-        private final TextEncryptor textEncryptor;
         private final CustomerRepository repo;
         private final Uniqueness uniqueness;
-        Handler(TextEncryptor textEncryptor, CustomerRepository repo, Uniqueness uniqueness) {
-            this.textEncryptor = textEncryptor;
+
+        Handler(CustomerRepository repo, Uniqueness uniqueness) {
             this.repo = repo;
             this.uniqueness = memoize(uniqueness::guaranteed)::apply;
         }
@@ -70,7 +70,7 @@ public class RegisterCommand implements Command<RegisterCommand.Response> {
 //            uniqueness.guaranteed(cmd.email);
 //            uniqueness.guaranteed(cmd.email);
 
-            var encryptedPersonalId = encrypted(cmd.personalId);
+            var encryptedPersonalId = encrypt(cmd.personalId);
             return new Response(encryptedPersonalId);
         }
 
@@ -85,9 +85,6 @@ public class RegisterCommand implements Command<RegisterCommand.Response> {
                     .check(cmd);
         }
 
-        private String encrypted(String personalId) {
-            return textEncryptor.encrypt(personalId);
-        }
 
     }
 
