@@ -15,13 +15,9 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 
 class BankStatement {
-
   private final Collection<Entry> entries = new ArrayList<>();
-
   private final BalanceOnADate closingBalance;
-
   private final BalanceOnADate startingBalance;
-
   BankStatement(LocalDate fromInclusive, LocalDate toInclusive, Collection<Transaction> transactions) {
     var startingBalance =  StreamEx
             .of(transactions)
@@ -73,15 +69,10 @@ class BankStatement {
   }
 
   private static class Entry {
-
     private final LocalDateTime time;
-
     private final Amount withdrawal;
-
     private final Amount deposit;
-
     private final Amount balance;
-
     private Entry(LocalDateTime time, Amount withdrawal, Amount deposit, Amount balance) {
       this.time = time.truncatedTo(MINUTES);
       this.withdrawal = withdrawal;
@@ -92,10 +83,8 @@ class BankStatement {
   }
 
   private static class BalanceOnADate {
-
     private final Amount balance;
     private final LocalDate date;
-
     private BalanceOnADate(LocalDate date, Amount balance) {
       this.balance = balance;
       this.date = date;
