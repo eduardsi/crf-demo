@@ -5,7 +5,6 @@ import awsm.domain.crm.Customer;
 import awsm.domain.crm.CustomerRepository;
 import awsm.domain.crm.Uniqueness;
 import awsm.infrastructure.pipeline.middlewares.resilience.RateLimit;
-import awsm.infrastructure.security.Encryption;
 import awsm.infrastructure.validation.Validator;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Refill;
