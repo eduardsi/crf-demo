@@ -13,7 +13,7 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
 
 @ControllerAdvice
 @Order
-public class SpringMvcExceptionHandler extends ResponseEntityExceptionHandler {
+class SpringMvcExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handle(Exception it) {
