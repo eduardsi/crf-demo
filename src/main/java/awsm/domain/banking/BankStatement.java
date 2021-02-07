@@ -79,7 +79,6 @@ class BankStatement {
       this.deposit = deposit;
       this.balance = balance;
     }
-
   }
 
   private static class BalanceOnADate {
@@ -89,6 +88,5 @@ class BankStatement {
       this.balance = balance;
       this.date = date;
     }
-
   }
 }

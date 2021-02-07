@@ -16,30 +16,10 @@ import static awsm.infrastructure.clock.TimeMachine.now;
 
 @Embeddable
 class Transaction implements DomainEntity<Transaction> {
-
     private static final ULID ulid = new ULID();
 
-    enum Type {
-        DEPOSIT {
-            @Override
-            Amount apply(Amount amount, Amount balance) {
-                return balance.add(amount);
-            }
-        },
-        WITHDRAW {
-            @Override
-            Amount apply(Amount amount, Amount balance) {
-                return balance.subtract(amount);
-            }
-        };
-
-        abstract Amount apply(Amount amount, Amount balance);
-    }
-
     private String uid;
-
     private Amount amount;
-
     private LocalDateTime bookingTime;
 
     @Enumerated(EnumType.STRING)
@@ -105,6 +85,23 @@ class Transaction implements DomainEntity<Transaction> {
 
     static Transaction depositOf(Amount amount) {
         return new Transaction(Type.DEPOSIT, amount, now());
+    }
+
+    enum Type {
+        DEPOSIT {
+            @Override
+            Amount apply(Amount amount, Amount balance) {
+                return balance.add(amount);
+            }
+        },
+        WITHDRAW {
+            @Override
+            Amount apply(Amount amount, Amount balance) {
+                return balance.subtract(amount);
+            }
+        };
+
+        abstract Amount apply(Amount amount, Amount balance);
     }
 
 }
