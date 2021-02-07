@@ -16,14 +16,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("rawtypes")
 class ScheduledCommand {
-
   private final LocalDateTime creationDate;
-
   private final Command command;
-
   private Optional<Long> id = Optional.empty();
-
   ScheduledCommand(Command command) {
     this(LocalDateTime.now(UTC), command);
   }
