@@ -33,8 +33,8 @@ class ScheduledCommand {
     this.command = command;
   }
 
-  void saveNew(Repository repository) {
-    repository.insert(this);
+  void execute(Pipeline pipeline) {
+    command.execute(pipeline);
   }
 
   @Override
@@ -46,30 +46,20 @@ class ScheduledCommand {
   static class Repository {
 
     private final DSLContext dsl;
-    private final Pipeline pipeline;
     private final Gson gson;
 
-    Repository(DSLContext dsl, Pipeline pipeline, Gson gson) {
+    Repository(DSLContext dsl, Gson gson) {
       this.dsl = dsl;
-      this.pipeline = pipeline;
       this.gson = gson;
     }
 
-    Stream<Runnable> list(long limit) {
+    Stream<ScheduledCommand> list(long limit) {
       return dsl
-          .selectFrom(SCHEDULED_COMMAND)
-          .limit(limit)
-          .forUpdate()
-          .fetchStream()
-          .map(fromJooq())
-          .map(this::runnable);
-    }
-
-    private Runnable runnable(ScheduledCommand self) {
-      return () -> {
-        self.command.execute(pipeline);
-        delete(self);
-      };
+              .selectFrom(SCHEDULED_COMMAND)
+              .limit(limit)
+              .forUpdate()
+              .fetchStream()
+              .map(fromJooq());
     }
 
     private Function<ScheduledCommandRecord, ScheduledCommand> fromJooq() {
@@ -81,7 +71,7 @@ class ScheduledCommand {
       };
     }
 
-    private void insert(ScheduledCommand self) {
+    void insert(ScheduledCommand self) {
       var id = dsl
           .insertInto(SCHEDULED_COMMAND)
             .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
@@ -92,7 +82,7 @@ class ScheduledCommand {
       self.id = Optional.of(id);
     }
 
-    private void delete(ScheduledCommand self) {
+    void delete(ScheduledCommand self) {
       dsl
           .deleteFrom(SCHEDULED_COMMAND)
           .where(SCHEDULED_COMMAND.ID.equal(self.id.orElseThrow()))

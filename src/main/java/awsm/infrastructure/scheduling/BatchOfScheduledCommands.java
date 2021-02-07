@@ -1,12 +1,15 @@
 package awsm.infrastructure.scheduling;
 
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+
+import an.awesome.pipelinr.Pipeline;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,12 +23,15 @@ class BatchOfScheduledCommands {
 
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
-  private final ScheduledCommand.Repository scheduledCommands;
+  private final ScheduledCommand.Repository repo;
+
+  private final Pipeline pipeline;
 
   private final PlatformTransactionManager txManager;
 
-  public BatchOfScheduledCommands(ScheduledCommand.Repository scheduledCommands, PlatformTransactionManager txManager) {
-    this.scheduledCommands = scheduledCommands;
+  public BatchOfScheduledCommands(ScheduledCommand.Repository repo, Pipeline pipeline, PlatformTransactionManager txManager) {
+    this.repo = repo;
+    this.pipeline = pipeline;
     this.txManager = txManager;
   }
 
@@ -38,21 +44,27 @@ class BatchOfScheduledCommands {
   }
 
   private Stream<CompletableFuture<Void>> run() {
-    return scheduledCommands
-        .list(BATCH_SIZE)
-        .map(this::wrapInATx)
-        .map(this::runInPool);
+    return repo
+            .list(BATCH_SIZE)
+            .map(this::work)
+            .map(this::runInAPool);
   }
 
-  private Runnable wrapInATx(Runnable runnable) {
+  private Runnable work(ScheduledCommand cmd) {
+    return () -> newTx().executeWithoutResult(__ -> {
+      cmd.execute(pipeline);
+      repo.delete(cmd);
+    });
+  }
+
+  private TransactionTemplate newTx() {
     var newTx = new TransactionTemplate(txManager);
     newTx.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
-    return () -> newTx.executeWithoutResult(txStatus -> runnable.run());
+    return newTx;
   }
 
-  private CompletableFuture<Void> runInPool(Runnable runnable) {
-    return CompletableFuture.runAsync(runnable, THREAD_POOL);
+  private CompletableFuture<Void> runInAPool(Runnable runnable) {
+    return runAsync(runnable, THREAD_POOL);
   }
-
 
 }
