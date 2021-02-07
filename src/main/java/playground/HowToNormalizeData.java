@@ -14,6 +14,8 @@ import static org.apache.commons.text.WordUtils.capitalizeFully;
 
 public class HowToNormalizeData {
 
+
+
     public static void main(String[] args) {
         var fullName = "\uD83D\uDE80 sören ilić \uD83D\uDE04";
 

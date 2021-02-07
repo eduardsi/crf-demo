@@ -5,7 +5,7 @@ import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static dagger.internal.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Amount {
 

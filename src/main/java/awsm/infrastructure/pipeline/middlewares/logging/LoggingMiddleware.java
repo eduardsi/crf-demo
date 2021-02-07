@@ -1,18 +1,19 @@
-package awsm.infrastructure.pipeline.logging;
+package awsm.infrastructure.pipeline.middlewares.logging;
 
 import an.awesome.pipelinr.Command;
+import awsm.infrastructure.pipeline.middlewares.logging.CorrelationId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(1)
-class Logging implements Command.Middleware {
+@Order(5)
+class LoggingMiddleware implements Command.Middleware {
 
   private final CorrelationId correlationId;
 
-  public Logging(CorrelationId correlationId) {
+  public LoggingMiddleware(CorrelationId correlationId) {
     this.correlationId = correlationId;
   }
 

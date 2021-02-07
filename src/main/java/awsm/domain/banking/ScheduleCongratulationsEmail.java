@@ -1,6 +1,6 @@
 package awsm.domain.banking;
 
-import awsm.application.CongratulateNewAccountHolder;
+import awsm.commands.CongratulateNewAccountHolderCommand;
 import awsm.domain.core.DomainEvent;
 import awsm.infrastructure.scheduling.Scheduler;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ class ScheduleCongratulationsEmail implements DomainEvent.SideEffect<BankAccount
 
   @Override
   public void trigger(BankAccountOpened event) {
-    var congratulateLater = new CongratulateNewAccountHolder(event.iban());
+    var congratulateLater = new CongratulateNewAccountHolderCommand(event.iban());
     scheduler.schedule(congratulateLater);
   }
 }

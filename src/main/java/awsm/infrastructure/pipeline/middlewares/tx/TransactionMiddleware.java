@@ -1,4 +1,4 @@
-package awsm.infrastructure.pipeline.tx;
+package awsm.infrastructure.pipeline.middlewares.tx;
 
 import an.awesome.pipelinr.Command;
 import org.springframework.core.annotation.Order;
@@ -7,12 +7,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
-@Order(3)
-class Tx implements Command.Middleware {
+@Order(15)
+class TransactionMiddleware implements Command.Middleware {
 
   private final PlatformTransactionManager txManager;
 
-  Tx(PlatformTransactionManager txManager) {
+  TransactionMiddleware(PlatformTransactionManager txManager) {
     this.txManager = txManager;
   }
 

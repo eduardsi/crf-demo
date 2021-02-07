@@ -1,8 +1,8 @@
-package awsm.application.webapi;
+package awsm.webapi;
 
 import an.awesome.pipelinr.Pipeline;
-import awsm.application.ApplyForBankAccount;
-import awsm.application.Register;
+import awsm.commands.ApplyForBankAccountCommand;
+import awsm.commands.RegisterCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,12 +15,12 @@ class WebController {
     Pipeline pipeline;
 
     @PostMapping("/registrations")
-    Register.Response register(@RequestBody Register command) {
+    RegisterCommand.Response register(@RequestBody RegisterCommand command) {
         return command.execute(pipeline);
     }
 
     @PostMapping("/bank-accounts")
-    ApplyForBankAccount.Response applyForBankAccount(@RequestBody ApplyForBankAccount command) {
+    ApplyForBankAccountCommand.Response applyForBankAccount(@RequestBody ApplyForBankAccountCommand command) {
         return command.execute(pipeline);
     }
 }

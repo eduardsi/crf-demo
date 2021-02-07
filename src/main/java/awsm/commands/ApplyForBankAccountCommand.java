@@ -1,4 +1,4 @@
-package awsm.application;
+package awsm.commands;
 
 import an.awesome.pipelinr.Command;
 import awsm.domain.banking.AccountHolder;
@@ -9,14 +9,14 @@ import awsm.domain.core.Amount;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-public class ApplyForBankAccount implements Command<ApplyForBankAccount.Response> {
+public class ApplyForBankAccountCommand implements Command<ApplyForBankAccountCommand.Response> {
 
     public final String firstName;
     public final String lastName;
     public final String personalId;
     public final String email;
 
-    ApplyForBankAccount(String firstName, String lastName, String personalId, String email) {
+    ApplyForBankAccountCommand(String firstName, String lastName, String personalId, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;
@@ -24,17 +24,16 @@ public class ApplyForBankAccount implements Command<ApplyForBankAccount.Response
     }
 
     public static class Response {
-
         public final String iban;
-
-        Response(String iban) {
+        public Response(String iban) {
             this.iban = iban;
         }
     }
 
 
     @Component
-    static class Handler implements Command.Handler<ApplyForBankAccount, ApplyForBankAccount.Response> {
+    static class Handler implements Command.Handler<ApplyForBankAccountCommand, Response> {
+
         private final BankAccountRepository accounts;
         private final Environment env;
 
@@ -44,7 +43,7 @@ public class ApplyForBankAccount implements Command<ApplyForBankAccount.Response
         }
 
         @Override
-        public Response handle(ApplyForBankAccount cmd) {
+        public Response handle(ApplyForBankAccountCommand cmd) {
             var withdrawalLimits = WithdrawalLimits.defaults(env);
             var accountHolder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId, cmd.email);
             var account = new BankAccount(accountHolder, withdrawalLimits);
@@ -58,5 +57,4 @@ public class ApplyForBankAccount implements Command<ApplyForBankAccount.Response
             return Amount.of("5.00");
         }
     }
-
 }

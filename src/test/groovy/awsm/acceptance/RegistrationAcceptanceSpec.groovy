@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 
-class RegisterNowAcceptanceSpec extends BaseAcceptanceSpec {
+class RegistrationAcceptanceSpec extends BaseAcceptanceSpec {
 
     def registrationInfo() {
         [

@@ -1,4 +1,4 @@
-package awsm.infrastructure.pipeline.logging;
+package awsm.infrastructure.pipeline.middlewares.logging;
 
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;

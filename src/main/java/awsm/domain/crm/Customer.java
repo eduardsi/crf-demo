@@ -15,17 +15,14 @@ public class Customer {
 
     private String email;
 
-    public Customer(String personalId, String firstName, String lastName, UniqueEmail email) {
+    public Customer(String personalId, String firstName, String lastName, String email) {
         this.personalId = personalId;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email.toString();
+        this.email = email;
     }
 
     private Customer() {
     }
 
-    public void register(CustomerRepository repo) {
-        repo.save(this);
-    }
 }

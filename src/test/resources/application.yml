@@ -4,8 +4,14 @@ banking:
     daily: 500.00
     monthly: 3000.00
 
+
 spring:
   jpa:
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
     open-in-view: false
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver

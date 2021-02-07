@@ -1,4 +1,4 @@
-package awsm.application;
+package awsm.commands;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
@@ -10,23 +10,23 @@ import org.simplejavamail.springsupport.SimpleJavaMailSpringSupport;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
-import static awsm.application.CongratulateNewAccountHolder.ID;
+import static awsm.commands.CongratulateNewAccountHolderCommand.ID;
 import static java.lang.String.format;
 
 @ScheduledCommandId(ID)
-public class CongratulateNewAccountHolder implements Command<Voidy> {
+public class CongratulateNewAccountHolderCommand implements Command<Voidy> {
 
   static final String ID = "Congratulations";
 
   final String iban;
 
-  public CongratulateNewAccountHolder(String iban) {
+  public CongratulateNewAccountHolderCommand(String iban) {
     this.iban = iban;
   }
 
   @Component
   @Import(SimpleJavaMailSpringSupport.class)
-  static class Handler implements Command.Handler<CongratulateNewAccountHolder, Voidy> {
+  static class Handler implements Command.Handler<CongratulateNewAccountHolderCommand, Voidy> {
 
     private final BankAccountRepository accountRepo;
 
@@ -38,7 +38,7 @@ public class CongratulateNewAccountHolder implements Command<Voidy> {
     }
 
     @Override
-    public Voidy handle(CongratulateNewAccountHolder cmd) {
+    public Voidy handle(CongratulateNewAccountHolderCommand cmd) {
       var account = accountRepo.getOne(cmd.iban);
       var email = EmailBuilder
               .startingBlank()
