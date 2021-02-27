@@ -16,3 +16,8 @@ Complementary materials for the course **[Effective Java Software Design](https:
 ```
 ./gradlew test
 ```
+
+#### Code formatting
+```
+./gradlew spotlessApply
+```
