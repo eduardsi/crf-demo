@@ -21,7 +21,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-//        classpath errorprone
+        classpath errorprone
         classpath springDepManager
         classpath springBoot
         classpath testContainersPg
@@ -40,10 +40,9 @@ apply plugin: "com.diffplug.spotless"
 apply plugin: 'jacoco'
 apply plugin: 'java-library'
 apply plugin: 'groovy'
-apply plugin: 'checkstyle'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
-//apply plugin: 'net.ltgt.errorprone'
+apply plugin: 'net.ltgt.errorprone'
 
 group = "awsm"
 version = "UNSPECIFIED"
@@ -79,9 +78,8 @@ spotless {
 }
 
 dependencies {
-//    wait for Java 15 support :(
-//    errorprone errorproneCore
-//    errorprone nullaway
+    errorprone errorproneCore
+    errorprone nullaway
 
     // experimental
     api 'org.immutables:value-annotations:2.8.8'
@@ -146,10 +144,6 @@ jacoco {
     toolVersion = '0.8.7-SNAPSHOT'
 }
 
-checkstyle {
-    toolVersion = "8.23"
-}
-
 tasks.withType(Test) {
     maxParallelForks = 4
     useJUnitPlatform()
@@ -158,17 +152,14 @@ tasks.withType(Test) {
 tasks.withType(JavaCompile) {
     options.compilerArgs += "-Xlint:unchecked"
     options.compilerArgs += "-Xlint:preview"
-//    it.options.errorprone { e ->
-//        e.disableWarningsInGeneratedCode = true
-//        e.disable "TypeParameterUnusedInFormals"
-//        e.option "NullAway:AnnotatedPackages", "awsm"
-//        e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
-//        e.option "NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.Embeddable"
-//    }
-}
-
-tasks.withType(Checkstyle) {
-    exclude 'jooq'
+    it.options.errorprone { e ->
+        e.disableWarningsInGeneratedCode = true
+        e.disable "TypeParameterUnusedInFormals"
+        e.disable "StaticAssignmentInConstructor"
+        e.option "NullAway:AnnotatedPackages", "awsm"
+        e.option "NullAway:ExcludedFieldAnnotations", "org.springframework.beans.factory.annotation.Autowired"
+        e.option "NullAway:ExternalInitAnnotations", "javax.persistence.Entity,javax.persistence.MappedSuperclass,javax.persistence.Embeddable"
+    }
 }
 
 compileJava {

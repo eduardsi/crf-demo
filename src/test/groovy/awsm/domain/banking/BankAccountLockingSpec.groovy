@@ -38,7 +38,7 @@ class BankAccountLockingSpec extends Specification {
 
     def setup() {
         newTx {
-            def holder = new AccountHolder(name().firstName(), name().lastName(), idNumber().valid(), internet().emailAddress())
+            def holder = new AccountHolder(name().firstName(), name().lastName(), internet().emailAddress())
             def withdrawalLimits = new WithdrawalLimits(Amount.of(1000.00), Amount.of(5000.00))
             def account = new BankAccount(holder, withdrawalLimits)
             account.open()

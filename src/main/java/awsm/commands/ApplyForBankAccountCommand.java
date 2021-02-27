@@ -43,7 +43,7 @@ public class ApplyForBankAccountCommand implements Command<ApplyForBankAccountCo
     @Override
     public Response handle(ApplyForBankAccountCommand cmd) {
       var withdrawalLimits = WithdrawalLimits.defaults(env);
-      var accountHolder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.personalId, cmd.email);
+      var accountHolder = new AccountHolder(cmd.firstName, cmd.lastName, cmd.email);
       var account = new BankAccount(accountHolder, withdrawalLimits);
       account.open();
       account.deposit(openingBonus());
