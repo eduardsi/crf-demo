@@ -70,6 +70,10 @@ dependencyManagement {
 
 spotless {
     java {
+        target project.fileTree(project.rootDir) {
+            include '**/*.java'
+            exclude '*/generated-src/**/*.*'
+        }
         googleJavaFormat()
     }
 }

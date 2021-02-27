@@ -14,5 +14,4 @@ class JooqConfiguration {
   DSLContext dsl(DataSource dataSource) {
     return DSL.using(dataSource, SQLDialect.POSTGRES);
   }
-
 }

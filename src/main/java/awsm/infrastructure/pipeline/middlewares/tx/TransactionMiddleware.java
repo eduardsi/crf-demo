@@ -23,5 +23,4 @@ class TransactionMiddleware implements Command.Middleware {
     tx.setReadOnly(command instanceof ReadOnly);
     return tx.execute(status -> next.invoke());
   }
-
 }

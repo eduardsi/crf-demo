@@ -1,10 +1,9 @@
 package awsm.infrastructure.pipeline.middlewares.logging;
 
-import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
 
 @Component
 class CorrelationId {
@@ -24,5 +23,4 @@ class CorrelationId {
   private String next() {
     return String.valueOf(counter.incrementAndGet() % 1000);
   }
-
 }

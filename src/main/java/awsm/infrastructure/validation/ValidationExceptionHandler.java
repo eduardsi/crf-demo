@@ -1,5 +1,6 @@
 package awsm.infrastructure.validation;
 
+import java.util.List;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -9,8 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.List;
-
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
@@ -19,5 +18,4 @@ class ValidationExceptionHandler extends ResponseEntityExceptionHandler {
   public ResponseEntity<List<String>> handle(ValidationException it, WebRequest request) {
     return new ResponseEntity<>(it.violations(), HttpStatus.BAD_REQUEST);
   }
-
 }

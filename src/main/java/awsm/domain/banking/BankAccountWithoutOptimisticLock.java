@@ -5,15 +5,14 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "BANK_ACCOUNT")
-public class BankAccountWithoutOptimisticLock extends BaseBankAccount<BankAccountWithoutOptimisticLock> {
+public class BankAccountWithoutOptimisticLock
+    extends BaseBankAccount<BankAccountWithoutOptimisticLock> {
 
-    public BankAccountWithoutOptimisticLock(AccountHolder holder, WithdrawalLimits withdrawalLimits) {
-        super(holder, withdrawalLimits);
-    }
+  public BankAccountWithoutOptimisticLock(AccountHolder holder, WithdrawalLimits withdrawalLimits) {
+    super(holder, withdrawalLimits);
+  }
 
-    BankAccountWithoutOptimisticLock() {
-        super();
-    }
-
+  BankAccountWithoutOptimisticLock() {
+    super();
+  }
 }
-

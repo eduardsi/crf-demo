@@ -1,19 +1,16 @@
 package awsm.infrastructure.scheduling;
 
+import static java.util.Arrays.asList;
+
 import an.awesome.pipelinr.Command;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
-
+import java.util.List;
 import javax.annotation.Nonnull;
-
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 @Component
 class GsonBeanFactory extends AbstractFactoryBean<Gson> {
@@ -32,21 +29,18 @@ class GsonBeanFactory extends AbstractFactoryBean<Gson> {
   }
 
   private void bindToType(String commandId) {
-    var type =  beanFactory.getType(commandId).asSubclass(Command.class);
+    var type = beanFactory.getType(commandId).asSubclass(Command.class);
     adapter.registerSubtype(type, commandId);
   }
 
   @Override
   @Nonnull
   protected Gson createInstance() {
-    return new GsonBuilder()
-            .registerTypeAdapterFactory(adapter)
-            .create();
+    return new GsonBuilder().registerTypeAdapterFactory(adapter).create();
   }
 
   @Override
   public Class<?> getObjectType() {
     return Gson.class;
   }
-
 }

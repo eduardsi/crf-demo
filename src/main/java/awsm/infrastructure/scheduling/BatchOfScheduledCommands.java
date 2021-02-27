@@ -4,12 +4,11 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
+import an.awesome.pipelinr.Pipeline;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-
-import an.awesome.pipelinr.Pipeline;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -29,7 +28,8 @@ class BatchOfScheduledCommands {
 
   private final PlatformTransactionManager txManager;
 
-  public BatchOfScheduledCommands(ScheduledCommand.Repository repo, Pipeline pipeline, PlatformTransactionManager txManager) {
+  public BatchOfScheduledCommands(
+      ScheduledCommand.Repository repo, Pipeline pipeline, PlatformTransactionManager txManager) {
     this.repo = repo;
     this.pipeline = pipeline;
     this.txManager = txManager;
@@ -38,23 +38,21 @@ class BatchOfScheduledCommands {
   @Transactional(readOnly = true)
   @Scheduled(initialDelay = 5000, fixedDelay = 5000)
   public void runAndWaitForAll() {
-    allOf(
-        run().toArray(CompletableFuture[]::new)
-    ).join();
+    allOf(run().toArray(CompletableFuture[]::new)).join();
   }
 
   private Stream<CompletableFuture<Void>> run() {
-    return repo
-            .list(BATCH_SIZE)
-            .map(this::work)
-            .map(this::runInAPool);
+    return repo.list(BATCH_SIZE).map(this::work).map(this::runInAPool);
   }
 
   private Runnable work(ScheduledCommand cmd) {
-    return () -> newTx().executeWithoutResult(__ -> {
-      cmd.execute(pipeline);
-      repo.delete(cmd);
-    });
+    return () ->
+        newTx()
+            .executeWithoutResult(
+                __ -> {
+                  cmd.execute(pipeline);
+                  repo.delete(cmd);
+                });
   }
 
   private TransactionTemplate newTx() {
@@ -66,5 +64,4 @@ class BatchOfScheduledCommands {
   private CompletableFuture<Void> runInAPool(Runnable runnable) {
     return runAsync(runnable, THREAD_POOL);
   }
-
 }

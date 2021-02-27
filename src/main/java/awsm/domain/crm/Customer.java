@@ -6,23 +6,20 @@ import javax.persistence.Id;
 @Entity
 public class Customer {
 
-    @Id
-    private String personalId;
+  @Id private String personalId;
 
-    private String firstName;
+  private String firstName;
 
-    private String lastName;
+  private String lastName;
 
-    private String email;
+  private String email;
 
-    public Customer(String personalId, String firstName, String lastName, String email) {
-        this.personalId = personalId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-    }
+  public Customer(String personalId, String firstName, String lastName, String email) {
+    this.personalId = personalId;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+  }
 
-    private Customer() {
-    }
-
+  private Customer() {}
 }

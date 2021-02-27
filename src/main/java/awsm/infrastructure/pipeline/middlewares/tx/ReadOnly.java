@@ -1,4 +1,3 @@
 package awsm.infrastructure.pipeline.middlewares.tx;
 
-public interface ReadOnly {
-}
+public interface ReadOnly {}

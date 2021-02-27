@@ -5,5 +5,4 @@ interface UnsatisfiedObligations {
   UnsatisfiedObligations NONE = () -> false;
 
   boolean exist();
-
 }

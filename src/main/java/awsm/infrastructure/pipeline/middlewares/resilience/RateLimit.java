@@ -9,10 +9,7 @@ public interface RateLimit<C extends Command<?>> {
   Bandwidth bandwidth();
 
   default boolean matches(C command) {
-    TypeToken<C> typeToken = new TypeToken<>(getClass()) {
-    };
+    TypeToken<C> typeToken = new TypeToken<>(getClass()) {};
     return typeToken.isSupertypeOf(command.getClass());
   }
-
-
 }

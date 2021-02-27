@@ -23,5 +23,4 @@ public class TimeMachine {
   public static LocalDateTime now() {
     return LocalDateTime.now(clock());
   }
-
 }

@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class WebController {
 
-    @Autowired
-    Pipeline pipeline;
+  @Autowired Pipeline pipeline;
 
-    @PostMapping("/registrations")
-    RegisterCommand.Response register(@RequestBody RegisterCommand command) {
-        return command.execute(pipeline);
-    }
+  @PostMapping("/registrations")
+  RegisterCommand.Response register(@RequestBody RegisterCommand command) {
+    return command.execute(pipeline);
+  }
 
-    @PostMapping("/bank-accounts")
-    ApplyForBankAccountCommand.Response applyForBankAccount(@RequestBody ApplyForBankAccountCommand command) {
-        return command.execute(pipeline);
-    }
+  @PostMapping("/bank-accounts")
+  ApplyForBankAccountCommand.Response applyForBankAccount(
+      @RequestBody ApplyForBankAccountCommand command) {
+    return command.execute(pipeline);
+  }
 }

@@ -16,5 +16,4 @@ public @interface ScheduledCommandId {
 
   @AliasFor(annotation = Component.class)
   String value() default "";
-
 }

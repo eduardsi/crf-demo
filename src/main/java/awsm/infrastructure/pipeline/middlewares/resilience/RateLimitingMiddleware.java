@@ -4,12 +4,11 @@ import an.awesome.pipelinr.Command;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Bucket4j;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 @Component
 @Order(10)
@@ -26,10 +25,7 @@ class RateLimitingMiddleware implements Command.Middleware {
 
   @Override
   public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-    var rateLimit = rateLimits
-            .stream()
-            .filter(limit -> limit.matches(command))
-            .findFirst();
+    var rateLimit = rateLimits.stream().filter(limit -> limit.matches(command)).findFirst();
 
     if (rateLimit.isEmpty()) {
       return next.invoke();
@@ -46,7 +42,7 @@ class RateLimitingMiddleware implements Command.Middleware {
 
   private <R, C extends Command<R>> Bucket bucket(C command, Bandwidth bandwidth) {
     var commandClass = command.getClass();
-    return buckets.computeIfAbsent(commandClass, type ->  Bucket4j.builder().addLimit(bandwidth).build());
+    return buckets.computeIfAbsent(
+        commandClass, type -> Bucket4j.builder().addLimit(bandwidth).build());
   }
-
 }

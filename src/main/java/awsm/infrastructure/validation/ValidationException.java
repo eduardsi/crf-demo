@@ -4,19 +4,18 @@ import java.util.List;
 
 class ValidationException extends RuntimeException {
 
-    private final List<String> violations;
+  private final List<String> violations;
 
-    ValidationException(List<String> violations) {
-        this.violations = violations;
-    }
+  ValidationException(List<String> violations) {
+    this.violations = violations;
+  }
 
-    public List<String> violations() {
-        return violations;
-    }
+  public List<String> violations() {
+    return violations;
+  }
 
-    @Override
-    public String getMessage() {
-        return String.join(", ", violations);
-    }
-
+  @Override
+  public String getMessage() {
+    return String.join(", ", violations);
+  }
 }

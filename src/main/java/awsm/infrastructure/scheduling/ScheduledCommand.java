@@ -21,6 +21,7 @@ class ScheduledCommand {
   private final LocalDateTime creationDate;
   private final Command command;
   private Optional<Long> id = Optional.empty();
+
   ScheduledCommand(Command command) {
     this(LocalDateTime.now(UTC), command);
   }
@@ -51,12 +52,11 @@ class ScheduledCommand {
     }
 
     Stream<ScheduledCommand> list(long limit) {
-      return dsl
-              .selectFrom(SCHEDULED_COMMAND)
-              .limit(limit)
-              .forUpdate()
-              .fetchStream()
-              .map(fromJooq());
+      return dsl.selectFrom(SCHEDULED_COMMAND)
+          .limit(limit)
+          .forUpdate()
+          .fetchStream()
+          .map(fromJooq());
     }
 
     private Function<ScheduledCommandRecord, ScheduledCommand> fromJooq() {
@@ -69,22 +69,20 @@ class ScheduledCommand {
     }
 
     void insert(ScheduledCommand self) {
-      var id = dsl
-          .insertInto(SCHEDULED_COMMAND)
-            .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
-            .set(SCHEDULED_COMMAND.COMMAND, gson.toJson(self.command, Command.class))
-            .returning(SCHEDULED_COMMAND.ID)
-            .fetchOne()
-            .id();
+      var id =
+          dsl.insertInto(SCHEDULED_COMMAND)
+              .set(SCHEDULED_COMMAND.CREATION_DATE, self.creationDate)
+              .set(SCHEDULED_COMMAND.COMMAND, gson.toJson(self.command, Command.class))
+              .returning(SCHEDULED_COMMAND.ID)
+              .fetchOne()
+              .id();
       self.id = Optional.of(id);
     }
 
     void delete(ScheduledCommand self) {
-      dsl
-          .deleteFrom(SCHEDULED_COMMAND)
+      dsl.deleteFrom(SCHEDULED_COMMAND)
           .where(SCHEDULED_COMMAND.ID.equal(self.id.orElseThrow()))
           .execute();
     }
   }
-
 }

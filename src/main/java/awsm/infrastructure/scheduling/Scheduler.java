@@ -16,5 +16,4 @@ public class Scheduler {
     var scheduledCommand = new ScheduledCommand(command);
     repository.insert(scheduledCommand);
   }
-
 }
