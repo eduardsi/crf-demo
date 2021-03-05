@@ -5,11 +5,10 @@ import static java.lang.String.format;
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
 import awsm.domain.banking.BankAccountRepository;
+import java.time.LocalDate;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
 
 public class CongratulateNewAccountHolderCommand implements Command<Voidy> {
 

@@ -8,7 +8,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import awsm.domain.core.AggregateRoot;
 import awsm.domain.core.Amount;
-import awsm.infrastructure.clock.TimeMachine;
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.time.Month;
