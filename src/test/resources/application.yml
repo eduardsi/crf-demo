@@ -4,7 +4,6 @@ banking:
     daily: 500.00
     monthly: 3000.00
 
-
 spring:
   jpa:
     properties:
@@ -13,10 +12,6 @@ spring:
           validation:
             mode: none
     open-in-view: false
-  datasource:
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    platform: postgres
-    url: jdbc:tc:postgresql:11.5://any:any/any?TC_TMPFS=/testtmpfs:rw
   groovy:
     template:
       check-template-location: false

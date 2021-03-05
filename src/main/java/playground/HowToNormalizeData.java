@@ -25,7 +25,7 @@ public class HowToNormalizeData {
   }
 
   private static String normalizeWithNesting(String fullName) {
-    return removeAllEmojis((capitalizeFully(stripAccents(fullName))));
+    return removeAllEmojis(capitalizeFully(stripAccents(fullName)));
   }
 
   private static String normalizeSimplyVariables(String fullName) {

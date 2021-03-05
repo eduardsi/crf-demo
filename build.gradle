@@ -1,19 +1,3 @@
-import org.flywaydb.core.Flyway
-import org.jooq.codegen.GenerationTool
-import org.jooq.codegen.DefaultGeneratorStrategy
-import org.jooq.meta.Definition
-import org.jooq.impl.Mode
-import org.jooq.meta.jaxb.Database
-import org.jooq.meta.jaxb.Generate
-import org.jooq.meta.jaxb.Generator
-import org.jooq.meta.jaxb.Jdbc
-import org.jooq.meta.jaxb.ForcedType
-import org.jooq.meta.jaxb.Target
-import org.jooq.meta.jaxb.Strategy
-import org.jooq.meta.postgres.PostgresDatabase
-import org.postgresql.Driver
-import org.testcontainers.containers.PostgreSQLContainer
-
 buildscript {
     repositories {
         jcenter()
@@ -25,11 +9,6 @@ buildscript {
         classpath springDepManager
         classpath springBoot
         classpath testContainersPg
-        classpath flyway
-        classpath postgres
-        classpath jooq
-        classpath jooqMeta
-        classpath jooqCodegen
         classpath spotless
 
     }
@@ -81,18 +60,14 @@ dependencies {
     errorprone errorproneCore
     errorprone nullaway
 
-    // experimental
-    api 'org.immutables:value-annotations:2.8.8'
-    annotationProcessor group: 'org.immutables', name: 'value-processor', version: '2.8.8'
-    testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+    compileOnly lombok
+	annotationProcessor lombok
 
     implementation emojiJava
     implementation commonsText
     implementation jool
     implementation vavr
     implementation commonsLang
-    implementation gson
-    implementation gsonExtras
     implementation hibernate
     implementation noException
     implementation guava
@@ -113,11 +88,8 @@ dependencies {
         because 'we use Jetty instead of Tomcat'
     }
     implementation javaxJson
-    implementation jooq
     implementation bucket4j
     implementation failsafe
-    implementation postgres
-    implementation flyway
     implementation pipelinr
     implementation hashIds
     implementation ulidGenerator
@@ -128,11 +100,13 @@ dependencies {
     testImplementation groovyJson
     testImplementation jsonAssert
     testImplementation archUnit
+    testImplementation h2
+    testImplementation greenmailSpring
     testImplementation spockSpring
     testImplementation springBootTest
     testImplementation springBootTestCfg
-    testImplementation testContainersPg
-    testImplementation testContainersSpo
+	testCompileOnly lombok
+	testAnnotationProcessor lombok
 }
 
 java {
@@ -164,68 +138,4 @@ tasks.withType(JavaCompile) {
 
 compileJava {
     options.annotationProcessorPath = configurations.annotationProcessor
-}
-
-def jooqOutput = "$buildDir/generated-src/jooq"
-sourceSets {
-    main {
-        java {
-            srcDirs += jooqOutput
-        }
-    }
-}
-
-class JooqGeneratorStrategy extends DefaultGeneratorStrategy {
-    @Override
-    String getJavaGetterName(Definition definition, Mode mode) {
-        super.getterSetterSuffix(definition).uncapitalize()
-    }
-}
-
-task generateJooq {
-    description = "Generates jOOQ sources."
-    doLast {
-        new PostgreSQLContainer("postgres:11.5").withCloseable { pg ->
-            pg.start()
-
-            def flyway = Flyway.configure()
-                    .locations("filesystem:$projectDir/src/main/resources/db/migration")
-                    .dataSource(pg.jdbcUrl, pg.username, pg.password)
-                    .load()
-
-            flyway.migrate()
-
-            def configuration = new org.jooq.meta.jaxb.Configuration()
-                    .withLogging(org.jooq.meta.jaxb.Logging.TRACE)
-                    .withJdbc(new Jdbc()
-                            .withDriver(Driver.name)
-                            .withUrl(pg.jdbcUrl)
-                            .withUser(pg.username)
-                            .withPassword(pg.password))
-                    .withGenerator(new Generator()
-                            .withStrategy(new Strategy()
-                                    .withName("JooqGeneratorStrategy")
-                            )
-                            .withGenerate(new Generate()
-                                    .withJavaTimeTypes(true)
-                                    .withFluentSetters(true)
-                            )
-                            .withDatabase(new Database()
-                                    .withName(PostgresDatabase.name)
-                                    .withIncludes(".*")
-                                    .withExcludes("")
-                                    .withInputSchema("public")
-                                    .withRecordVersionFields("VERSION")
-                            )
-                            .withTarget(new Target()
-                                    .withClean(true)
-                                    .withDirectory(jooqOutput)
-                                    .withPackageName("jooq")
-                            )
-                    )
-
-            GenerationTool.generate(configuration)
-        }
-
-    }
 }

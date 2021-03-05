@@ -4,7 +4,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "BANK_ACCOUNT")
 public class BankAccountWithoutOptimisticLock
     extends BaseBankAccount<BankAccountWithoutOptimisticLock> {
 

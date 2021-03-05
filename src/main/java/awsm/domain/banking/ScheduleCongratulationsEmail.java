@@ -16,7 +16,7 @@ class ScheduleCongratulationsEmail implements DomainEvent.SideEffect<BankAccount
 
   @Override
   public void trigger(BankAccountOpened event) {
-    var congratulateLater = new CongratulateNewAccountHolderCommand(event.iban());
+    var congratulateLater = new CongratulateNewAccountHolderCommand(event.iban(), event.date());
     scheduler.schedule(congratulateLater);
   }
 }

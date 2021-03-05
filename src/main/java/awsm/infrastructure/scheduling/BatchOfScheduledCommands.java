@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -22,14 +23,14 @@ class BatchOfScheduledCommands {
 
   private static final Executor THREAD_POOL = Executors.newFixedThreadPool(BATCH_SIZE);
 
-  private final ScheduledCommand.Repository repo;
+  private final ScheduledCommandRepository repo;
 
   private final Pipeline pipeline;
 
   private final PlatformTransactionManager txManager;
 
   public BatchOfScheduledCommands(
-      ScheduledCommand.Repository repo, Pipeline pipeline, PlatformTransactionManager txManager) {
+      ScheduledCommandRepository repo, Pipeline pipeline, PlatformTransactionManager txManager) {
     this.repo = repo;
     this.pipeline = pipeline;
     this.txManager = txManager;
@@ -42,7 +43,7 @@ class BatchOfScheduledCommands {
   }
 
   private Stream<CompletableFuture<Void>> run() {
-    return repo.list(BATCH_SIZE).map(this::work).map(this::runInAPool);
+    return repo.findAll(PageRequest.of(0, BATCH_SIZE)).map(this::work).map(this::runInAPool);
   }
 
   private Runnable work(ScheduledCommand cmd) {

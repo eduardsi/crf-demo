@@ -8,6 +8,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import awsm.domain.core.AggregateRoot;
 import awsm.domain.core.Amount;
+import awsm.infrastructure.clock.TimeMachine;
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.time.Month;
@@ -58,7 +59,7 @@ abstract class BaseBankAccount<T> extends AggregateRoot<T> {
 
   public void open() {
     this.status = OPEN;
-    publish(new BankAccountOpened(iban));
+    publish(new BankAccountOpened(iban, today()));
   }
 
   public void suspend() {

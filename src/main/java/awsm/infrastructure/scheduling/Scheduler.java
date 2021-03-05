@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class Scheduler {
 
-  private final ScheduledCommand.Repository repository;
+  private final ScheduledCommandRepository repository;
 
-  public Scheduler(ScheduledCommand.Repository repository) {
+  public Scheduler(ScheduledCommandRepository repository) {
     this.repository = repository;
   }
 
   public void schedule(Command command) {
     var scheduledCommand = new ScheduledCommand(command);
-    repository.insert(scheduledCommand);
+    repository.save(scheduledCommand);
   }
 }

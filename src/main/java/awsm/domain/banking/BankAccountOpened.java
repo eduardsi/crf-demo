@@ -1,17 +1,16 @@
 package awsm.domain.banking;
 
-import awsm.domain.core.Data;
 import awsm.domain.core.DomainEvent;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
-public class BankAccountOpened extends Data implements DomainEvent {
+import java.time.LocalDate;
+
+@Data
+@Accessors(fluent = true)
+public class BankAccountOpened implements DomainEvent {
 
   private final String iban;
 
-  BankAccountOpened(String iban) {
-    this.iban = iban;
-  }
-
-  public String iban() {
-    return iban;
-  }
+  private final LocalDate date;
 }

@@ -3,13 +3,16 @@ package awsm.domain.banking;
 import static com.google.common.base.Preconditions.checkState;
 
 import awsm.domain.core.Amount;
-import awsm.domain.core.Data;
 import java.math.BigDecimal;
 import javax.persistence.Embeddable;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.springframework.core.env.Environment;
 
 @Embeddable
-public class WithdrawalLimits extends Data {
+@Data
+@Accessors(fluent = true)
+public class WithdrawalLimits {
 
   private Amount dailyLimit;
 
@@ -28,14 +31,6 @@ public class WithdrawalLimits extends Data {
   }
 
   private WithdrawalLimits() {}
-
-  Amount dailyLimit() {
-    return dailyLimit;
-  }
-
-  Amount monthlyLimit() {
-    return monthlyLimit;
-  }
 
   public static WithdrawalLimits defaults(Environment env) {
     return new WithdrawalLimits(

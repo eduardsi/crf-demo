@@ -1,5 +1,6 @@
 package awsm.infrastructure.security;
 
+import java.util.Optional;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.jasypt.util.text.TextEncryptor;
 import org.slf4j.Logger;
@@ -14,10 +15,17 @@ public class Encryption {
 
   private static TextEncryptor ENCRYPTOR = new WeakTextEncryptor();
 
-  private Encryption(@Value("${security.encryption.password}") String encryptionPwd) {
-    var encryptor = new BasicTextEncryptor();
-    encryptor.setPassword(encryptionPwd);
-    ENCRYPTOR = encryptor;
+  private Encryption(
+      @Value("${security.encryption.password:#{null}") Optional<String> encryptionPwd) {
+    ENCRYPTOR =
+        encryptionPwd
+            .map(
+                pwd -> {
+                  var encryptor = new BasicTextEncryptor();
+                  encryptor.setPassword(pwd);
+                  return (TextEncryptor) encryptor;
+                })
+            .orElseGet(() -> new WeakTextEncryptor());
   }
 
   public static String encrypt(String rawValue) {

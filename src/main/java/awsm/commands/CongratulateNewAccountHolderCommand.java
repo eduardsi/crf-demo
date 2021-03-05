@@ -1,31 +1,27 @@
 package awsm.commands;
 
-import static awsm.commands.CongratulateNewAccountHolderCommand.ID;
 import static java.lang.String.format;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Voidy;
 import awsm.domain.banking.BankAccountRepository;
-import awsm.infrastructure.scheduling.ScheduledCommandId;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
-import org.simplejavamail.springsupport.SimpleJavaMailSpringSupport;
-import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
-@ScheduledCommandId(ID)
+import java.time.LocalDate;
+
 public class CongratulateNewAccountHolderCommand implements Command<Voidy> {
 
-  static final String ID = "Congratulations";
-
   final String iban;
+  final LocalDate date;
 
-  public CongratulateNewAccountHolderCommand(String iban) {
+  public CongratulateNewAccountHolderCommand(String iban, LocalDate date) {
+    this.date = date;
     this.iban = iban;
   }
 
   @Component
-  @Import(SimpleJavaMailSpringSupport.class)
   static class Handler implements Command.Handler<CongratulateNewAccountHolderCommand, Voidy> {
 
     private final BankAccountRepository accountRepo;
@@ -46,8 +42,8 @@ public class CongratulateNewAccountHolderCommand implements Command<Voidy> {
               .withSubject("Congratulations!")
               .withPlainText(
                   format(
-                      "Congratulations, %s. Thanks for using our services",
-                      account.holder().name()))
+                      "Congratulations, %s. Thanks for using our services in %s",
+                      account.holder().name(), cmd.date.getYear()))
               .buildEmail();
       mailer.sendMail(email);
       return new Voidy();
