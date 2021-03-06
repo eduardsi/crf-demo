@@ -1,4 +1,4 @@
-package awsm.acceptance
+package awsm.api
 
 
 import spock.util.concurrent.PollingConditions

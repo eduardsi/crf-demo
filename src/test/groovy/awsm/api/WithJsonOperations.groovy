@@ -1,4 +1,4 @@
-package awsm.acceptance
+package awsm.api
 
 import groovy.json.JsonBuilder
 import org.springframework.http.MediaType

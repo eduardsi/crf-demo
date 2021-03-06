@@ -1,4 +1,4 @@
-package awsm.acceptance
+package awsm.api
 
 import com.github.javafaker.Faker
 

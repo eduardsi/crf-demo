@@ -69,7 +69,6 @@ dependencies {
     implementation vavr
     implementation commonsLang
     implementation hibernate
-    implementation noException
     implementation guava
     implementation mug
     implementation caffeine
@@ -77,6 +76,7 @@ dependencies {
     implementation faker
     implementation jasypt
     implementation threeten
+    implementation hibernateValidator
     implementation simpleJavaMail
     implementation springBootJetty
     implementation springBootJpa

@@ -1,4 +1,4 @@
-package awsm.acceptance
+package awsm.api
 
 import com.icegreen.greenmail.spring.GreenMailBean
 import org.springframework.beans.factory.annotation.Autowired
