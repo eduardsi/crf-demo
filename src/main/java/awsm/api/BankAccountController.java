@@ -49,8 +49,7 @@ class BankAccountController {
             .to(holder.email())
             .withSubject("Congratulations!")
             .withPlainText(
-                format(
-                    "Congratulations, %s. Thanks for using our services", holder.name()))
+                format("Congratulations, %s. Thanks for using our services", holder.name()))
             .buildEmail();
     mailer.sendMail(email);
   }

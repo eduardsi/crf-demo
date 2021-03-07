@@ -14,7 +14,7 @@ import javax.persistence.Enumerated;
 import org.threeten.extra.LocalDateRange;
 
 @Embeddable
-class Transaction implements DomainEntity<Transaction> {
+public class Transaction implements DomainEntity<Transaction> {
   private static final ULID ulid = new ULID();
 
   private String uid;
@@ -41,7 +41,7 @@ class Transaction implements DomainEntity<Transaction> {
     return type.apply(amount, balance);
   }
 
-  Amount withdrawn() {
+  public Amount withdrawn() {
     return isWithdrawal() ? amount : Amount.ZERO;
   }
 
@@ -49,7 +49,7 @@ class Transaction implements DomainEntity<Transaction> {
     return type == Type.WITHDRAW;
   }
 
-  Amount deposited() {
+  public Amount deposited() {
     return isDeposit() ? amount : Amount.ZERO;
   }
 

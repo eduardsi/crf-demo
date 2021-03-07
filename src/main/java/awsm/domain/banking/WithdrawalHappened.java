@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(fluent = true)
-class WithdrawalHappened implements DomainEvent {
+public class WithdrawalHappened implements DomainEvent {
 
   private final String iban;
   private final String txUid;

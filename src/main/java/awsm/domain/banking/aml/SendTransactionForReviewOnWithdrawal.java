@@ -1,14 +1,16 @@
-package awsm.domain.banking;
+package awsm.domain.banking.aml;
 
+import awsm.domain.banking.BankAccountRepository;
+import awsm.domain.banking.WithdrawalHappened;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-class SendTransactionForManualApprovalOnWithdrawal {
+class SendTransactionForReviewOnWithdrawal {
 
   private final BankAccountRepository accounts;
 
-  SendTransactionForManualApprovalOnWithdrawal(BankAccountRepository accounts) {
+  SendTransactionForReviewOnWithdrawal(BankAccountRepository accounts) {
     this.accounts = accounts;
   }
 
@@ -18,7 +20,7 @@ class SendTransactionForManualApprovalOnWithdrawal {
     var txUid = event.txUid();
     var tx = account.tx(txUid);
 
-    if (tx.satisfies(new IsManualApprovalNeeded())) {
+    if (tx.satisfies(new IsManualReviewNeeded())) {
       // send for approval
     }
   }
