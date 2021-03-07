@@ -6,16 +6,14 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 import awsm.domain.crm.Customer;
 import awsm.domain.crm.CustomerRepository;
 import awsm.domain.crm.UniqueEmail;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.context.annotation.Scope;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 
 @RestController
 @Scope(SCOPE_PROTOTYPE)
@@ -28,7 +26,6 @@ public class RegistrationController {
   }
 
   @PostMapping("/registrations")
-  @Transactional
   ResponseDto register(@Valid @RequestBody RequestDto request) {
     var customer =
         new Customer(request.personalId, request.firstName, request.lastName, request.email);
@@ -40,15 +37,10 @@ public class RegistrationController {
   @Data
   @Accessors(fluent = true)
   static class RequestDto {
-    @NotEmpty
-    public final String firstName;
-    @NotEmpty
-    public final String lastName;
-    @NotEmpty
-    public final String personalId;
-    @NotEmpty
-    @UniqueEmail
-    public final String email;
+    @NotEmpty public final String firstName;
+    @NotEmpty public final String lastName;
+    @NotEmpty public final String personalId;
+    @NotEmpty @UniqueEmail public final String email;
   }
 
   @Data

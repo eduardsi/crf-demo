@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(fluent = true)
-public class BankAccountOpened implements DomainEvent {
+class BankAccountOpened implements DomainEvent {
 
   private final String iban;
 

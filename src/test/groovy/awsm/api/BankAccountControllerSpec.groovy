@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.startsWith
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class BankingAcceptanceSpec extends BaseAcceptanceSpec {
+class BankAccountControllerSpec extends BaseAcceptanceSpec {
 
     def conditions = new PollingConditions(timeout: 10)
 

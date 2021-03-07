@@ -23,9 +23,7 @@ class BankAccountSpec extends Specification {
 
     def accountHolder = new AccountHolder("Eduards", "Sizovs", "eduards@sizovs.net")
 
-    def defaultLimits = WithdrawalLimits.defaults(new MockEnvironment()
-            .withProperty("banking.account-limits.daily", "100.00")
-            .withProperty("banking.account-limits.monthly", "1000.00"))
+    def defaultLimits = new WithdrawalLimits(Amount.of("100.00"), Amount.of("1000.00"))
 
     @Subject
     BankAccount account = new BankAccount(accountHolder, defaultLimits)
@@ -183,7 +181,7 @@ class BankAccountSpec extends Specification {
         account.open()
 
         then: "An event gets published"
-        events.any { it -> new BankAccountOpened(account.iban())}
+        events.any { it -> new BankAccountOpened(account.iban(), today())}
     }
 
     def "calculates a balance"() {

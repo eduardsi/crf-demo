@@ -11,13 +11,12 @@ spring:
         persistence:
           validation:
             mode: none
-    open-in-view: false
-  groovy:
-    template:
-      check-template-location: false
+groovy:
+  template:
+    check-template-location: false
 
-  simplejavamail:
-    defaults:
-      from:
-        name: Awesome Bank
-        address: no-reply@awesome.bank
+simplejavamail:
+  defaults:
+    from:
+      name: Awesome Bank
+      address: no-reply@awesome.bank

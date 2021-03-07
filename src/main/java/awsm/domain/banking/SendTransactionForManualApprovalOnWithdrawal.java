@@ -4,12 +4,12 @@ import awsm.domain.core.DomainEvent;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SendTransactionForManualApproval
+class SendTransactionForManualApprovalOnWithdrawal
     implements DomainEvent.SideEffect<WithdrawalHappened> {
 
   private final BankAccountRepository accounts;
 
-  SendTransactionForManualApproval(BankAccountRepository accounts) {
+  SendTransactionForManualApprovalOnWithdrawal(BankAccountRepository accounts) {
     this.accounts = accounts;
   }
 

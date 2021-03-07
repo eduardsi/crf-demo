@@ -90,7 +90,6 @@ dependencies {
     implementation javaxJson
     implementation bucket4j
     implementation failsafe
-    implementation pipelinr
     implementation hashIds
     implementation ulidGenerator
     testImplementation wiremock
