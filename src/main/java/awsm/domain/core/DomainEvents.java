@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 public interface DomainEvents {
@@ -34,22 +34,19 @@ public interface DomainEvents {
     }
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked", "UnstableApiUsage"})
   @Component
   class SpringManaged implements DomainEvents {
     static Optional<DomainEvents> INSTANCE = Optional.empty();
-    private final ObjectProvider<DomainEvent.SideEffect> sideEffects;
+    private final ApplicationEventPublisher eventPublisher;
 
-    SpringManaged(ObjectProvider<DomainEvent.SideEffect> sideEffects) {
-      this.sideEffects = sideEffects;
+    SpringManaged(ApplicationEventPublisher eventPublisher) {
+      this.eventPublisher = eventPublisher;
       SpringManaged.INSTANCE = Optional.of(this);
     }
 
     @Override
     public void publish(DomainEvent event) {
-      sideEffects.stream()
-          .filter(sideEffect -> sideEffect.eventType().isSupertypeOf(event.type()))
-          .forEach(sideEffect -> sideEffect.trigger(event));
+      eventPublisher.publishEvent(event);
     }
   }
 }

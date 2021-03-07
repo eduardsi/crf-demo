@@ -1,11 +1,10 @@
 package awsm.domain.banking;
 
-import awsm.domain.core.DomainEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-class SendTransactionForManualApprovalOnWithdrawal
-    implements DomainEvent.SideEffect<WithdrawalHappened> {
+class SendTransactionForManualApprovalOnWithdrawal {
 
   private final BankAccountRepository accounts;
 
@@ -13,7 +12,7 @@ class SendTransactionForManualApprovalOnWithdrawal
     this.accounts = accounts;
   }
 
-  @Override
+  @TransactionalEventListener
   public void trigger(WithdrawalHappened event) {
     var account = accounts.getOne(event.iban());
     var txUid = event.txUid();
