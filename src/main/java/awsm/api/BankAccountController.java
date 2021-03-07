@@ -35,7 +35,7 @@ class BankAccountController {
     account.open();
     account.deposit(openingBonus());
     repo.save(account);
-    emailCongratulations(account);
+    emailCongratulations(account.holder());
     return new ResponseDto(account.iban(), account.balance() + "");
   }
 
@@ -43,14 +43,14 @@ class BankAccountController {
     return Amount.of("5.00");
   }
 
-  private void emailCongratulations(BankAccount account) {
+  private void emailCongratulations(AccountHolder holder) {
     var email =
         EmailBuilder.startingBlank()
-            .to(account.holder().email())
+            .to(holder.email())
             .withSubject("Congratulations!")
             .withPlainText(
                 format(
-                    "Congratulations, %s. Thanks for using our services", account.holder().name()))
+                    "Congratulations, %s. Thanks for using our services", holder.name()))
             .buildEmail();
     mailer.sendMail(email);
   }
