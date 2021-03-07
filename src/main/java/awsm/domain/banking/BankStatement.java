@@ -22,12 +22,12 @@ class BankStatement {
       LocalDate fromInclusive, LocalDate toInclusive, Collection<Transaction> transactions) {
     var startingBalance =
         StreamEx.of(transactions)
-            .filter(tx -> tx.bookedBefore(fromInclusive))
+            .filter(tx -> tx.isBookedBefore(fromInclusive))
             .foldRight(Amount.ZERO, Transaction::apply);
 
     var closingBalance =
         StreamEx.of(transactions)
-            .filter(tx -> tx.bookedDuring(fromInclusive, toInclusive))
+            .filter(tx -> tx.isBookedDuring(fromInclusive, toInclusive))
             .foldLeft(
                 startingBalance,
                 (amount, tx) -> {

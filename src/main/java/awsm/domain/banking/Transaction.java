@@ -61,19 +61,19 @@ class Transaction implements DomainEntity<Transaction> {
     return bookingTime;
   }
 
-  boolean bookedIn(LocalDate date) {
+  boolean isBookedOn(LocalDate date) {
     return bookingTime.toLocalDate().isEqual(date);
   }
 
-  boolean bookedBefore(LocalDate dateExclusive) {
+  boolean isBookedBefore(LocalDate dateExclusive) {
     return LocalDateRange.ofUnboundedStart(dateExclusive).contains(bookingTime.toLocalDate());
   }
 
-  boolean bookedDuring(LocalDate fromInclusive, LocalDate toInclusive) {
+  boolean isBookedDuring(LocalDate fromInclusive, LocalDate toInclusive) {
     return LocalDateRange.ofClosed(fromInclusive, toInclusive).contains(bookingTime.toLocalDate());
   }
 
-  boolean bookedIn(Month month) {
+  boolean isBookedIn(Month month) {
     return bookingTime.toLocalDate().getMonth().equals(month);
   }
 

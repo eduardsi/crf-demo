@@ -161,7 +161,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
     private Amount withdrawn(LocalDate someDay) {
       return StreamEx.of(transactions)
-          .filter(tx -> tx.bookedIn(someDay))
+          .filter(tx -> tx.isBookedOn(someDay))
           .filter(tx -> tx.isWithdrawal())
           .foldRight(Amount.ZERO, Transaction::apply)
           .abs();
@@ -179,7 +179,7 @@ public class BankAccount implements DomainEntity<BankAccount> {
 
     private Amount withdrawn(Month month) {
       return StreamEx.of(transactions)
-          .filter(tx -> tx.bookedIn(month))
+          .filter(tx -> tx.isBookedIn(month))
           .filter(tx -> tx.isWithdrawal())
           .foldRight(Amount.ZERO, Transaction::apply)
           .abs();
