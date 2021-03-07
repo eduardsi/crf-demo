@@ -6,8 +6,9 @@ import static awsm.infrastructure.clock.TimeMachine.today;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import awsm.domain.core.AggregateRoot;
 import awsm.domain.core.Amount;
+import awsm.domain.core.DomainEntity;
+import awsm.domain.core.DomainEvents;
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.time.Month;
@@ -17,7 +18,9 @@ import javax.persistence.*;
 import one.util.streamex.StreamEx;
 
 @Entity
-public class BankAccount extends AggregateRoot<BankAccount> {
+public class BankAccount implements DomainEntity<BankAccount> {
+
+  transient DomainEvents events = DomainEvents.INSTANCE;
 
   enum Status {
     NEW,
@@ -58,7 +61,7 @@ public class BankAccount extends AggregateRoot<BankAccount> {
 
   public void open() {
     this.status = OPEN;
-    publish(new BankAccountOpened(iban, today()));
+    events.publish(new BankAccountOpened(iban, today()));
   }
 
   public void suspend() {
@@ -90,7 +93,7 @@ public class BankAccount extends AggregateRoot<BankAccount> {
     new EnforceMonthlyWithdrawalLimit();
     new EnforceDailyWithdrawalLimit();
 
-    publish(new WithdrawalHappened(iban, tx.uid()));
+    events.publish(new WithdrawalHappened(iban, tx.uid()));
 
     return tx;
   }

@@ -1,6 +1,6 @@
 package awsm.domain.banking
 
-import awsm.domain.StubDomainEvents
+
 import awsm.domain.core.Amount
 import awsm.infrastructure.clock.TimeMachine
 import org.skyscreamer.jsonassert.JSONAssert
@@ -18,8 +18,6 @@ class BankAccountSpec extends Specification {
 
     def clock = new MutableClock(EPOCH, UTC)
 
-    def events = new StubDomainEvents()
-
     def accountHolder = new AccountHolder("Eduards", "Sizovs", "eduards@sizovs.net")
 
     def defaultLimits = new WithdrawalLimits(Amount.of("100.00"), Amount.of("1000.00"))
@@ -28,7 +26,6 @@ class BankAccountSpec extends Specification {
     BankAccount account = new BankAccount(accountHolder, defaultLimits)
 
     def setup() {
-        account.set(events)
         TimeMachine.set(clock)
     }
 
@@ -87,7 +84,7 @@ class BankAccountSpec extends Specification {
         tx.isWithdrawal()
         tx.withdrawn() == Amount.of(100.00)
         tx.deposited() == Amount.of(0.00)
-        events.any { it -> new WithdrawalHappened(account.iban(), tx.uid()) }
+        account.events.any { it -> new WithdrawalHappened(account.iban(), tx.uid()) }
     }
 
     def "cannot be withdrawn when closed"() {
@@ -180,7 +177,7 @@ class BankAccountSpec extends Specification {
         account.open()
 
         then: "An event gets published"
-        events.any { it -> new BankAccountOpened(account.iban(), today())}
+        account.events.any { it -> new BankAccountOpened(account.iban(), today())}
     }
 
     def "calculates a balance"() {
