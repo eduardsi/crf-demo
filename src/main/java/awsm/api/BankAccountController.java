@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+
 @RestController
 class BankAccountController {
 
@@ -28,7 +30,7 @@ class BankAccountController {
     this.mailer = mailer;
   }
 
-  @PostMapping("/bank-accounts")
+  @PostMapping("/accounts")
   ResponseDto applyForBankAccount(@RequestBody RequestDto request) {
     var accountHolder = new AccountHolder(request.firstName, request.lastName, request.email);
     var account = new BankAccount(accountHolder, withdrawalLimits);
@@ -36,7 +38,7 @@ class BankAccountController {
     account.deposit(openingBonus());
     repo.save(account);
     emailCongratulations(account);
-    return new ResponseDto(account.iban());
+    return new ResponseDto(account.iban(), account.balance() + "");
   }
 
   private Amount openingBonus() {
@@ -66,5 +68,7 @@ class BankAccountController {
   @Data
   static class ResponseDto {
     public final String iban;
+    public final String balance;
   }
+
 }

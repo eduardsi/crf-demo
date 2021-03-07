@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import spock.lang.Specification
 
 import static org.hamcrest.Matchers.hasLength
 import static org.hamcrest.Matchers.is
@@ -19,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class RegistrationControllerSpec  {
+class RegistrationControllerSpec extends Specification {
 
     @Autowired
     protected MockMvc mvc

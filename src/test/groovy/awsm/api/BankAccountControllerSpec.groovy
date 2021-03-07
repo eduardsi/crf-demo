@@ -8,9 +8,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
 import static org.hamcrest.Matchers.hasLength
+import static org.hamcrest.Matchers.is
 import static org.hamcrest.Matchers.startsWith
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -18,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class BankAccountControllerSpec {
+class BankAccountControllerSpec extends Specification {
 
     @Autowired
     protected MockMvc mvc
@@ -41,7 +43,7 @@ class BankAccountControllerSpec {
 
         when: 'I apply for a new bank account'
 
-            def applyForAccount = mvc.perform post("/bank-accounts")
+            def applyForAccount = mvc.perform post("/accounts")
                 .content(new JsonBuilder(application).toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON)
 
@@ -49,6 +51,9 @@ class BankAccountControllerSpec {
             applyForAccount.andExpect status().isOk()
             applyForAccount.andExpect jsonPath("iban", startsWith('LV'))
             applyForAccount.andExpect jsonPath("iban", hasLength(21))
+
+        then: 'I am receiving an opening bonus'
+            applyForAccount.andExpect jsonPath("balance", is("5.00"))
 
         and: 'I am receiving a congratulations email'
         conditions.eventually {
