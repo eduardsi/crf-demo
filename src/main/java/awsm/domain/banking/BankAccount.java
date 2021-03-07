@@ -134,10 +134,6 @@ public class BankAccount implements DomainEntity<BankAccount> {
     return status.equals(SUSPENDED);
   }
 
-  WithdrawalLimits withdrawalLimits() {
-    return withdrawalLimits;
-  }
-
   private class EnforceOpen {
     private EnforceOpen() {
       checkState(isOpen(), "Account is not open.");
