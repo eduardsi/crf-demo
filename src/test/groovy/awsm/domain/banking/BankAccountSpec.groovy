@@ -1,11 +1,10 @@
 package awsm.domain.banking
 
-import awsm.domain.AllDomainEvents
+import awsm.domain.StubDomainEvents
 import awsm.domain.core.Amount
 import awsm.infrastructure.clock.TimeMachine
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.springframework.mock.env.MockEnvironment
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.util.time.MutableClock
@@ -19,7 +18,7 @@ class BankAccountSpec extends Specification {
 
     def clock = new MutableClock(EPOCH, UTC)
 
-    def events = new AllDomainEvents()
+    def events = new StubDomainEvents()
 
     def accountHolder = new AccountHolder("Eduards", "Sizovs", "eduards@sizovs.net")
 

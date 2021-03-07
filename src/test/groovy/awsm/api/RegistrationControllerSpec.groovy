@@ -1,17 +1,30 @@
 package awsm.api
 
+import com.github.javafaker.Faker
+import groovy.json.JsonBuilder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 
 import static org.hamcrest.Matchers.hasLength
 import static org.hamcrest.Matchers.is
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 
-class RegistrationControllerSpec extends BaseAcceptanceSpec {
+@SpringBootTest
+@AutoConfigureMockMvc
+class RegistrationControllerSpec  {
 
-    def registrationInfo() {
+    @Autowired
+    protected MockMvc mvc
+
+    static def registrationInfo() {
         [
                 firstName: fake().name().firstName(),
                 lastName: fake().name().lastName(),
@@ -58,7 +71,13 @@ class RegistrationControllerSpec extends BaseAcceptanceSpec {
     }
 
     private ResultActions register(registrationForm) {
-        mvc.perform jsonPost("/registrations", registrationForm)
+        mvc.perform post("/registrations")
+                .content(new JsonBuilder(registrationForm).toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON)
+    }
+
+    static Faker fake() {
+        return new Faker()
     }
 
 }

@@ -100,7 +100,7 @@ dependencies {
     testImplementation jsonAssert
     testImplementation archUnit
     testImplementation h2
-    testImplementation greenmailSpring
+    testImplementation dumbster
     testImplementation spockSpring
     testImplementation springBootTest
     testImplementation springBootTestCfg

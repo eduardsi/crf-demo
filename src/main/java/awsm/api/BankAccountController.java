@@ -1,5 +1,7 @@
 package awsm.api;
 
+import static java.lang.String.format;
+
 import awsm.domain.banking.AccountHolder;
 import awsm.domain.banking.BankAccount;
 import awsm.domain.banking.BankAccountRepository;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static java.lang.String.format;
-
 @RestController
 class BankAccountController {
 
@@ -21,7 +21,8 @@ class BankAccountController {
   private final WithdrawalLimits withdrawalLimits;
   private final Mailer mailer;
 
-  BankAccountController(BankAccountRepository repo, WithdrawalLimits withdrawalLimits, Mailer mailer) {
+  BankAccountController(
+      BankAccountRepository repo, WithdrawalLimits withdrawalLimits, Mailer mailer) {
     this.repo = repo;
     this.withdrawalLimits = withdrawalLimits;
     this.mailer = mailer;
@@ -49,8 +50,7 @@ class BankAccountController {
             .withSubject("Congratulations!")
             .withPlainText(
                 format(
-                    "Congratulations, %s. Thanks for using our services",
-                    account.holder().name()))
+                    "Congratulations, %s. Thanks for using our services", account.holder().name()))
             .buildEmail();
     mailer.sendMail(email);
   }

@@ -4,7 +4,7 @@ import awsm.domain.core.DomainEvent
 import awsm.domain.core.DomainEvents
 import com.google.common.collect.ForwardingCollection
 
-class AllDomainEvents extends ForwardingCollection<DomainEvent> implements DomainEvents {
+class StubDomainEvents extends ForwardingCollection<DomainEvent> implements DomainEvents {
 
     private final Collection<DomainEvent> events = new ArrayList<>()
 

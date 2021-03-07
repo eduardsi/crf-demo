@@ -16,6 +16,9 @@ groovy:
     check-template-location: false
 
 simplejavamail:
+  smtp:
+    host: localhost
+    port: 1025
   defaults:
     from:
       name: Awesome Bank

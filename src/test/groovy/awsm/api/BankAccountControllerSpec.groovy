@@ -1,18 +1,33 @@
 package awsm.api
 
-
+import com.dumbster.smtp.SimpleSmtpServer
+import com.github.javafaker.Faker
+import groovy.json.JsonBuilder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
 import spock.util.concurrent.PollingConditions
 
 import static org.hamcrest.Matchers.hasLength
 import static org.hamcrest.Matchers.startsWith
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
-class BankAccountControllerSpec extends BaseAcceptanceSpec {
+@SpringBootTest
+@AutoConfigureMockMvc
+class BankAccountControllerSpec {
 
-    def conditions = new PollingConditions(timeout: 10)
+    @Autowired
+    protected MockMvc mvc
 
-    def validApplication() {
+    private mockSmtpServer = SimpleSmtpServer.start(1025)
+
+    def conditions = new PollingConditions(timeout: 5)
+
+    static def validApplication() {
         [
             firstName: fake().name().firstName(),
             lastName: fake().name().lastName(),
@@ -25,7 +40,10 @@ class BankAccountControllerSpec extends BaseAcceptanceSpec {
         def application = validApplication()
 
         when: 'I apply for a new bank account'
-            def applyForAccount = mvc.perform jsonPost("/bank-accounts", application)
+
+            def applyForAccount = mvc.perform post("/bank-accounts")
+                .content(new JsonBuilder(application).toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON)
 
         then: 'I am getting a bank account with a new iban'
             applyForAccount.andExpect status().isOk()
@@ -34,12 +52,15 @@ class BankAccountControllerSpec extends BaseAcceptanceSpec {
 
         and: 'I am receiving a congratulations email'
         conditions.eventually {
-            def outgoingEmail = outgoingEmails().elementWithIndex(0)
-            assert outgoingEmail.field("Content", "Headers", "To").contains(application.email)
-            assert outgoingEmail.field("Content", "Headers", "Subject").contains('Congratulations!')
-            assert outgoingEmail.field("Content", "Body").isEqualTo("Congratulations, $application.firstName $application.lastName. Thanks for using our services")
+            def email = mockSmtpServer.getReceivedEmails().first()
+            assert email.getHeaderValue("To").contains(application.email)
+            assert email.getHeaderValue("Subject").contains('Congratulations!')
+            assert email.body == "Congratulations, $application.firstName $application.lastName. Thanks for using our services"
         }
 
     }
 
+    static Faker fake() {
+        return new Faker()
+    }
 }
