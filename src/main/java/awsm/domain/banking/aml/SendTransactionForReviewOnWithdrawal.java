@@ -9,9 +9,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
 class SendTransactionForReviewOnWithdrawal {
 
   private final BankAccountRepository accounts;
+  private final TransactionsForReviewRepository txForReviewRepository;
 
-  SendTransactionForReviewOnWithdrawal(BankAccountRepository accounts) {
+  SendTransactionForReviewOnWithdrawal(
+      BankAccountRepository accounts, TransactionsForReviewRepository txForReviewRepository) {
     this.accounts = accounts;
+    this.txForReviewRepository = txForReviewRepository;
   }
 
   @TransactionalEventListener
@@ -20,8 +23,9 @@ class SendTransactionForReviewOnWithdrawal {
     var txUid = event.txUid();
     var tx = account.tx(txUid);
 
-    if (tx.satisfies(new IsManualReviewNeeded())) {
-      // send for approval
+    if (tx.satisfies(new IsReviewNeeded())) {
+      var txForReview = new TransactionForReview(tx.uid(), tx.withdrawn(), event.iban());
+      txForReviewRepository.save(txForReview);
     }
   }
 }

@@ -8,5 +8,7 @@ public interface BankAccountRepository extends Repository<BankAccount, String> {
 
   BankAccount getOne(String iban);
 
+  long countByTransactionStatus(Transaction.Status status);
+
   void save(BankAccount account);
 }

@@ -2,35 +2,45 @@ package awsm.api;
 
 import static java.lang.String.format;
 
-import awsm.domain.banking.AccountHolder;
-import awsm.domain.banking.BankAccount;
-import awsm.domain.banking.BankAccountRepository;
-import awsm.domain.banking.WithdrawalLimits;
+import awsm.domain.banking.*;
 import awsm.domain.core.Amount;
+import java.math.BigDecimal;
+import javax.websocket.server.PathParam;
 import lombok.Data;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 class BankAccountController {
 
   private final BankAccountRepository repo;
-  private final WithdrawalLimits withdrawalLimits;
+  private final Environment env;
   private final Mailer mailer;
 
-  BankAccountController(
-      BankAccountRepository repo, WithdrawalLimits withdrawalLimits, Mailer mailer) {
+  BankAccountController(BankAccountRepository repo, Environment env, Mailer mailer) {
     this.repo = repo;
-    this.withdrawalLimits = withdrawalLimits;
+    this.env = env;
     this.mailer = mailer;
+  }
+
+  @PostMapping("/accounts/{iban}/deposits")
+  void deposit(@PathParam("iban") String iban, @RequestParam BigDecimal amount) {
+    var account = repo.getOne(iban);
+    account.deposit(Amount.of(amount));
+  }
+
+  @PostMapping("/accounts/{iban}/withdrawal")
+  void withdraw(@PathParam("iban") String iban, @RequestParam BigDecimal amount) {
+    var account = repo.getOne(iban);
+    account.withdraw(Amount.of(amount));
   }
 
   @PostMapping("/accounts")
   ResponseDto applyForBankAccount(@RequestBody RequestDto request) {
     var accountHolder = new AccountHolder(request.firstName, request.lastName, request.email);
+    var withdrawalLimits = new WithdrawalLimits(env);
     var account = new BankAccount(accountHolder, withdrawalLimits);
     account.open();
     account.deposit(openingBonus());
