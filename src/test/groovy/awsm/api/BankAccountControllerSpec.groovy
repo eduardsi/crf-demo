@@ -72,9 +72,7 @@ class BankAccountControllerSpec extends Specification {
 
     def 'deposits and withdrawals'() {
         def application = application()
-
-        when: 'I apply for a bank account'
-
+        given: 'I have a bank account'
             def applyForAccount = mvc.perform post("/accounts")
                 .content(new JsonBuilder(application).toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -85,12 +83,11 @@ class BankAccountControllerSpec extends Specification {
             def deposit = mvc.perform post("/accounts/${content.iban}/deposits")
                 .param("amount", "1000000")
             deposit.andExpect status().isOk()
-        and: 'I withdraw that million'
+        when: 'I withdraw that million'
             def withdrawal = mvc.perform post("/accounts/${content.iban}/withdrawals")
                 .param("amount", "1000000")
+        then: 'Withdrawal should succeed'
             withdrawal.andExpect status().isOk()
-        then:
-            true
     }
 
     static Faker fake() {
