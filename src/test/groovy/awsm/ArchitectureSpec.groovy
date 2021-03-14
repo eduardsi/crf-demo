@@ -1,7 +1,9 @@
 package awsm
 
+import awsm.domain.core.DomainRepository
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.Repository
 import spock.lang.Specification
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.*
@@ -16,6 +18,18 @@ class ArchitectureSpec extends Specification {
   def "no package cycles allowed"() {
     given:
       final rule = slices().matching("..(*)..").should().beFreeOfCycles()
+    expect:
+      rule.check(allClasses())
+  }
+
+  def "all repositories must be annotated with @DomainRepository"() {
+    given:
+      final rule = classes()
+              .that()
+              .areAssignableTo(Repository)
+              .should()
+              .beAnnotatedWith(DomainRepository)
+              .because("it requires tx to be started/stopped at higher levels")
     expect:
       rule.check(allClasses())
   }

@@ -24,10 +24,10 @@ public class WithdrawalLimits {
   }
 
   public WithdrawalLimits(Amount dailyLimit, Amount monthlyLimit) {
-    var withinLimits = monthlyLimit.isGreaterThan(dailyLimit);
+    var withinLimits = monthlyLimit.isGreaterThanOrEqualTo(dailyLimit);
     checkState(
         withinLimits,
-        "Monthly limit (%s) must be higher than daily limit (%s)",
+        "Monthly limit (%s) must be higher or equal to daily limit (%s)",
         monthlyLimit,
         dailyLimit);
 

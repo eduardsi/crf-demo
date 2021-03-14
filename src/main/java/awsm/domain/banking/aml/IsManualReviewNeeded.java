@@ -4,7 +4,7 @@ import awsm.domain.banking.Transaction;
 import awsm.domain.core.Amount;
 import awsm.domain.core.Specification;
 
-class IsReviewNeeded implements Specification<Transaction> {
+public class IsManualReviewNeeded implements Specification<Transaction> {
 
   @Override
   public boolean isSatisfiedBy(Transaction tx) {

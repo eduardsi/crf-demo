@@ -1,8 +1,9 @@
 package awsm.domain.crm;
 
+import awsm.domain.core.DomainRepository;
 import org.springframework.data.repository.Repository;
 
-@org.springframework.stereotype.Repository
+@DomainRepository
 public interface CustomerRepository extends Repository<Customer, String> {
 
   void save(Customer customer);

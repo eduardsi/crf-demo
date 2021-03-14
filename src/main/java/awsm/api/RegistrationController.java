@@ -1,32 +1,39 @@
 package awsm.api;
 
 import static awsm.infrastructure.security.Encryption.encrypt;
-import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 import awsm.domain.crm.Customer;
 import awsm.domain.crm.CustomerRepository;
 import awsm.domain.crm.UniqueEmail;
-import javax.validation.Valid;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.context.annotation.Scope;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Scope(SCOPE_PROTOTYPE)
-public class RegistrationController {
+@Transactional
+class RegistrationController {
 
+  private final Validator validator;
   private final CustomerRepository repo;
 
-  RegistrationController(CustomerRepository repo) {
+  RegistrationController(Validator validator, CustomerRepository repo) {
+    this.validator = validator;
     this.repo = repo;
   }
 
   @PostMapping("/registrations")
-  ResponseDto register(@Valid @RequestBody RequestDto request) {
+  public ResponseDto register(@RequestBody RequestDto request) {
+    var violations = validator.validate(request);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+
     var customer =
         new Customer(request.personalId, request.firstName, request.lastName, request.email);
     repo.save(customer);

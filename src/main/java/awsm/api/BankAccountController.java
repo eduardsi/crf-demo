@@ -2,17 +2,21 @@ package awsm.api;
 
 import static java.lang.String.format;
 
-import awsm.domain.banking.*;
+import awsm.domain.banking.AccountHolder;
+import awsm.domain.banking.BankAccount;
+import awsm.domain.banking.BankAccountRepository;
+import awsm.domain.banking.WithdrawalLimits;
 import awsm.domain.core.Amount;
 import java.math.BigDecimal;
-import javax.websocket.server.PathParam;
 import lombok.Data;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.springframework.core.env.Environment;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Transactional
 class BankAccountController {
 
   private final BankAccountRepository repo;
@@ -26,19 +30,19 @@ class BankAccountController {
   }
 
   @PostMapping("/accounts/{iban}/deposits")
-  void deposit(@PathParam("iban") String iban, @RequestParam BigDecimal amount) {
+  public void deposit(@PathVariable String iban, @RequestParam BigDecimal amount) {
     var account = repo.getOne(iban);
     account.deposit(Amount.of(amount));
   }
 
-  @PostMapping("/accounts/{iban}/withdrawal")
-  void withdraw(@PathParam("iban") String iban, @RequestParam BigDecimal amount) {
+  @PostMapping("/accounts/{iban}/withdrawals")
+  public void withdraw(@PathVariable String iban, @RequestParam BigDecimal amount) {
     var account = repo.getOne(iban);
     account.withdraw(Amount.of(amount));
   }
 
   @PostMapping("/accounts")
-  ResponseDto applyForBankAccount(@RequestBody RequestDto request) {
+  public ResponseDto applyForBankAccount(@RequestBody RequestDto request) {
     var accountHolder = new AccountHolder(request.firstName, request.lastName, request.email);
     var withdrawalLimits = new WithdrawalLimits(env);
     var account = new BankAccount(accountHolder, withdrawalLimits);

@@ -1,11 +1,12 @@
 ---
 banking:
   account-limits:
-    daily: 500.00
-    monthly: 3000.00
+    daily: 10000000.00
+    monthly: 10000000.00
 
 spring:
   jpa:
+    open-in-view: false
     properties:
       javax:
         persistence:

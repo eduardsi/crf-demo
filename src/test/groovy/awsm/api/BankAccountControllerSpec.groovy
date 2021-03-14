@@ -3,11 +3,14 @@ package awsm.api
 import com.dumbster.smtp.SimpleSmtpServer
 import com.github.javafaker.Faker
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.AutoCleanup
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
@@ -25,11 +28,13 @@ class BankAccountControllerSpec extends Specification {
     @Autowired
     protected MockMvc mvc
 
-    private mockSmtpServer = SimpleSmtpServer.start(1025)
+    @Shared
+    @AutoCleanup
+    static def mockSmtpServer = SimpleSmtpServer.start(1025)
 
     def conditions = new PollingConditions(timeout: 5)
 
-    static def validApplication() {
+    static def application() {
         [
             firstName: fake().name().firstName(),
             lastName: fake().name().lastName(),
@@ -39,7 +44,7 @@ class BankAccountControllerSpec extends Specification {
     }
 
     def 'new bank account'() {
-        def application = validApplication()
+        def application = application()
 
         when: 'I apply for a new bank account'
 
@@ -57,12 +62,35 @@ class BankAccountControllerSpec extends Specification {
 
         and: 'I am receiving a congratulations email'
         conditions.eventually {
-            def email = mockSmtpServer.getReceivedEmails().first()
+            def email = mockSmtpServer.receivedEmails.first()
             assert email.getHeaderValue("To").contains(application.email)
             assert email.getHeaderValue("Subject").contains('Congratulations!')
             assert email.body == "Congratulations, $application.firstName $application.lastName. Thanks for using our services"
         }
 
+    }
+
+    def 'deposits and withdrawals'() {
+        def application = application()
+
+        when: 'I apply for a bank account'
+
+            def applyForAccount = mvc.perform post("/accounts")
+                .content(new JsonBuilder(application).toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON)
+            def response = applyForAccount.andReturn().response
+            def content = new JsonSlurper().parseText(response.contentAsString)
+
+        and: 'I deposit one million'
+            def deposit = mvc.perform post("/accounts/${content.iban}/deposits")
+                .param("amount", "1000000")
+            deposit.andExpect status().isOk()
+        and: 'I withdraw that million'
+            def withdrawal = mvc.perform post("/accounts/${content.iban}/withdrawals")
+                .param("amount", "1000000")
+            withdrawal.andExpect status().isOk()
+        then:
+            true
     }
 
     static Faker fake() {
