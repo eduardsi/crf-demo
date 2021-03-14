@@ -4,6 +4,9 @@ import awsm.domain.core.DomainRepository
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.Repository
+import org.springframework.stereotype.Controller
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.bind.annotation.RestController
 import spock.lang.Specification
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.*
@@ -30,6 +33,19 @@ class ArchitectureSpec extends Specification {
               .should()
               .beAnnotatedWith(DomainRepository)
               .because("it requires tx to be started/stopped at higher levels")
+    expect:
+      rule.check(allClasses())
+  }
+
+    def "all controllers must be @Transactional"() {
+    given:
+      final rule = classes()
+              .that()
+              .areAnnotatedWith(RestController)
+              .or()
+              .areAnnotatedWith(Controller)
+              .should()
+              .beAnnotatedWith(Transactional)
     expect:
       rule.check(allClasses())
   }

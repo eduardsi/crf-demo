@@ -14,12 +14,10 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-import static org.hamcrest.Matchers.hasLength
-import static org.hamcrest.Matchers.is
-import static org.hamcrest.Matchers.startsWith
+import static org.hamcrest.Matchers.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
 @SpringBootTest
 @AutoConfigureMockMvc
